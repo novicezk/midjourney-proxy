@@ -1,0 +1,9 @@
+server:
+  port: 8022
+  servlet:
+    context-path: /mj
+mj-discord:
+  user-token: 用户Token
+  bot-token: 机器人Token
+  guild-id: 服务器ID
+  channel-id: 频道ID

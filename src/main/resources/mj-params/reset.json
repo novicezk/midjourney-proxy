@@ -1,0 +1,13 @@
+{
+  "type": 3,
+  "guild_id": "$guild_id",
+  "channel_id": "$channel_id",
+  "message_id": "$message_id",
+  "application_id": "936929561302675456",
+  "session_id": "9c4055428e13bcbf2248a6b36084c5f3",
+  "message_flags": 0,
+  "data": {
+    "component_type": 2,
+    "custom_id": "MJ::JOB::reroll::0::$message_hash::SOLO"
+  }
+}
