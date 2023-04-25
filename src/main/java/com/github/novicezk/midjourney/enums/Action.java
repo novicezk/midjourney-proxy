@@ -1,15 +1,19 @@
 package com.github.novicezk.midjourney.enums;
 
 
-public enum TaskType {
+public enum Action {
 	/**
 	 * 生成图片.
 	 */
 	IMAGINE,
 	/**
-	 * 变换图片.
+	 * 选中放大.
 	 */
-	UP,
+	UPSCALE,
+	/**
+	 * 选中其中的一张图，生成四张相似的.
+	 */
+	VARIATION,
 	/**
 	 * 重新生成.
 	 */

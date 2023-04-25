@@ -1,26 +1,28 @@
 package com.github.novicezk.midjourney.dto;
 
-import com.github.novicezk.midjourney.enums.TaskType;
+import com.github.novicezk.midjourney.enums.Action;
 import lombok.Data;
 
 @Data
 public class TaskDTO {
 	/**
-	 * 微信群名.
+	 * state: 自定义字符串, 回调接口带回.
 	 */
-	private String room;
+	private String state;
 	/**
-	 * 微信名.
+	 * 动作: IMAGINE\UPSCALE\VARIATION\RESET.
 	 */
-	private String user;
-
+	private Action action;
 	/**
-	 * 任务类型.
-	 */
-	private TaskType type;
-	/**
-	 * prompt.
+	 * prompt: action 为 IMAGINE 必传.
 	 */
 	private String prompt;
-
+	/**
+	 * 任务ID: action 为 UPSCALE\VARIATION\RESET 必传.
+	 */
+	private String taskId;
+	/**
+	 * index: action 为 UPSCALE\VARIATION 必传.
+	 */
+	private Integer index;
 }

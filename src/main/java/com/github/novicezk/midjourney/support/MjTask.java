@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.support;
 
-import com.github.novicezk.midjourney.enums.TaskType;
+import com.github.novicezk.midjourney.enums.Action;
+import com.github.novicezk.midjourney.enums.TaskStatus;
 import lombok.Data;
 
 import java.util.Date;
@@ -8,17 +9,17 @@ import java.util.Date;
 @Data
 public class MjTask {
 
-	private TaskType type;
-	private String key;
+	private Action action;
+	private String id;
 	private String prompt;
-	private String room;
-	private String user;
+	private String description;
+	private String state;
 	private Date submitDate;
-	private Date doneDate;
+	private Date finishDate;
 	private String messageId;
 	private String messageHash;
-	private boolean done = false;
 	private String imageUrl;
-	private boolean notifySuccess = false;
+
+	private TaskStatus status = TaskStatus.NOT_START;
 
 }

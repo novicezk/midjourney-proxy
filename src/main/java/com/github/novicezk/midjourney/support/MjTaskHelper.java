@@ -4,9 +4,9 @@ import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.stream.StreamUtil;
-import com.github.novicezk.midjourney.enums.TaskType;
 import org.springframework.stereotype.Component;
 
+import java.util.Iterator;
 import java.util.List;
 
 @Component
@@ -30,8 +30,12 @@ public class MjTaskHelper {
 		return ListUtil.toList(TASK_MAP.iterator());
 	}
 
-	public MjTask findByTypeAndMessageId(TaskType type, String messageId) {
-		return StreamUtil.of(TASK_MAP.iterator()).filter(t -> t.getType() == type && messageId.equals(t.getMessageId()))
+	public Iterator<MjTask> taskIterator() {
+		return TASK_MAP.iterator();
+	}
+
+	public MjTask findById(String taskId) {
+		return StreamUtil.of(TASK_MAP.iterator()).filter(t -> taskId.equals(t.getId()))
 				.findFirst().orElse(null);
 	}
 

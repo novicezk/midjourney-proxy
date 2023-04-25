@@ -3,7 +3,7 @@ package com.github.novicezk.midjourney.service;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import com.github.novicezk.midjourney.MjDiscordProperties;
+import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.result.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,18 +25,29 @@ import java.io.IOException;
 @Service
 @RequiredArgsConstructor
 public class MjDiscordServiceImpl implements MjDiscordService {
-	private final MjDiscordProperties properties;
+	private final ProxyProperties properties;
 
 	private static final String DISCORD_API_URL = "https://discord.com/api/v9/interactions";
 
 	private String imagineParamsJson;
-	private String upParamsJson;
+	private String upscaleParamsJson;
+	private String variationParamsJson;
+	private String resetParamsJson;
+
+	private String discordUserToken;
+	private String discordGuildId;
+	private String discordChannelId;
 
 	@PostConstruct
 	void init() {
+		this.discordUserToken = this.properties.getDiscord().getUserToken();
+		this.discordGuildId = this.properties.getDiscord().getGuildId();
+		this.discordChannelId = this.properties.getDiscord().getChannelId();
 		try {
-			this.imagineParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:mj-params/imagine.json").openStream());
-			this.upParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:mj-params/up.json").openStream());
+			this.imagineParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/imagine.json").openStream());
+			this.upscaleParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/upscale.json").openStream());
+			this.variationParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/variation.json").openStream());
+			this.resetParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/reset.json").openStream());
 		} catch (IOException e) {
 			// can't happen
 		}
@@ -44,19 +55,37 @@ public class MjDiscordServiceImpl implements MjDiscordService {
 
 	@Override
 	public Message<Void> imagine(String prompt) {
-		String paramsStr = this.imagineParamsJson.replace("$guild_id", this.properties.getGuildId())
-				.replace("$channel_id", this.properties.getChannelId())
+		String paramsStr = this.imagineParamsJson.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId)
 				.replace("$prompt", prompt);
 		return postJson(paramsStr);
 	}
 
 	@Override
-	public Message<Void> up(String messageId, String action, int index, String messageHash) {
-		String paramsStr = this.upParamsJson.replace("$guild_id", this.properties.getGuildId())
-				.replace("$channel_id", this.properties.getChannelId())
+	public Message<Void> upscale(String messageId, int index, String messageHash) {
+		String paramsStr = this.upscaleParamsJson.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId)
 				.replace("$message_id", messageId)
-				.replace("$action", action)
-				.replace("$index", index + "")
+				.replace("$index", String.valueOf(index))
+				.replace("$message_hash", messageHash);
+		return postJson(paramsStr);
+	}
+
+	@Override
+	public Message<Void> variation(String messageId, int index, String messageHash) {
+		String paramsStr = this.variationParamsJson.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId)
+				.replace("$message_id", messageId)
+				.replace("$index", String.valueOf(index))
+				.replace("$message_hash", messageHash);
+		return postJson(paramsStr);
+	}
+
+	@Override
+	public Message<Void> reset(String messageId, String messageHash) {
+		String paramsStr = this.resetParamsJson.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId)
+				.replace("$message_id", messageId)
 				.replace("$message_hash", messageHash);
 		return postJson(paramsStr);
 	}
@@ -64,7 +93,7 @@ public class MjDiscordServiceImpl implements MjDiscordService {
 	private Message<Void> postJson(String paramsStr) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", this.properties.getUserToken());
+		headers.set("Authorization", this.discordUserToken);
 		HttpEntity<String> httpEntity = new HttpEntity<>(paramsStr, headers);
 		try {
 			ResponseEntity<String> responseEntity = new RestTemplate().postForEntity(DISCORD_API_URL, httpEntity, String.class);

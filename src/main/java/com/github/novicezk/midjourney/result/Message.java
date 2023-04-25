@@ -12,7 +12,6 @@ public class Message<T> {
 	public static final int NOT_FOUND_CODE = 3;
 	public static final int VALIDATION_ERROR_CODE = 4;
 	public static final int FAILURE_CODE = 9;
-	public static final int UNAUTHORIZED_CODE = 13;
 
 	public static <Y> Message<Y> success() {
 		return new Message<>(SUCCESS_CODE, "成功");
@@ -32,10 +31,6 @@ public class Message<T> {
 
 	public static <Y> Message<Y> failure() {
 		return new Message<>(FAILURE_CODE, "系统异常");
-	}
-
-	public static <Y> Message<Y> unauthorized() {
-		return new Message<>(UNAUTHORIZED_CODE, "未授权");
 	}
 
 	public static <Y> Message<Y> of(int code, String description) {

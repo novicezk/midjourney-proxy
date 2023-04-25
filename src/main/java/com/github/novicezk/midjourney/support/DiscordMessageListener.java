@@ -1,141 +1,122 @@
 package com.github.novicezk.midjourney.support;
 
+import cn.hutool.core.comparator.CompareUtil;
+import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import com.github.novicezk.midjourney.MjDiscordProperties;
-import com.github.novicezk.midjourney.service.WechatProxyNotifyService;
-import lombok.Data;
+import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.enums.Action;
+import com.github.novicezk.midjourney.enums.TaskStatus;
+import com.github.novicezk.midjourney.service.NotifyService;
+import com.github.novicezk.midjourney.util.ConvertUtils;
+import com.github.novicezk.midjourney.util.MessageData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageType;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DiscordMessageListener extends ListenerAdapter {
-	private final MjDiscordProperties properties;
+	private final ProxyProperties properties;
 	private final MjTaskHelper taskHelper;
-	private final WechatProxyNotifyService wechatProxyNotifyService;
+	private final NotifyService notifyService;
 
-	private static final String MJ_I_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - <@(\\d+)> \\((.*?)\\)";
-	private static final String MJ_U_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Image #(\\d) <@(\\d+)>";
-	private static final String MJ_V_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - (.*?) by <@(\\d+)> \\((.*?)\\)";
+	private boolean ignoreMessage(Message message) {
+		String authorName = message.getAuthor().getName();
+		String channelId = message.getChannel().getId();
+		return !this.properties.getDiscord().getMjBotName().equals(authorName) || !this.properties.getDiscord().getChannelId().equals(channelId);
+	}
 
 	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		User author = event.getAuthor();
-		if (!this.properties.getMjBotName().equals(author.getName())) {
-			return;
-		}
-		if (!this.properties.getChannelId().equals(event.getChannel().getId())) {
-			return;
-		}
+	public void onMessageUpdate(MessageUpdateEvent event) {
 		Message message = event.getMessage();
-		String content = message.getContentRaw();
-		log.info("收到 {} 消息, type: {}, content: {}", author.getName(), message.getType(), content);
-		String messageId;
-		SplitResult splitResult;
-		if (MessageType.INLINE_REPLY.equals(message.getType()) && message.getReferencedMessage() != null) {
-			messageId = message.getReferencedMessage().getId();
-			splitResult = splitReplyContent(content);
-		} else {
-			messageId = message.getId();
-			splitResult = splitContent(content);
-		}
-		if (splitResult == null) {
+		if (ignoreMessage(event.getMessage())) {
 			return;
 		}
-		String key = splitResult.getPrompt();
-		if ("u".equals(splitResult.getAction()) || "v".equals(splitResult.getAction())) {
-			key = messageId + "-" + splitResult.getAction();
+		String content = message.getContentRaw();
+		log.debug("消息变更, ID: {}, type: {}, content: {}", message.getId(), message.getType(), content);
+		MessageData data = ConvertUtils.matchImagineContent(content);
+		if (data == null) {
+			data = ConvertUtils.matchUVContent(content);
 		}
-		MjTask task = this.taskHelper.getTask(key);
+		if (data == null) {
+			return;
+		}
+		String prompt = data.getPrompt();
+		MjTask task = StreamUtil.of(this.taskHelper.taskIterator())
+				.filter(t -> prompt.equals(t.getPrompt())
+						&& TaskStatus.NOT_START.equals(t.getStatus())
+						&& List.of(Action.UPSCALE, Action.VARIATION).contains(t.getAction()))
+				.max((o1, o2) -> CompareUtil.compare(o1.getSubmitDate(), o2.getSubmitDate()))
+				.orElse(null);
 		if (task == null) {
 			return;
 		}
-		task.setMessageId(messageId);
-		if ("Waiting to start".equals(splitResult.getStatus())) {
-			log.info("通知微信代理, 任务提交成功, 消息ID: {}", messageId);
-			boolean success = this.wechatProxyNotifyService.notifyCreated(task.getRoom(), task.getUser(), splitResult.getPrompt(), messageId);
-			task.setNotifySuccess(success);
-		} else if ("relaxed".equals(splitResult.getStatus())) {
-			// 通知微信代理，图片已生成
-			task.setDone(true);
-			task.setDoneDate(new Date());
-			List<Message.Attachment> attachments = message.getAttachments();
-			if (attachments.isEmpty()) {
+		task.setStatus(TaskStatus.IN_PROGRESS);
+		this.notifyService.notifyTaskChange(task);
+	}
+
+	@Override
+	public void onMessageReceived(MessageReceivedEvent event) {
+		Message message = event.getMessage();
+		if (ignoreMessage(event.getMessage())) {
+			return;
+		}
+		String messageId = message.getId();
+		String content = message.getContentRaw();
+		log.debug("消息接收, ID: {}, type: {}, content: {}", messageId, message.getType(), content);
+		if (MessageType.SLASH_COMMAND.equals(message.getType()) || MessageType.DEFAULT.equals(message.getType())) {
+			MessageData messageData = ConvertUtils.matchImagineContent(content);
+			if (messageData == null) {
 				return;
 			}
-			String imageUrl = attachments.get(0).getUrl();
-			task.setImageUrl(imageUrl);
-			log.info("通知微信代理, 图片已生成, 消息ID: {}, url: {}", messageId, imageUrl);
-			boolean success;
-			if ("i".equals(splitResult.getAction())) {
-				task.setMessageHash(CharSequenceUtil.subBetween(imageUrl, "__", ".png"));
-				success = this.wechatProxyNotifyService.notifyImagine(task.getRoom(), task.getUser(), splitResult.getPrompt(), messageId, imageUrl);
-			} else {
-				success = this.wechatProxyNotifyService.notifyUp(task.getRoom(), task.getUser(), imageUrl);
+			// imagine 命令生成的消息: 启动、完成
+			MjTask task = this.taskHelper.getTask(messageData.getPrompt());
+			if (task == null) {
+				return;
 			}
-			task.setNotifySuccess(success);
+			task.setMessageId(messageId);
+			if ("Waiting to start".equals(messageData.getStatus())) {
+				task.setStatus(TaskStatus.IN_PROGRESS);
+			} else {
+				finishTask(task, message);
+			}
+			this.notifyService.notifyTaskChange(task);
+		} else if (MessageType.INLINE_REPLY.equals(message.getType()) && message.getReferencedMessage() != null) {
+			MessageData messageData = ConvertUtils.matchUVContent(content);
+			if (messageData == null) {
+				return;
+			}
+			// uv 变更图片完成后的消息
+			MjTask task = this.taskHelper.getTask(message.getReferencedMessage().getId() + "-" + messageData.getAction());
+			if (task == null) {
+				return;
+			}
+			task.setMessageId(messageId);
+			finishTask(task, message);
+			this.notifyService.notifyTaskChange(task);
 		}
 	}
 
-	private SplitResult splitContent(String content) {
-		Pattern pattern = Pattern.compile(MJ_I_CONTENT_REGEX);
-		Matcher matcher = pattern.matcher(content);
-		if (!matcher.find()) {
-			return null;
+	private void finishTask(MjTask task, Message message) {
+		task.setFinishDate(new Date());
+		if (!message.getAttachments().isEmpty()) {
+			task.setStatus(TaskStatus.SUCCESS);
+			String imageUrl = message.getAttachments().get(0).getUrl();
+			task.setImageUrl(imageUrl);
+			task.setMessageHash(CharSequenceUtil.subBetween(imageUrl, "__", ".png"));
+		} else {
+			task.setStatus(TaskStatus.FAILURE);
+			task.setFinishDate(new Date());
 		}
-		SplitResult result = new SplitResult();
-		result.setAction("i");
-		result.setPrompt(matcher.group(1));
-		result.setStatus(matcher.group(3));
-		return result;
-	}
-
-	private SplitResult splitReplyContent(String content) {
-		Pattern pattern = Pattern.compile(MJ_V_CONTENT_REGEX);
-		Matcher matcher = pattern.matcher(content);
-		if (!matcher.find()) {
-			return splitUContent(content);
-		}
-		SplitResult result = new SplitResult();
-		result.setPrompt(matcher.group(1));
-		String matchAction = matcher.group(2);
-		result.setAction(matchAction.startsWith("Variations") ? "v" : "u");
-		result.setStatus(matcher.group(4));
-		return result;
-	}
-
-	private SplitResult splitUContent(String content) {
-		Pattern pattern = Pattern.compile(MJ_U_CONTENT_REGEX);
-		Matcher matcher = pattern.matcher(content);
-		if (!matcher.find()) {
-			return null;
-		}
-		SplitResult result = new SplitResult();
-		result.setPrompt(matcher.group(1));
-		result.setAction("u");
-		result.setStatus("relaxed");
-		result.setIndex(matcher.group(2));
-		return result;
-	}
-
-	@Data
-	static class SplitResult {
-		private String action;
-		private String prompt;
-		private String status;
-		private String index;
 	}
 
 }

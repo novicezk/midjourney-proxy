@@ -7,6 +7,10 @@ public interface MjDiscordService {
 
 	Message<Void> imagine(String prompt);
 
-	Message<Void> up(String messageId, String action, int index, String messageHash);
+	Message<Void> upscale(String messageId, int index, String messageHash);
+
+	Message<Void> variation(String messageId, int index, String messageHash);
+
+	Message<Void> reset(String messageId, String messageHash);
 
 }

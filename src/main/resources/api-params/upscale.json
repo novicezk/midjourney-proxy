@@ -8,6 +8,6 @@
   "message_flags": 0,
   "data": {
     "component_type": 2,
-    "custom_id": "MJ::JOB::$action::$index::$message_hash"
+    "custom_id": "MJ::JOB::upsample::$index::$message_hash"
   }
 }
