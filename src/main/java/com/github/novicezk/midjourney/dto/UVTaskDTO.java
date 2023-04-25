@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class UVTaskDTO {
 	/**
-	 * state参数, 回调接口带回.
+	 * 自定义字符串, task中保留.
 	 */
 	private String state;
 	/**
