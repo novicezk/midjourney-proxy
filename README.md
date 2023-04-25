@@ -4,8 +4,8 @@
 
 ## 使用前提
 1. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
-2. [添加自己的机器人](./docs/discord-bot.md)
-3. 安装jdk17
+2. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
+3. 安装 jdk17
 
 ## 快速启动
 1. 下载项目
@@ -47,14 +47,32 @@ docker run -d --name midjourney-proxy \
 POST  application/json
 ```json
 {
-    // 动作: 必传 IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（变换）
+    // 动作: 必传，IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（变换）
     "action":"IMAGINE",
     // 绘图参数: IMAGINE时必传
     "prompt": "大狗子",
-    // 自定义字符串:
-    "state": "test:22"
+    // 自定义字符串: 必传，任务中保留
+    "state": "test:22",
+    // 任务ID: UPSCALE、VARIATION时必传
+    "taskId": "1320098173412546",
+    // 图序号: 1～4，UPSCALE、VARIATION时必传，表示第几张图
+    "index": 3
 }
 ```
+返回 `Message<任务ID>`，用于后续查询任务或提交变换任务
 
+### 2. `/trigger/submit-uv` 提交变换任务
+POST  application/json
+```json
+{
+    // 自定义字符串: 必传，任务中保留
+    "state": "test:22",
+    // 任务描述
+    "content": "1320098173412546 U2"
+}
+```
+返回 `Message<任务ID>`
 
+### 3. `/task/{id}/fetch` 查询单个任务
 
+### 4. `/task/list` 查询所有任务
