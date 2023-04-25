@@ -24,4 +24,5 @@ https://discord.com/developers/applications
 ![img_7.png](img_7.png)
 
 ![img_8.png](img_8.png)
+
 频道的url里取出 服务器ID、频道ID
