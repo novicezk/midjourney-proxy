@@ -58,13 +58,13 @@ public class TriggerController {
 			}
 			MjTask targetTask = this.mjTaskHelper.findById(taskDTO.getTaskId());
 			if (targetTask == null) {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "任务ID不存在或已失效");
+				return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
 			}
 			if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
 			}
 			task.setPrompt(targetTask.getPrompt());
-			key = taskDTO.getTaskId() + "-" + taskDTO.getAction();
+			key = targetTask.getMessageId() + "-" + taskDTO.getAction();
 			this.mjTaskHelper.putTask(key, task);
 			if (Action.UPSCALE.equals(taskDTO.getAction())) {
 				task.setDescription("/up " + taskDTO.getTaskId() + " U" + taskDTO.getIndex());
