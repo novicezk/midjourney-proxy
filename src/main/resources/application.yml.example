@@ -10,6 +10,5 @@ mj-proxy:
     channel-id: 频道ID
   # 任务状态变更回调地址，不设置时需要轮询查task
   notify-hook: http://xxx/notify
-  openai:
-    # gpt的api-key，不设置时不支持使用中文描述来绘图
-    gpt-api-key: sk-xxxxxx
+  # prompt中文翻译成英文的方式，默认不翻译，可选百度、GPT，需要配置
+  translate-way: null
