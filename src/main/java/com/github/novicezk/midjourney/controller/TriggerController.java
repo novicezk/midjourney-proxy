@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-
 @RestController
 @RequestMapping("/trigger")
 @RequiredArgsConstructor
@@ -29,7 +27,7 @@ public class TriggerController {
 
 	@PostMapping("/submit")
 	public Message<String> submitTask(@RequestBody TaskDTO taskDTO) {
-		if (CharSequenceUtil.isBlank(taskDTO.getState()) || taskDTO.getAction() == null) {
+		if (taskDTO.getAction() == null) {
 			return Message.validationError();
 		}
 		if ((taskDTO.getAction() == Action.UPSCALE || taskDTO.getAction() == Action.VARIATION)
@@ -38,7 +36,7 @@ public class TriggerController {
 		}
 		MjTask task = new MjTask();
 		task.setId(RandomUtil.randomNumbers(16));
-		task.setSubmitDate(new Date());
+		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(taskDTO.getState());
 		task.setAction(taskDTO.getAction());
 		String key;

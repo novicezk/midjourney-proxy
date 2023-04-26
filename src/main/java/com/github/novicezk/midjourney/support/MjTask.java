@@ -1,10 +1,9 @@
 package com.github.novicezk.midjourney.support;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class MjTask {
@@ -14,12 +13,13 @@ public class MjTask {
 	private String prompt;
 	private String description;
 	private String state;
-	private Date submitDate;
-	private Date finishDate;
-	private String messageId;
-	private String messageHash;
+	private Long submitTime;
+	private Long finishTime;
 	private String imageUrl;
-
 	private TaskStatus status = TaskStatus.NOT_START;
 
+	@JsonIgnore
+	private String messageId;
+	@JsonIgnore
+	private String messageHash;
 }

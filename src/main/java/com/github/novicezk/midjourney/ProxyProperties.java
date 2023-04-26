@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "mj-proxy")
 public class ProxyProperties {
 	/**
-	 * mj结果通知地址.
+	 * 任务变更回调地址.
 	 */
 	private String notifyHook;
 
