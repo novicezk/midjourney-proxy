@@ -1,7 +1,6 @@
 package com.github.novicezk.midjourney.support;
 
 import cn.hutool.core.stream.StreamUtil;
-import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -112,7 +111,8 @@ public class DiscordMessageListener extends ListenerAdapter {
 			task.setStatus(TaskStatus.SUCCESS);
 			String imageUrl = message.getAttachments().get(0).getUrl();
 			task.setImageUrl(imageUrl);
-			task.setMessageHash(CharSequenceUtil.subBetween(imageUrl, "__", ".png"));
+			int hashStartIndex = imageUrl.lastIndexOf("_");
+			task.setMessageHash(imageUrl.substring(hashStartIndex + 1).replace(".png", ""));
 		} else {
 			task.setStatus(TaskStatus.FAILURE);
 		}
