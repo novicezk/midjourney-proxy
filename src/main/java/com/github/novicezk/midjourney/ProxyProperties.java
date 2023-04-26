@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney;
 
+import com.github.novicezk.midjourney.enums.TranslateWay;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -18,10 +19,20 @@ public class ProxyProperties {
 	 * 用于连接discord，接收、发送消息.
 	 */
 	private final DiscordConfig discord = new DiscordConfig();
+
 	/**
-	 * 用于调用openai把中文的prompt翻译成英文.
+	 * prompt翻译方式，默认不翻译，可选百度、GPT.
+	 */
+	private TranslateWay translateWay = TranslateWay.NULL;
+	/**
+	 * 调用百度翻译把中文的prompt翻译成英文.
+	 */
+	private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
+	/**
+	 * 调用openai把中文的prompt翻译成英文.
 	 */
 	private final OpenaiConfig openai = new OpenaiConfig();
+
 
 	@Data
 	public static class DiscordConfig {
@@ -50,7 +61,7 @@ public class ProxyProperties {
 	@Data
 	public static class OpenaiConfig {
 		/**
-		 * gpt的api-key，配置表示启用.
+		 * gpt的api-key.
 		 */
 		private String gptApiKey;
 		/**
@@ -68,7 +79,20 @@ public class ProxyProperties {
 		/**
 		 * 相似度，取值 0-2.
 		 */
-		private double temperature = 0.5;
+		private double temperature = 0;
+	}
+
+	@Data
+	public static class BaiduTranslateConfig {
+		/**
+		 * 百度翻译的APP_ID.
+		 */
+		private String appid;
+		/**
+		 * 百度翻译的密钥.
+		 */
+		private String appSecret;
+
 	}
 
 }
