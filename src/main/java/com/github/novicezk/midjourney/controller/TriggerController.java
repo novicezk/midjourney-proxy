@@ -49,7 +49,7 @@ public class TriggerController {
 				return Message.validationError();
 			}
 			task.setPrompt(prompt);
-			String promptEn = this.translateService.translateToEnglish(prompt);
+			String promptEn = this.translateService.translateToEnglish(prompt).trim();
 			key = promptEn;
 			task.setPromptEn(promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
