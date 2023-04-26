@@ -3,10 +3,13 @@ server:
   servlet:
     context-path: /mj
 mj-proxy:
-  # mj任务变更通知地址
-  notify-hook:
   discord:
     user-token: 用户Token
     bot-token: 机器人Token
     guild-id: 服务器ID
     channel-id: 频道ID
+  # 任务状态变更回调地址，不设置时需要轮询查task
+  notify-hook: http://xxx/notify
+  openai:
+    # gpt的api-key，不设置时不支持使用中文描述来绘图
+    gpt-api-key: sk-xxxxxx

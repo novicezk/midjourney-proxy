@@ -1,6 +1,5 @@
 package com.github.novicezk.midjourney.support;
 
-import cn.hutool.core.comparator.CompareUtil;
 import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
@@ -18,6 +17,7 @@ import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -50,11 +50,12 @@ public class DiscordMessageListener extends ListenerAdapter {
 			return;
 		}
 		String prompt = data.getPrompt();
+		List<Action> uvActions = List.of(Action.UPSCALE, Action.VARIATION);
 		Task task = StreamUtil.of(this.taskHelper.taskIterator())
-				.filter(t -> prompt.equals(t.getPrompt())
+				.filter(t -> prompt.equals(t.getPromptEn())
 						&& TaskStatus.NOT_START.equals(t.getStatus())
-						&& List.of(Action.UPSCALE, Action.VARIATION).contains(t.getAction()))
-				.max((o1, o2) -> CompareUtil.compare(o1.getSubmitTime(), o2.getSubmitTime()))
+						&& uvActions.contains(t.getAction()))
+				.max(Comparator.comparing(Task::getSubmitTime))
 				.orElse(null);
 		if (task == null) {
 			return;

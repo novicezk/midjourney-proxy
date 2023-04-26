@@ -11,6 +11,7 @@ public class Task {
 	private Action action;
 	private String id;
 	private String prompt;
+	private String promptEn;
 	private String description;
 	private String state;
 	private Long submitTime;
