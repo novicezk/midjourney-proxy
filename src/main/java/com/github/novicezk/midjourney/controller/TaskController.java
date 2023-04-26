@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.controller;
 
-import com.github.novicezk.midjourney.support.MjTask;
-import com.github.novicezk.midjourney.support.MjTaskHelper;
+import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,16 +14,16 @@ import java.util.List;
 @RequestMapping("/task")
 @RequiredArgsConstructor
 public class TaskController {
-	private final MjTaskHelper mjTaskHelper;
+	private final TaskHelper taskHelper;
 
 	@GetMapping("/list")
-	public List<MjTask> listTask() {
-		return this.mjTaskHelper.listTask();
+	public List<Task> listTask() {
+		return this.taskHelper.listTask();
 	}
 
 	@GetMapping("/{id}/fetch")
-	public MjTask getTask(@PathVariable String id) {
-		return this.mjTaskHelper.findById(id);
+	public Task getTask(@PathVariable String id) {
+		return this.taskHelper.findById(id);
 	}
 
 }

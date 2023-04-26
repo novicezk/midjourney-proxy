@@ -24,7 +24,7 @@ import java.io.IOException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MjDiscordServiceImpl implements MjDiscordService {
+public class DiscordServiceImpl implements DiscordService {
 	private final ProxyProperties properties;
 
 	private static final String DISCORD_API_URL = "https://discord.com/api/v9/interactions";

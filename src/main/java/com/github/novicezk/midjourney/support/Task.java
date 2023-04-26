@@ -6,7 +6,7 @@ import com.github.novicezk.midjourney.enums.TaskStatus;
 import lombok.Data;
 
 @Data
-public class MjTask {
+public class Task {
 
 	private Action action;
 	private String id;

@@ -10,11 +10,11 @@ import java.util.Iterator;
 import java.util.List;
 
 @Component
-public class MjTaskHelper {
+public class TaskHelper {
 	// 创建缓存，1天过期
-	private static final TimedCache<String, MjTask> TASK_MAP = CacheUtil.newTimedCache(3600 * 24 * 1000L);
+	private static final TimedCache<String, Task> TASK_MAP = CacheUtil.newTimedCache(3600 * 24 * 1000L);
 
-	public void putTask(String key, MjTask task) {
+	public void putTask(String key, Task task) {
 		TASK_MAP.put(key, task);
 	}
 
@@ -22,19 +22,19 @@ public class MjTaskHelper {
 		TASK_MAP.remove(key);
 	}
 
-	public MjTask getTask(String key) {
+	public Task getTask(String key) {
 		return TASK_MAP.get(key);
 	}
 
-	public List<MjTask> listTask() {
+	public List<Task> listTask() {
 		return ListUtil.toList(TASK_MAP.iterator());
 	}
 
-	public Iterator<MjTask> taskIterator() {
+	public Iterator<Task> taskIterator() {
 		return TASK_MAP.iterator();
 	}
 
-	public MjTask findById(String taskId) {
+	public Task findById(String taskId) {
 		return StreamUtil.of(TASK_MAP.iterator()).filter(t -> taskId.equals(t.getId()))
 				.findFirst().orElse(null);
 	}

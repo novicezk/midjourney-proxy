@@ -3,7 +3,7 @@ package com.github.novicezk.midjourney.dto;
 import lombok.Data;
 
 @Data
-public class UVTaskDTO {
+public class UVSubmitDTO {
 	/**
 	 * 自定义参数, task中保留.
 	 */

@@ -25,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DiscordMessageListener extends ListenerAdapter {
 	private final ProxyProperties properties;
-	private final MjTaskHelper taskHelper;
+	private final TaskHelper taskHelper;
 	private final NotifyService notifyService;
 
 	private boolean ignoreMessage(Message message) {
@@ -50,7 +50,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 			return;
 		}
 		String prompt = data.getPrompt();
-		MjTask task = StreamUtil.of(this.taskHelper.taskIterator())
+		Task task = StreamUtil.of(this.taskHelper.taskIterator())
 				.filter(t -> prompt.equals(t.getPrompt())
 						&& TaskStatus.NOT_START.equals(t.getStatus())
 						&& List.of(Action.UPSCALE, Action.VARIATION).contains(t.getAction()))
@@ -78,7 +78,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 				return;
 			}
 			// imagine 命令生成的消息: 启动、完成
-			MjTask task = this.taskHelper.getTask(messageData.getPrompt());
+			Task task = this.taskHelper.getTask(messageData.getPrompt());
 			if (task == null) {
 				return;
 			}
@@ -95,7 +95,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 				return;
 			}
 			// uv 变更图片完成后的消息
-			MjTask task = this.taskHelper.getTask(message.getReferencedMessage().getId() + "-" + messageData.getAction());
+			Task task = this.taskHelper.getTask(message.getReferencedMessage().getId() + "-" + messageData.getAction());
 			if (task == null) {
 				return;
 			}
@@ -105,7 +105,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 		}
 	}
 
-	private void finishTask(MjTask task, Message message) {
+	private void finishTask(Task task, Message message) {
 		task.setFinishTime(System.currentTimeMillis());
 		if (!message.getAttachments().isEmpty()) {
 			task.setStatus(TaskStatus.SUCCESS);
