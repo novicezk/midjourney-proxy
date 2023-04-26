@@ -29,8 +29,9 @@ cd midjourney-proxy
 ```
 5. 启动容器示例
 ```shell
-docker run -d --name midjourney-proxy \
+docker run -itd --name midjourney-proxy \
  -p 8080:8080 \
+ --restart=always \
  midjourney-proxy:1.0-SNAPSHOT
 ```
 
@@ -41,6 +42,12 @@ docker run -d --name midjourney-proxy \
 - `mj-proxy.discord.guild-id` 服务器ID
 - `mj-proxy.discord.channel-id` 频道ID
 - `mj-proxy.discord.mj-bot-name` Midjourney机器人的名称，默认 "Midjourney Bot"
+- `mj-proxy.openai.gpt-api-key` gpt的api-key，不设置时不支持使用中文描述来绘图
+
+## 注意事项
+1. 启动失败请检查科学上网策略，全局代理或HTTP代理
+2. docker方式启动，若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
+3. 欢迎在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或意见
 
 ## API接口说明
 
@@ -51,7 +58,7 @@ POST  application/json
     // 动作: 必传，IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）
     "action":"IMAGINE",
     // 绘图参数: IMAGINE时必传
-    "prompt": "可爱的猫猫",
+    "prompt": "猫猫",
     // 任务ID: UPSCALE、VARIATION时必传
     "taskId": "1320098173412546",
     // 图序号: 1～4，UPSCALE、VARIATION时必传，表示第几张图
@@ -91,9 +98,11 @@ POST  application/json
     // 任务ID
     "id":"8498455807628990",
     // 绘图参数
-    "prompt":"可爱的猫猫",
+    "prompt":"猫猫",
+    // 绘图参数英文
+    "promptEn":"cat",
     // 执行的命令
-    "description":"/imagine 可爱的猫猫",
+    "description":"/imagine cat",
     // 自定义参数
     "state":"test:22",
     // 提交时间
@@ -114,8 +123,9 @@ POST  application/json
   {
     "action":"IMAGINE",
     "id":"8498455807628990",
-    "prompt":"可爱的猫猫",
-    "description":"/imagine 可爱的猫猫",
+    "prompt":"猫猫",
+    "promptEn":"cat",
+    "description":"/imagine cat",
     "state":"test:22",
     "submitTime":1682473784826,
     "finishTime":null,
@@ -131,8 +141,9 @@ POST  application/json
 {
     "action":"IMAGINE",
     "id":"8498455807628990",
-    "prompt":"可爱的狗狗",
-    "description":"/imagine 可爱的狗狗",
+    "prompt":"猫猫",
+    "promptEn":"cat",
+    "description":"/imagine cat",
     "state":"test:22",
     "submitTime":1682473784826,
     "finishTime":null,
