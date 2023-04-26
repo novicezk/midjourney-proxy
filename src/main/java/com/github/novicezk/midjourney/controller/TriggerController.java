@@ -2,14 +2,14 @@ package com.github.novicezk.midjourney.controller;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.github.novicezk.midjourney.dto.TaskDTO;
-import com.github.novicezk.midjourney.dto.UVTaskDTO;
+import com.github.novicezk.midjourney.dto.SubmitDTO;
+import com.github.novicezk.midjourney.dto.UVSubmitDTO;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.result.Message;
-import com.github.novicezk.midjourney.service.MjDiscordService;
-import com.github.novicezk.midjourney.support.MjTask;
-import com.github.novicezk.midjourney.support.MjTaskHelper;
+import com.github.novicezk.midjourney.service.DiscordService;
+import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskHelper;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.UVData;
 import lombok.RequiredArgsConstructor;
@@ -22,39 +22,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/trigger")
 @RequiredArgsConstructor
 public class TriggerController {
-	private final MjDiscordService discordService;
-	private final MjTaskHelper mjTaskHelper;
+	private final DiscordService discordService;
+	private final TaskHelper taskHelper;
 
 	@PostMapping("/submit")
-	public Message<String> submitTask(@RequestBody TaskDTO taskDTO) {
-		if (taskDTO.getAction() == null) {
+	public Message<String> submit(@RequestBody SubmitDTO submitDTO) {
+		if (submitDTO.getAction() == null) {
 			return Message.validationError();
 		}
-		if ((taskDTO.getAction() == Action.UPSCALE || taskDTO.getAction() == Action.VARIATION)
-				&& (taskDTO.getIndex() < 1 || taskDTO.getIndex() > 4)) {
+		if ((submitDTO.getAction() == Action.UPSCALE || submitDTO.getAction() == Action.VARIATION)
+				&& (submitDTO.getIndex() < 1 || submitDTO.getIndex() > 4)) {
 			return Message.validationError();
 		}
-		MjTask task = new MjTask();
+		Task task = new Task();
 		task.setId(RandomUtil.randomNumbers(16));
 		task.setSubmitTime(System.currentTimeMillis());
-		task.setState(taskDTO.getState());
-		task.setAction(taskDTO.getAction());
+		task.setState(submitDTO.getState());
+		task.setAction(submitDTO.getAction());
 		String key;
 		Message<Void> result;
-		if (Action.IMAGINE.equals(taskDTO.getAction())) {
-			if (CharSequenceUtil.isBlank(taskDTO.getPrompt())) {
+		if (Action.IMAGINE.equals(submitDTO.getAction())) {
+			if (CharSequenceUtil.isBlank(submitDTO.getPrompt())) {
 				return Message.validationError();
 			}
-			key = taskDTO.getPrompt();
-			task.setPrompt(taskDTO.getPrompt());
-			task.setDescription("/imagine " + taskDTO.getPrompt());
-			this.mjTaskHelper.putTask(key, task);
-			result = this.discordService.imagine(taskDTO.getPrompt());
+			key = submitDTO.getPrompt();
+			task.setPrompt(submitDTO.getPrompt());
+			task.setDescription("/imagine " + submitDTO.getPrompt());
+			this.taskHelper.putTask(key, task);
+			result = this.discordService.imagine(submitDTO.getPrompt());
 		} else {
-			if (CharSequenceUtil.isBlank(taskDTO.getTaskId())) {
+			if (CharSequenceUtil.isBlank(submitDTO.getTaskId())) {
 				return Message.validationError();
 			}
-			MjTask targetTask = this.mjTaskHelper.findById(taskDTO.getTaskId());
+			Task targetTask = this.taskHelper.findById(submitDTO.getTaskId());
 			if (targetTask == null) {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
 			}
@@ -62,38 +62,38 @@ public class TriggerController {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
 			}
 			task.setPrompt(targetTask.getPrompt());
-			key = targetTask.getMessageId() + "-" + taskDTO.getAction();
-			this.mjTaskHelper.putTask(key, task);
-			if (Action.UPSCALE.equals(taskDTO.getAction())) {
-				task.setDescription("/up " + taskDTO.getTaskId() + " U" + taskDTO.getIndex());
-				result = this.discordService.upscale(targetTask.getMessageId(), taskDTO.getIndex(), targetTask.getMessageHash());
-			} else if (Action.VARIATION.equals(taskDTO.getAction())) {
-				task.setDescription("/up " + taskDTO.getTaskId() + " V" + taskDTO.getIndex());
-				result = this.discordService.variation(targetTask.getMessageId(), taskDTO.getIndex(), targetTask.getMessageHash());
+			key = targetTask.getMessageId() + "-" + submitDTO.getAction();
+			this.taskHelper.putTask(key, task);
+			if (Action.UPSCALE.equals(submitDTO.getAction())) {
+				task.setDescription("/up " + submitDTO.getTaskId() + " U" + submitDTO.getIndex());
+				result = this.discordService.upscale(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
+			} else if (Action.VARIATION.equals(submitDTO.getAction())) {
+				task.setDescription("/up " + submitDTO.getTaskId() + " V" + submitDTO.getIndex());
+				result = this.discordService.variation(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
 			} else {
 				// todo 暂不支持 reset, 接收mj消息时, 无法找到对应task
 				return Message.of(Message.VALIDATION_ERROR_CODE, "暂不支持 reset 操作");
 			}
 		}
 		if (result.getCode() != Message.SUCCESS_CODE) {
-			this.mjTaskHelper.removeTask(key);
+			this.taskHelper.removeTask(key);
 			return Message.of(result.getCode(), result.getDescription());
 		}
 		return Message.success(task.getId());
 	}
 
 	@PostMapping("/submit-uv")
-	public Message<String> submitUVTask(@RequestBody UVTaskDTO uvDTO) {
-		UVData uvData = ConvertUtils.convertUVData(uvDTO.getContent());
+	public Message<String> submitUV(@RequestBody UVSubmitDTO uvSubmitDTO) {
+		UVData uvData = ConvertUtils.convertUVData(uvSubmitDTO.getContent());
 		if (uvData == null) {
 			return Message.of(Message.VALIDATION_ERROR_CODE, "/up 参数错误");
 		}
-		TaskDTO taskDTO = new TaskDTO();
-		taskDTO.setAction(uvData.getAction());
-		taskDTO.setTaskId(uvData.getId());
-		taskDTO.setIndex(uvData.getIndex());
-		taskDTO.setState(uvDTO.getState());
-		return submitTask(taskDTO);
+		SubmitDTO submitDTO = new SubmitDTO();
+		submitDTO.setAction(uvData.getAction());
+		submitDTO.setTaskId(uvData.getId());
+		submitDTO.setIndex(uvData.getIndex());
+		submitDTO.setState(uvSubmitDTO.getState());
+		return submit(submitDTO);
 	}
 
 }

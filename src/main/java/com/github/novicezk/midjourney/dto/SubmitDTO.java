@@ -4,7 +4,7 @@ import com.github.novicezk.midjourney.enums.Action;
 import lombok.Data;
 
 @Data
-public class TaskDTO {
+public class SubmitDTO {
 	/**
 	 * state: 自定义参数, task中保留.
 	 */

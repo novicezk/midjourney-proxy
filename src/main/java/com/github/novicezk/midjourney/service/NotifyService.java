@@ -1,10 +1,10 @@
 package com.github.novicezk.midjourney.service;
 
 
-import com.github.novicezk.midjourney.support.MjTask;
+import com.github.novicezk.midjourney.support.Task;
 
 public interface NotifyService {
 
-	void notifyTaskChange(MjTask task);
+	void notifyTaskChange(Task task);
 
 }

@@ -4,7 +4,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.novicezk.midjourney.ProxyProperties;
-import com.github.novicezk.midjourney.support.MjTask;
+import com.github.novicezk.midjourney.support.Task;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -25,7 +25,7 @@ public class NotifyServiceImpl implements NotifyService {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	@Override
-	public void notifyTaskChange(MjTask task) {
+	public void notifyTaskChange(Task task) {
 		if (CharSequenceUtil.isBlank(this.properties.getNotifyHook())) {
 			return;
 		}

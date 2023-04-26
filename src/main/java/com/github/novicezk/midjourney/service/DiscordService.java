@@ -3,7 +3,7 @@ package com.github.novicezk.midjourney.service;
 
 import com.github.novicezk.midjourney.result.Message;
 
-public interface MjDiscordService {
+public interface DiscordService {
 
 	Message<Void> imagine(String prompt);
 

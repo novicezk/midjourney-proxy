@@ -3,9 +3,10 @@
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
 ## 使用前提
-1. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
-2. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
-3. 安装 jdk17
+1. 科学上网
+2. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
+3. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
+4. 安装 jdk17
 
 ## 快速启动
 1. 下载项目

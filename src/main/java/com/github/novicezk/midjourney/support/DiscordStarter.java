@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component
-public class MjDiscordStarter implements ApplicationListener<ApplicationStartedEvent> {
+public class DiscordStarter implements ApplicationListener<ApplicationStartedEvent> {
 	@Resource
 	private ProxyProperties properties;
 	@Resource
