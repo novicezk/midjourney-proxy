@@ -8,6 +8,7 @@ import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.service.DiscordService;
+import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskHelper;
 import com.github.novicezk.midjourney.util.ConvertUtils;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TriggerController {
 	private final DiscordService discordService;
+	private final TranslateService translateService;
 	private final TaskHelper taskHelper;
 
 	@PostMapping("/submit")
@@ -42,14 +44,17 @@ public class TriggerController {
 		String key;
 		Message<Void> result;
 		if (Action.IMAGINE.equals(submitDTO.getAction())) {
-			if (CharSequenceUtil.isBlank(submitDTO.getPrompt())) {
+			String prompt = submitDTO.getPrompt();
+			if (CharSequenceUtil.isBlank(prompt)) {
 				return Message.validationError();
 			}
-			key = submitDTO.getPrompt();
-			task.setPrompt(submitDTO.getPrompt());
+			task.setPrompt(prompt);
+			String promptEn = this.translateService.translateToEnglish(prompt);
+			key = promptEn;
+			task.setPromptEn(promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
 			this.taskHelper.putTask(key, task);
-			result = this.discordService.imagine(submitDTO.getPrompt());
+			result = this.discordService.imagine(promptEn);
 		} else {
 			if (CharSequenceUtil.isBlank(submitDTO.getTaskId())) {
 				return Message.validationError();
@@ -62,6 +67,7 @@ public class TriggerController {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
 			}
 			task.setPrompt(targetTask.getPrompt());
+			task.setPromptEn(targetTask.getPromptEn());
 			key = targetTask.getMessageId() + "-" + submitDTO.getAction();
 			this.taskHelper.putTask(key, task);
 			if (Action.UPSCALE.equals(submitDTO.getAction())) {
