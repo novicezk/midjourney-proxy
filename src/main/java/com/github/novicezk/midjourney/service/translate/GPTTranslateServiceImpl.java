@@ -1,45 +1,42 @@
-package com.github.novicezk.midjourney.service;
+package com.github.novicezk.midjourney.service.translate;
 
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.service.TranslateService;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Slf4j
-@Service
-@RequiredArgsConstructor
-public class TranslateServiceGPTImpl implements TranslateService {
-	private final ProxyProperties properties;
+public class GPTTranslateServiceImpl implements TranslateService {
+	private final OpenAiService openAiService;
+	private final ProxyProperties.OpenaiConfig openaiConfig;
 
-	private OpenAiService openAiService;
-
-	@PostConstruct
-	void init() {
-		if (CharSequenceUtil.isNotBlank(this.properties.getOpenai().getGptApiKey())) {
-			this.openAiService = new OpenAiService(this.properties.getOpenai().getGptApiKey(), this.properties.getOpenai().getTimeout());
+	public GPTTranslateServiceImpl(ProxyProperties.OpenaiConfig openaiConfig) {
+		if (CharSequenceUtil.isBlank(openaiConfig.getGptApiKey())) {
+			throw new BeanDefinitionValidationException("mj-proxy.openai.gpt-api-key未配置");
 		}
+		this.openaiConfig = openaiConfig;
+		this.openAiService = new OpenAiService(openaiConfig.getGptApiKey(), openaiConfig.getTimeout());
 	}
 
 	@Override
 	public String translateToEnglish(String prompt) {
-		if (!containsChinese(prompt) || this.openAiService == null) {
+		if (!containsChinese(prompt)) {
 			return prompt;
 		}
 		ChatMessage m1 = new ChatMessage("system", "把中文翻译成英文");
 		ChatMessage m2 = new ChatMessage("user", prompt);
 		ChatCompletionRequest request = ChatCompletionRequest.builder()
-				.model(this.properties.getOpenai().getModel())
-				.temperature(this.properties.getOpenai().getTemperature())
-				.maxTokens(this.properties.getOpenai().getMaxTokens())
+				.model(this.openaiConfig.getModel())
+				.temperature(this.openaiConfig.getTemperature())
+				.maxTokens(this.openaiConfig.getMaxTokens())
 				.messages(List.of(m1, m2))
 				.build();
 		try {
