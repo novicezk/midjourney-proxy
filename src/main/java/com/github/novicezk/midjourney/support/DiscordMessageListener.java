@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -42,7 +41,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 			return;
 		}
 		String content = message.getContentRaw();
-		log.debug("消息变更, ID: {}, type: {}, content: {}", message.getId(), message.getType(), content);
+		log.debug("消息变更: {}", content);
 		MessageData data = ConvertUtils.matchImagineContent(content);
 		if (data == null) {
 			data = ConvertUtils.matchUVContent(content);
@@ -55,7 +54,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 				.filter(t -> prompt.equals(t.getPrompt())
 						&& TaskStatus.NOT_START.equals(t.getStatus())
 						&& List.of(Action.UPSCALE, Action.VARIATION).contains(t.getAction()))
-				.max((o1, o2) -> CompareUtil.compare(o1.getSubmitDate(), o2.getSubmitDate()))
+				.max((o1, o2) -> CompareUtil.compare(o1.getSubmitTime(), o2.getSubmitTime()))
 				.orElse(null);
 		if (task == null) {
 			return;
@@ -72,7 +71,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 		}
 		String messageId = message.getId();
 		String content = message.getContentRaw();
-		log.debug("消息接收, ID: {}, type: {}, content: {}", messageId, message.getType(), content);
+		log.debug("消息接收: {}", content);
 		if (MessageType.SLASH_COMMAND.equals(message.getType()) || MessageType.DEFAULT.equals(message.getType())) {
 			MessageData messageData = ConvertUtils.matchImagineContent(content);
 			if (messageData == null) {
@@ -107,7 +106,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 	}
 
 	private void finishTask(MjTask task, Message message) {
-		task.setFinishDate(new Date());
+		task.setFinishTime(System.currentTimeMillis());
 		if (!message.getAttachments().isEmpty()) {
 			task.setStatus(TaskStatus.SUCCESS);
 			String imageUrl = message.getAttachments().get(0).getUrl();
@@ -115,7 +114,6 @@ public class DiscordMessageListener extends ListenerAdapter {
 			task.setMessageHash(CharSequenceUtil.subBetween(imageUrl, "__", ".png"));
 		} else {
 			task.setStatus(TaskStatus.FAILURE);
-			task.setFinishDate(new Date());
 		}
 	}
 

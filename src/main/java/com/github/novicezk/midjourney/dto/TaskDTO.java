@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class TaskDTO {
 	/**
-	 * state: 自定义字符串, task中保留.
+	 * state: 自定义参数, task中保留.
 	 */
 	private String state;
 	/**

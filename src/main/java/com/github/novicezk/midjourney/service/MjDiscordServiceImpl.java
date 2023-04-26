@@ -56,9 +56,11 @@ public class MjDiscordServiceImpl implements MjDiscordService {
 	@Override
 	public Message<Void> imagine(String prompt) {
 		String paramsStr = this.imagineParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$prompt", prompt);
-		return postJson(paramsStr);
+				.replace("$channel_id", this.discordChannelId);
+		JSONObject params = new JSONObject(paramsStr);
+		params.getJSONObject("data").getJSONArray("options").getJSONObject(0)
+				.put("value", prompt);
+		return postJson(params.toString());
 	}
 
 	@Override

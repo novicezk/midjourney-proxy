@@ -1,6 +1,5 @@
 package com.github.novicezk.midjourney.controller;
 
-import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.support.MjTask;
 import com.github.novicezk.midjourney.support.MjTaskHelper;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +22,8 @@ public class TaskController {
 	}
 
 	@GetMapping("/{id}/fetch")
-	public Message<MjTask> getTask(@PathVariable String id) {
-		MjTask task = this.mjTaskHelper.findById(id);
-		if (task == null) {
-			return Message.notFound();
-		}
-		return Message.success(task);
+	public MjTask getTask(@PathVariable String id) {
+		return this.mjTaskHelper.findById(id);
 	}
 
 }
