@@ -42,7 +42,7 @@ docker run -itd --name midjourney-proxy \
 - `mj-proxy.discord.guild-id` 服务器ID
 - `mj-proxy.discord.channel-id` 频道ID
 - `mj-proxy.discord.mj-bot-name` Midjourney机器人的名称，默认 "Midjourney Bot"
-- `mj-proxy.openai.gpt-api-key` gpt的api-key，不设置时不支持使用中文描述来绘图
+- `mj-proxy.translate-way` prompt中文翻译成英文的方式，默认不翻译，可选百度、GPT，需要配置对应的baidu-translate或openai
 
 ## 注意事项
 1. 启动失败请检查科学上网策略，全局代理或HTTP代理
