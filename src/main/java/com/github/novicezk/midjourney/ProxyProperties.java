@@ -9,41 +9,31 @@ import java.time.Duration;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "mj-proxy")
+@ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
+	/**
+	 * discord配置.
+	 */
+	private final DiscordConfig discord = new DiscordConfig();
+	/**
+	 * 中文prompt翻译方式.
+	 */
+	private TranslateWay translateWay = TranslateWay.NULL;
+	/**
+	 * 百度翻译配置.
+	 */
+	private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
+	/**
+	 * openai配置.
+	 */
+	private final OpenaiConfig openai = new OpenaiConfig();
 	/**
 	 * 任务状态变更回调地址.
 	 */
 	private String notifyHook;
-	/**
-	 * 用于连接discord，接收、发送消息.
-	 */
-	private final DiscordConfig discord = new DiscordConfig();
-
-	/**
-	 * prompt翻译方式，默认不翻译，可选百度、GPT.
-	 */
-	private TranslateWay translateWay = TranslateWay.NULL;
-	/**
-	 * 调用百度翻译把中文的prompt翻译成英文.
-	 */
-	private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
-	/**
-	 * 调用openai把中文的prompt翻译成英文.
-	 */
-	private final OpenaiConfig openai = new OpenaiConfig();
-
 
 	@Data
 	public static class DiscordConfig {
-		/**
-		 * 你的登录token.
-		 */
-		private String userToken;
-		/**
-		 * 你的机器人token.
-		 */
-		private String botToken;
 		/**
 		 * 你的服务器id.
 		 */
@@ -53,9 +43,29 @@ public class ProxyProperties {
 		 */
 		private String channelId;
 		/**
+		 * 你的登录token.
+		 */
+		private String userToken;
+		/**
+		 * 你的机器人token.
+		 */
+		private String botToken;
+		/**
 		 * Midjourney机器人的名称.
 		 */
 		private String mjBotName = "Midjourney Bot";
+	}
+
+	@Data
+	public static class BaiduTranslateConfig {
+		/**
+		 * 百度翻译的APP_ID.
+		 */
+		private String appid;
+		/**
+		 * 百度翻译的密钥.
+		 */
+		private String appSecret;
 	}
 
 	@Data
@@ -65,7 +75,7 @@ public class ProxyProperties {
 		 */
 		private String gptApiKey;
 		/**
-		 * 超时时长.
+		 * 超时时间.
 		 */
 		private Duration timeout = Duration.ofSeconds(30);
 		/**
@@ -80,19 +90,6 @@ public class ProxyProperties {
 		 * 相似度，取值 0-2.
 		 */
 		private double temperature = 0;
-	}
-
-	@Data
-	public static class BaiduTranslateConfig {
-		/**
-		 * 百度翻译的APP_ID.
-		 */
-		private String appid;
-		/**
-		 * 百度翻译的密钥.
-		 */
-		private String appSecret;
-
 	}
 
 }

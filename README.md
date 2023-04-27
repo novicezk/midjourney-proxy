@@ -4,50 +4,50 @@
 
 ## 使用前提
 1. 科学上网
-2. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
-3. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
-4. 安装 jdk17
+2. docker环境
+3. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
+4. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
 
 ## 快速启动
-1. 下载项目
-2. 复制 `application.yml.example` 到 `application.yml`
-3. 更改配置文件
-4. 启动 `ProxyApplication` main 方法
 
-## docker方式启动
-
-1. 下载项目
+1. 下载镜像
 ```shell
-git clone https://github.com/novicezk/midjourney-proxy
+docker pull novicezk/midjourney-proxy:1.0
 ```
-2. 复制 `application.yml.example` 到 `application.yml`
-3. 更改配置文件
-4. 构建镜像
+2. 启动容器，并设置参数
 ```shell
-cd midjourney-proxy
-./build-image.sh
-```
-5. 启动容器示例
-```shell
-docker run -itd --name midjourney-proxy \
+docker run -d --name midjourney-proxy \
  -p 8080:8080 \
+ -e mj.discord.guild-id=xxx \
+ -e mj.discord.channel-id=xxx \
+ -e mj.discord.user-token=xxx \
+ -e mj.discord.bot-token=xxx \
  --restart=always \
- midjourney-proxy:1.0-SNAPSHOT
+ novicezk/midjourney-proxy:1.0
 ```
-
-## 配置项
-- `mj-proxy.notify-hook` 任务变更回调地址（可空），配置之后可以主动通知
-- `mj-proxy.discord.user-token` 用户Token
-- `mj-proxy.discord.bot-token` 自定义机器人Token
-- `mj-proxy.discord.guild-id` 服务器ID
-- `mj-proxy.discord.channel-id` 频道ID
-- `mj-proxy.discord.mj-bot-name` Midjourney机器人的名称，默认 "Midjourney Bot"
-- `mj-proxy.translate-way` prompt中文翻译成英文的方式，默认不翻译，可选百度、GPT，需要配置对应的baidu-translate或openai
 
 ## 注意事项
-1. 启动失败请检查科学上网策略，全局代理或HTTP代理
-2. docker方式启动，若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
+1. 启动失败请检查全局代理或HTTP代理，排查 [JDA](https://github.com/DV8FromTheWorld/JDA) 连接问题
+2. 若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
 3. 欢迎在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或意见
+
+## 配置项
+
+| 变量名 | 非空 | 描述 |
+| :-----| :----: | :---- |
+| mj.discord.guild-id | 是 | discord服务器ID |
+| mj.discord.channel-id | 是 | discord频道ID |
+| mj.discord.user-token | 是 | discord用户Token |
+| mj.discord.bot-token | 是 | 自定义机器人Token |
+| mj.discord.mj-bot-name | 否 | mj机器人名称，默认 "Midjourney Bot" |
+| mj.translate-way | 否 | 中文prompt翻译方式，可选null(默认)、baidu、gpt |
+| mj.baidu-translate.appid | 否 | 百度翻译的appid |
+| mj.baidu-translate.app-secret | 否 | 百度翻译的app-secret |
+| mj.openai.gpt-api-key | 否 | gpt的api-key |
+| mj.openai.timeout | 否 | openai调用的超时时间，默认30秒 |
+| mj.openai.model | 否 | openai的模型，默认gpt-3.5-turbo |
+| mj.openai.max-tokens | 否 | 返回结果的最大分词数，默认2048 |
+| mj.openai.temperature | 否 | 相似度(0-2.0)，默认0 |
 
 ## API接口说明
 
@@ -135,7 +135,7 @@ POST  application/json
 ]
 ```
 
-## `mj-proxy.notify-hook` 任务变更回调
+## `mj.notify-hook` 任务变更回调
 POST  application/json
 ```json
 {
