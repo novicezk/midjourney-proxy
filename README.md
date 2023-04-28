@@ -25,6 +25,7 @@ docker run -d --name midjourney-proxy \
  --restart=always \
  novicezk/midjourney-proxy:1.0
 ```
+3. 访问 http://ip:8080/mj/trigger/submit 提交绘图任务
 
 ## 注意事项
 1. 启动失败请检查全局代理或HTTP代理，排查 [JDA](https://github.com/DV8FromTheWorld/JDA) 连接问题
