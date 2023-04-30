@@ -96,6 +96,7 @@ public class DiscordServiceImpl implements DiscordService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set("Authorization", this.discordUserToken);
+		headers.add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
 		HttpEntity<String> httpEntity = new HttpEntity<>(paramsStr, headers);
 		try {
 			ResponseEntity<String> responseEntity = new RestTemplate().postForEntity(DISCORD_API_URL, httpEntity, String.class);
