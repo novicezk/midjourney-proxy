@@ -30,7 +30,10 @@ docker run -d --name midjourney-proxy \
 ## 注意事项
 1. 启动失败请检查全局代理或HTTP代理，排查 [JDA](https://github.com/DV8FromTheWorld/JDA) 连接问题
 2. 若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
-3. 欢迎在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或意见
+3. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
+4. 感兴趣的朋友也欢迎加入交流群讨论一下
+
+![wechat-qrcode.png](./docs/wechat-qrcode.png)
 
 ## 配置项
 
@@ -41,6 +44,7 @@ docker run -d --name midjourney-proxy \
 | mj.discord.user-token | 是 | discord用户Token |
 | mj.discord.bot-token | 是 | 自定义机器人Token |
 | mj.discord.mj-bot-name | 否 | mj机器人名称，默认 "Midjourney Bot" |
+| mj.notify-hook | 否 | 任务状态变更回调地址 |
 | mj.translate-way | 否 | 中文prompt翻译方式，可选null(默认)、baidu、gpt |
 | mj.baidu-translate.appid | 否 | 百度翻译的appid |
 | mj.baidu-translate.app-secret | 否 | 百度翻译的app-secret |
