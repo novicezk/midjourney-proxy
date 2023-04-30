@@ -32,8 +32,7 @@ docker run -d --name midjourney-proxy \
 2. 若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
 3. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
 4. 感兴趣的朋友也欢迎加入交流群讨论一下
-
-![wechat-qrcode.png](./docs/wechat-qrcode.png)
+ <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/wechat-qrcode.png" width = "300" height = "300" alt="交流群二维码" align=center />
 
 ## 配置项
 
