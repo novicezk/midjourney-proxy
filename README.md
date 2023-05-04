@@ -103,8 +103,6 @@ POST  application/json
     "id":"8498455807628990",
     // 绘图参数
     "prompt":"猫猫",
-    // 绘图参数英文
-    "promptEn":"cat",
     // 执行的命令
     "description":"/imagine cat",
     // 自定义参数
@@ -128,7 +126,6 @@ POST  application/json
     "action":"IMAGINE",
     "id":"8498455807628990",
     "prompt":"猫猫",
-    "promptEn":"cat",
     "description":"/imagine cat",
     "state":"test:22",
     "submitTime":1682473784826,
@@ -146,7 +143,6 @@ POST  application/json
     "action":"IMAGINE",
     "id":"8498455807628990",
     "prompt":"猫猫",
-    "promptEn":"cat",
     "description":"/imagine cat",
     "state":"test:22",
     "submitTime":1682473784826,
