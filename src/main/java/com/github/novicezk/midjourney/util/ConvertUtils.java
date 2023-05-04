@@ -14,6 +14,10 @@ public class ConvertUtils {
 	private static final String MJ_UV_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - (.*?) by <@(\\d+)> \\((.*?)\\)";
 	private static final String MJ_U_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Image #(\\d) <@(\\d+)>";
 
+	public static String findTaskIdByFinalPrompt(String finalPrompt) {
+		return CharSequenceUtil.subBetween(finalPrompt, "[", "]");
+	}
+
 	public static MessageData matchImagineContent(String content) {
 		Pattern pattern = Pattern.compile(MJ_I_CONTENT_REGEX);
 		Matcher matcher = pattern.matcher(content);
@@ -50,7 +54,7 @@ public class ConvertUtils {
 		MessageData data = new MessageData();
 		data.setAction(Action.UPSCALE);
 		data.setPrompt(matcher.group(1));
-		data.setStatus("relaxed");
+		data.setStatus("complete");
 		data.setIndex(Integer.parseInt(matcher.group(2)));
 		return data;
 	}

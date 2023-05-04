@@ -11,7 +11,7 @@ public class Task {
 	private Action action;
 	private String id;
 	private String prompt;
-	private String promptEn;
+
 	private String description;
 	private String state;
 	private Long submitTime;
@@ -19,6 +19,10 @@ public class Task {
 	private String imageUrl;
 	private TaskStatus status = TaskStatus.NOT_START;
 
+	@JsonIgnore
+	private String finalPrompt;
+	@JsonIgnore
+	private String relatedTaskId;
 	@JsonIgnore
 	private String messageId;
 	@JsonIgnore

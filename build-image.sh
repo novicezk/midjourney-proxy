@@ -1,10 +1,15 @@
 #!/bin/bash
 set -e -u -o pipefail
 
-VERSION=1.0-SNAPSHOT
+VERSION=latest
+ARCH=amd64
 
 if [ $# -ge 1 ]; then
   VERSION=$1
+fi
+
+if [ $# -ge 2 ]; then
+  ARCH=$2
 fi
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -19,5 +24,5 @@ ls -l "${CURRENT_DIR}"/target/*.jar
 
 (cd "${CURRENT_DIR}"; docker build . -t midjourney-proxy:${VERSION})
 
-docker tag midjourney-proxy:${VERSION} novicezk/midjourney-proxy:${VERSION}
-docker push novicezk/midjourney-proxy:${VERSION}
+docker tag midjourney-proxy:${VERSION} novicezk/midjourney-proxy-${ARCH}:${VERSION}
+docker push novicezk/midjourney-proxy-${ARCH}:${VERSION}
