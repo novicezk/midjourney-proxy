@@ -32,6 +32,7 @@ docker run -d --name midjourney-proxy \
 2. 若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
 3. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
 4. 感兴趣的朋友也欢迎加入交流群讨论一下
+
  <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/wechat-qrcode.png" width = "300" height = "300" alt="交流群二维码" align=center />
 
 ## 配置项
@@ -104,7 +105,7 @@ POST  application/json
     // 绘图参数
     "prompt":"猫猫",
     // 执行的命令
-    "description":"/imagine cat",
+    "description":"/imagine 猫猫",
     // 自定义参数
     "state":"test:22",
     // 提交时间
@@ -126,7 +127,7 @@ POST  application/json
     "action":"IMAGINE",
     "id":"8498455807628990",
     "prompt":"猫猫",
-    "description":"/imagine cat",
+    "description":"/imagine 猫猫",
     "state":"test:22",
     "submitTime":1682473784826,
     "finishTime":null,
@@ -143,7 +144,7 @@ POST  application/json
     "action":"IMAGINE",
     "id":"8498455807628990",
     "prompt":"猫猫",
-    "description":"/imagine cat",
+    "description":"/imagine 猫猫",
     "state":"test:22",
     "submitTime":1682473784826,
     "finishTime":null,
@@ -151,3 +152,7 @@ POST  application/json
     "status":"IN_PROGRESS"
 }
 ```
+
+## 应用项目
+
+- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney
