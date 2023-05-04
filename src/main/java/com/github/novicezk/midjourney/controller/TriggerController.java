@@ -48,13 +48,13 @@ public class TriggerController {
 			if (CharSequenceUtil.isBlank(prompt)) {
 				return Message.validationError();
 			}
+			key = task.getId();
 			task.setPrompt(prompt);
 			String promptEn = this.translateService.translateToEnglish(prompt).trim();
-			key = promptEn;
-			task.setPromptEn(promptEn);
+			task.setFinalPrompt("[" + task.getId() + "]" + promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
-			this.taskHelper.putTask(key, task);
-			result = this.discordService.imagine(promptEn);
+			this.taskHelper.putTask(task.getId(), task);
+			result = this.discordService.imagine(task.getFinalPrompt());
 		} else {
 			if (CharSequenceUtil.isBlank(submitDTO.getTaskId())) {
 				return Message.validationError();
@@ -67,7 +67,8 @@ public class TriggerController {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
 			}
 			task.setPrompt(targetTask.getPrompt());
-			task.setPromptEn(targetTask.getPromptEn());
+			task.setFinalPrompt(targetTask.getFinalPrompt());
+			task.setRelatedTaskId(ConvertUtils.findTaskIdByFinalPrompt(targetTask.getFinalPrompt()));
 			key = targetTask.getMessageId() + "-" + submitDTO.getAction();
 			this.taskHelper.putTask(key, task);
 			if (Action.UPSCALE.equals(submitDTO.getAction())) {

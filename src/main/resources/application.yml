@@ -2,6 +2,10 @@ server:
   port: 8080
   servlet:
     context-path: /mj
+logging:
+  level:
+    ROOT: info
+    com.github.novicezk.midjourney: debug
 mj:
   discord:
     guild-id: xxx

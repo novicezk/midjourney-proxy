@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.support;
 
 import cn.hutool.core.stream.StreamUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -48,10 +49,13 @@ public class DiscordMessageListener extends ListenerAdapter {
 		if (data == null) {
 			return;
 		}
-		String prompt = data.getPrompt();
+		String relatedTaskId = ConvertUtils.findTaskIdByFinalPrompt(data.getPrompt());
+		if (CharSequenceUtil.isBlank(relatedTaskId)) {
+			return;
+		}
 		List<Action> uvActions = List.of(Action.UPSCALE, Action.VARIATION);
 		Task task = StreamUtil.of(this.taskHelper.taskIterator())
-				.filter(t -> prompt.equals(t.getPromptEn())
+				.filter(t -> relatedTaskId.equals(t.getRelatedTaskId())
 						&& TaskStatus.NOT_START.equals(t.getStatus())
 						&& uvActions.contains(t.getAction()))
 				.max(Comparator.comparing(Task::getSubmitTime))
@@ -78,7 +82,8 @@ public class DiscordMessageListener extends ListenerAdapter {
 				return;
 			}
 			// imagine 命令生成的消息: 启动、完成
-			Task task = this.taskHelper.getTask(messageData.getPrompt());
+			String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
+			Task task = this.taskHelper.getTask(taskId);
 			if (task == null) {
 				return;
 			}
