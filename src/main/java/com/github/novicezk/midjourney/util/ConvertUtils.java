@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class ConvertUtils {
 	private static final String MJ_I_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - <@(\\d+)> \\((.*?)\\)";
-	private static final String MJ_UV_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - (.*?) by <@(\\d+)> \\((.*?)\\)";
+	private static final String MJ_V_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - (.*?) by <@(\\d+)> \\((.*?)\\)";
 	private static final String MJ_U_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Image #(\\d) <@(\\d+)>";
 
 	public static String findTaskIdByFinalPrompt(String finalPrompt) {
@@ -32,7 +32,7 @@ public class ConvertUtils {
 	}
 
 	public static MessageData matchUVContent(String content) {
-		Pattern pattern = Pattern.compile(MJ_UV_CONTENT_REGEX);
+		Pattern pattern = Pattern.compile(MJ_V_CONTENT_REGEX);
 		Matcher matcher = pattern.matcher(content);
 		if (!matcher.find()) {
 			return matchUContent(content);
