@@ -26,7 +26,7 @@ public class NotifyServiceImpl implements NotifyService {
 
 	@Override
 	public void notifyTaskChange(Task task) {
-		if (CharSequenceUtil.isBlank(this.properties.getNotifyHook())) {
+		if (CharSequenceUtil.isBlank(task.getNotifyHook())) {
 			return;
 		}
 		try {

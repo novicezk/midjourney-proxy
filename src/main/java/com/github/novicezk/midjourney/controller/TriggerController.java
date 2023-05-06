@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.controller;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.dto.SubmitDTO;
 import com.github.novicezk.midjourney.dto.UVSubmitDTO;
 import com.github.novicezk.midjourney.enums.Action;
@@ -26,6 +27,7 @@ public class TriggerController {
 	private final DiscordService discordService;
 	private final TranslateService translateService;
 	private final TaskHelper taskHelper;
+	private final ProxyProperties properties;
 
 	@PostMapping("/submit")
 	public Message<String> submit(@RequestBody SubmitDTO submitDTO) {
@@ -37,6 +39,7 @@ public class TriggerController {
 			return Message.validationError();
 		}
 		Task task = new Task();
+		task.setNotifyHook(submitDTO.getNotifyHook() == null ? this.properties.getNotifyHook() : submitDTO.getNotifyHook());
 		task.setId(RandomUtil.randomNumbers(16));
 		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(submitDTO.getState());
@@ -100,7 +103,7 @@ public class TriggerController {
 		submitDTO.setTaskId(uvData.getId());
 		submitDTO.setIndex(uvData.getIndex());
 		submitDTO.setState(uvSubmitDTO.getState());
+		submitDTO.setNotifyHook(uvSubmitDTO.getNotifyHook());
 		return submit(submitDTO);
 	}
-
 }

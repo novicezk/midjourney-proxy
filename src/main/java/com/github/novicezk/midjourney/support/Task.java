@@ -18,6 +18,7 @@ public class Task {
 	private Long finishTime;
 	private String imageUrl;
 	private TaskStatus status = TaskStatus.NOT_START;
+	private String notifyHook;
 
 	@JsonIgnore
 	private String finalPrompt;
