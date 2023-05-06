@@ -25,5 +25,8 @@ public class SubmitDTO {
 	 * index: action 为 UPSCALE\VARIATION 必传.
 	 */
 	private Integer index;
+	/**
+	 * notifyHook of caller
+	 */
 	private String notifyHook;
 }

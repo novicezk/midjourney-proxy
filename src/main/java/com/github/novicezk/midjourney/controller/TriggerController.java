@@ -103,7 +103,7 @@ public class TriggerController {
 		submitDTO.setTaskId(uvData.getId());
 		submitDTO.setIndex(uvData.getIndex());
 		submitDTO.setState(uvSubmitDTO.getState());
+		submitDTO.setNotifyHook(uvSubmitDTO.getNotifyHook());
 		return submit(submitDTO);
 	}
-
 }
