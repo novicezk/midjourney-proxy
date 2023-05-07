@@ -1,7 +1,9 @@
 package com.github.novicezk.midjourney.support.task;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.github.novicezk.midjourney.ProxyProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
@@ -13,17 +15,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
+@Primary
 @ConditionalOnProperty(value = "mj.task-store", havingValue = "redis")
+@RequiredArgsConstructor
 public class RedisTaskHelper implements TaskHelper {
-    private static final long EXPIRATION_TIME = 3600 * 24 * 30; // 30 days
     String keyPrefix = "mj::task::";
 
-    @Autowired
-    private RedisTemplate<String, Task> redisTemplate;
+    final ProxyProperties properties;
+
+    private final RedisTemplate<String, Task> redisTemplate;
 
     public void putTask(String key, Task task) {
         ValueOperations<String, Task> valueOps = redisTemplate.opsForValue();
-        valueOps.set(getRedisKey(key), task, EXPIRATION_TIME, TimeUnit.SECONDS);
+        valueOps.set(getRedisKey(key), task, properties.getTaskStore().getTimeout(), TimeUnit.SECONDS);
     }
 
     public void removeTask(String key) {

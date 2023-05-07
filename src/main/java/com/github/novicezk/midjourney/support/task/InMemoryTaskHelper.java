@@ -4,13 +4,19 @@ import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.stream.StreamUtil;
+import com.github.novicezk.midjourney.ProxyProperties;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 import java.util.List;
 
+@Component
+@RequiredArgsConstructor
 public class InMemoryTaskHelper implements TaskHelper {
-	// 创建缓存，1天过期
-	private static final TimedCache<String, Task> TASK_MAP = CacheUtil.newTimedCache(3600 * 24 * 1000L);
+	private final ProxyProperties properties;
+	// 创建缓存
+	private final TimedCache<String, Task> TASK_MAP = CacheUtil.newTimedCache(properties.getTaskStore().getTimeout());
 
 	public void putTask(String key, Task task) {
 		TASK_MAP.put(key, task);
