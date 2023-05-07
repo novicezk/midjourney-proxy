@@ -4,8 +4,6 @@ import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.stream.StreamUtil;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 import java.util.List;
