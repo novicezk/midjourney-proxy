@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.Iterator;
 import java.util.List;
 
-@Component
-@ConditionalOnProperty(value = "mj.task.store", havingValue = "in-memory")
 public class InMemoryTaskHelper implements TaskHelper {
 	// 创建缓存，1天过期
 	private static final TimedCache<String, Task> TASK_MAP = CacheUtil.newTimedCache(3600 * 24 * 1000L);
