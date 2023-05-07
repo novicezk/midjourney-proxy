@@ -26,3 +26,6 @@ https://discord.com/developers/applications
 ![img_8.png](img_8.png)
 
 频道的url里取出 服务器ID、频道ID
+
+把 MidJourney Bot 邀请到要让它作图的频道，
+把自己的 bot 也拉到 MidJourney Bot 所在的频道(Edit Channel -> Permissions -> Add Members or roles；Member下面选中bot名字，按 Done 按钮)
