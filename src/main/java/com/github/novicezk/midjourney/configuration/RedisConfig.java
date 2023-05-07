@@ -9,7 +9,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@ConditionalOnProperty(name = "mj.task-store", havingValue = "redis")
+@ConditionalOnProperty(name = "mj.task.store", havingValue = "redis")
 public class RedisConfig {
 
     @Bean
