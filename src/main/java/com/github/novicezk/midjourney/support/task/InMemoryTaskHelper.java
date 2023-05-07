@@ -1,4 +1,4 @@
-package com.github.novicezk.midjourney.support;
+package com.github.novicezk.midjourney.support.task;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @Component
-public class TaskHelper {
+public class InMemoryTaskHelper implements TaskHelper {
 	// 创建缓存，1天过期
 	private static final TimedCache<String, Task> TASK_MAP = CacheUtil.newTimedCache(3600 * 24 * 1000L);
 

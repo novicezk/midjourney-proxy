@@ -3,9 +3,14 @@ package com.github.novicezk.midjourney;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
+import com.github.novicezk.midjourney.support.task.InMemoryTaskHelper;
+import com.github.novicezk.midjourney.support.task.RedisTaskHelper;
+import com.github.novicezk.midjourney.support.task.TaskHelper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+
+import java.util.Objects;
 
 @SpringBootApplication
 public class ProxyApplication {
@@ -21,6 +26,11 @@ public class ProxyApplication {
 			case GPT -> new GPTTranslateServiceImpl(properties.getOpenai());
 			default -> prompt -> prompt;
 		};
+	}
+
+	@Bean
+	TaskHelper taskHelper(ProxyProperties properties) {
+		return Objects.equals(properties.getTaskStore(), "redis") ? new RedisTaskHelper() : new InMemoryTaskHelper();
 	}
 
 }
