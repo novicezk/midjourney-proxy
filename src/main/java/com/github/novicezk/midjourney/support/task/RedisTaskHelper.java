@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
-@ConditionalOnProperty(value = "mj.task.store", havingValue = "redis")
+@ConditionalOnProperty(value = "mj.task-store", havingValue = "redis")
 public class RedisTaskHelper implements TaskHelper {
     private static final long EXPIRATION_TIME = 3600 * 24 * 30; // 30 days
     String keyPrefix = "mj::task::";
