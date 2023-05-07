@@ -12,8 +12,8 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
 	@Data
-	static class Task {
-		String store;
+	public static class Task {
+		String store = "in-memory";
 	}
 	private final Task taskStore = new Task();
 	/**
