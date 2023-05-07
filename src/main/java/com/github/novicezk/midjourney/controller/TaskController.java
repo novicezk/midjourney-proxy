@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.controller;
 
-import com.github.novicezk.midjourney.support.Task;
-import com.github.novicezk.midjourney.support.TaskHelper;
+import com.github.novicezk.midjourney.support.task.Task;
+import com.github.novicezk.midjourney.support.task.TaskHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,4 +1,4 @@
-package com.github.novicezk.midjourney.support;
+package com.github.novicezk.midjourney.support.task;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.novicezk.midjourney.enums.Action;
