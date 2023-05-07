@@ -6,6 +6,7 @@ import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
 import com.github.novicezk.midjourney.support.task.InMemoryTaskHelper;
 import com.github.novicezk.midjourney.support.task.RedisTaskHelper;
 import com.github.novicezk.midjourney.support.task.TaskHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -28,9 +29,14 @@ public class ProxyApplication {
 		};
 	}
 
-	@Bean
-	TaskHelper taskHelper(ProxyProperties properties) {
-		return Objects.equals(properties.getTaskStore(), "redis") ? new RedisTaskHelper() : new InMemoryTaskHelper();
-	}
+//	@Autowired
+//	TaskHelper taskHelper;
+//
+//	@Bean
+//	TaskHelper taskHelper(ProxyProperties properties) {
+////		return Objects.equals(properties.getTaskStore(), "redis") ? new RedisTaskHelper() : new InMemoryTaskHelper();
+////		return Objects.equals(properties.getTaskStore(), "redis") ? new RedisTaskHelper() : new InMemoryTaskHelper();
+//		return taskHelper;
+//	}
 
 }
