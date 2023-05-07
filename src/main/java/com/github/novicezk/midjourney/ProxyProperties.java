@@ -11,7 +11,8 @@ import java.time.Duration;
 @Component
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
-	private String taskStore;
+
+	private final TaskStore taskStore = new TaskStore();
 	/**
 	 * discord配置.
 	 */
@@ -93,4 +94,8 @@ public class ProxyProperties {
 		private double temperature = 0;
 	}
 
+	@Data
+	public static class TaskStore {
+		private long timeout = 24 * 3600;
+	}
 }
