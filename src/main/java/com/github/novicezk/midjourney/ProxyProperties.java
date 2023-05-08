@@ -11,6 +11,7 @@ import java.time.Duration;
 @Component
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
+	private String taskStore;
 	/**
 	 * discord配置.
 	 */
