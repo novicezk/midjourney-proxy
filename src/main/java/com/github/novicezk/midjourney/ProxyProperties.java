@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney;
 
+import com.github.novicezk.midjourney.enums.TaskStore;
 import com.github.novicezk.midjourney.enums.TranslateWay;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,7 +12,14 @@ import java.time.Duration;
 @Component
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
-	private String taskStore;
+	/**
+	 * 任务存储方式.
+	 */
+	private TaskStore taskStore = TaskStore.IN_MEMORY;
+	/**
+	 * 任务有效期，过期删除.
+	 */
+	private Duration taskExpiration = Duration.ofDays(30);
 	/**
 	 * discord配置.
 	 */

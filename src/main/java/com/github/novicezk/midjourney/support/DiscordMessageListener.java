@@ -1,6 +1,5 @@
 package com.github.novicezk.midjourney.support;
 
-import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.Action;
@@ -56,7 +55,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 			return;
 		}
 		List<Action> uvActions = List.of(Action.UPSCALE, Action.VARIATION);
-		Task task = StreamUtil.of(this.taskHelper.taskIterator())
+		Task task = this.taskHelper.listTask().stream()
 				.filter(t -> relatedTaskId.equals(t.getRelatedTaskId())
 						&& TaskStatus.NOT_START.equals(t.getStatus())
 						&& uvActions.contains(t.getAction()))
