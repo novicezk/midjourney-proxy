@@ -3,8 +3,8 @@ package com.github.novicezk.midjourney.support.task;
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.ListUtil;
-import com.github.novicezk.midjourney.ProxyProperties;
 
+import java.time.Duration;
 import java.util.List;
 
 
@@ -13,8 +13,8 @@ public class InMemoryTaskHelper implements TaskHelper {
 	// 创建缓存
 	private final TimedCache<String, Task> taskMap;
 
-	public InMemoryTaskHelper(ProxyProperties properties) {
-		taskMap = CacheUtil.newTimedCache(properties.getTaskStore().getTimeout().toMillis());
+	public InMemoryTaskHelper(Duration timeout) {
+		taskMap = CacheUtil.newTimedCache(timeout.toMillis());
 	}
 
 	@Override
