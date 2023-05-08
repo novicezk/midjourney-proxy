@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.configuration;
 
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.support.task.InMemoryTaskHelper;
 import com.github.novicezk.midjourney.support.task.RedisTaskHelper;
 import com.github.novicezk.midjourney.support.task.Task;
 import com.github.novicezk.midjourney.support.task.TaskHelper;
@@ -13,10 +14,9 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@ConditionalOnProperty(name = "mj.task-store.type", havingValue = "redis")
-public class RedisTaskHelperConfig {
-
+public class TaskHelperConfig {
     @Bean
+    @ConditionalOnProperty(name = "mj.task-store.type", havingValue = "redis")
     public RedisTemplate<String, Task> taskRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Task> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -34,8 +34,14 @@ public class RedisTaskHelperConfig {
     }
 
     @Bean
-    public TaskHelper taskHelper(ProxyProperties properties, RedisTemplate<String, Task> redisTemplate) {
-        return new RedisTaskHelper(properties, redisTemplate);
+    public TaskHelper taskHelper(ProxyProperties proxyProperties, RedisTemplate<String, Task> redisTemplate) {
+        String type = proxyProperties.getTaskStore().getType();
+        return switch (type) {
+            case "in-memory" -> new InMemoryTaskHelper(proxyProperties);
+            case "redis" -> new RedisTaskHelper(proxyProperties, redisTemplate);
+            default -> throw new IllegalStateException("Invalid task store type: " + type);
+        };
     }
 }
+
 

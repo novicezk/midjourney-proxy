@@ -104,6 +104,6 @@ public class ProxyProperties {
 		 * default: "in-memory"
 		 * type: "redis" for Redis TaskStore
 		 */
-		private String type;
+		private String type = "in-memory";
 	}
 }
