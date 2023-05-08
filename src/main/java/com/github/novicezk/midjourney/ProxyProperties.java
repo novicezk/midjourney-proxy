@@ -96,6 +96,14 @@ public class ProxyProperties {
 
 	@Data
 	public static class TaskStore {
+		/**
+		 * timeout of task: default one day
+		 */
 		private long timeout = 24 * 3600;
+		/**
+		 * default: "in-memory"
+		 * type: "redis" for Redis TaskStore
+		 */
+		private String type;
 	}
 }
