@@ -1,6 +1,6 @@
 package com.github.novicezk.midjourney.support.task;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -10,16 +10,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+@RequiredArgsConstructor
 public class RedisTaskHelper implements TaskHelper {
 	private static final String KEY_PREFIX = "mj::task::";
 	private final Duration timeout;
 
-	@Autowired
-	private RedisTemplate<String, Task> redisTemplate;
-
-	public RedisTaskHelper(Duration taskExpiration) {
-		this.timeout = taskExpiration;
-	}
+	private final RedisTemplate<String, Task> redisTemplate;
 
 	@Override
 	public void putTask(String key, Task task) {
