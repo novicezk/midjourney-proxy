@@ -6,6 +6,8 @@ import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.service.NotifyService;
+import com.github.novicezk.midjourney.support.task.Task;
+import com.github.novicezk.midjourney.support.task.TaskHelper;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MessageData;
 import lombok.RequiredArgsConstructor;
