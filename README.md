@@ -55,8 +55,8 @@ docker run -d --name midjourney-proxy \
 | mj.discord.bot-token | 是 | 自定义机器人Token |
 | mj.discord.mj-bot-name | 否 | mj机器人名称，默认 "Midjourney Bot" |
 | mj.notify-hook | 否 | 任务状态变更回调地址 |
-| mj.task-store | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
-| mj.task-expiration | 否 | 任务有效期，过期后删除，默认30天 |
+| mj.task-store.type | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
+| mj.task-store.timeout | 否 | 任务过期时间，过期后删除，默认30天 |
 | mj.translate-way | 否 | 中文prompt翻译方式，可选null(默认)、baidu、gpt |
 | mj.baidu-translate.appid | 否 | 百度翻译的appid |
 | mj.baidu-translate.app-secret | 否 | 百度翻译的app-secret |

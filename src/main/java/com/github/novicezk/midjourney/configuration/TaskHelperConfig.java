@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.time.Duration;
+
 @Configuration
 public class TaskHelperConfig {
     public RedisTemplate<String, Task> taskRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
@@ -33,9 +35,10 @@ public class TaskHelperConfig {
     @Bean
     public TaskHelper taskHelper(ProxyProperties proxyProperties, RedisConnectionFactory redisConnectionFactory) {
         ProxyProperties.TaskStore.Type type = proxyProperties.getTaskStore().getType();
-        return switch (type) {
-            case IN_MEMORY -> new InMemoryTaskHelper(proxyProperties);
-            case REDIS -> new RedisTaskHelper(proxyProperties.getTaskStore().getTimeout(), taskRedisTemplate(redisConnectionFactory));
+	    Duration timeout = proxyProperties.getTaskStore().getTimeout();
+	    return switch (type) {
+            case IN_MEMORY -> new InMemoryTaskHelper(timeout);
+            case REDIS -> new RedisTaskHelper(timeout, taskRedisTemplate(redisConnectionFactory));
         };
     }
 }
