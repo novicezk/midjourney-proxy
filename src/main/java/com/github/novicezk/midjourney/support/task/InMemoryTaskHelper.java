@@ -3,38 +3,36 @@ package com.github.novicezk.midjourney.support.task;
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.stream.StreamUtil;
 
-import java.util.Iterator;
+import java.time.Duration;
 import java.util.List;
 
+
 public class InMemoryTaskHelper implements TaskHelper {
-	// 创建缓存，1天过期
-	private static final TimedCache<String, Task> TASK_MAP = CacheUtil.newTimedCache(3600 * 24 * 1000L);
+	private final TimedCache<String, Task> taskMap;
 
+	public InMemoryTaskHelper(Duration taskExpiration) {
+		this.taskMap = CacheUtil.newTimedCache(taskExpiration.toMillis());
+	}
+
+	@Override
 	public void putTask(String key, Task task) {
-		TASK_MAP.put(key, task);
+		this.taskMap.put(key, task);
 	}
 
+	@Override
 	public void removeTask(String key) {
-		TASK_MAP.remove(key);
+		this.taskMap.remove(key);
 	}
 
+	@Override
 	public Task getTask(String key) {
-		return TASK_MAP.get(key);
+		return this.taskMap.get(key);
 	}
 
+	@Override
 	public List<Task> listTask() {
-		return ListUtil.toList(TASK_MAP.iterator());
-	}
-
-	public Iterator<Task> taskIterator() {
-		return TASK_MAP.iterator();
-	}
-
-	public Task findById(String taskId) {
-		return StreamUtil.of(TASK_MAP.iterator()).filter(t -> taskId.equals(t.getId()))
-				.findFirst().orElse(null);
+		return ListUtil.toList(this.taskMap.iterator());
 	}
 
 }
