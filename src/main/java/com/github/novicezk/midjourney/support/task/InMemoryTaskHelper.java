@@ -5,12 +5,10 @@ import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.stream.StreamUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 import java.util.List;
 
-@Component
 public class InMemoryTaskHelper implements TaskHelper {
 	// 创建缓存
 	private final TimedCache<String, Task> TASK_MAP;
