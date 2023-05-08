@@ -32,11 +32,10 @@ public class TaskHelperConfig {
 
     @Bean
     public TaskHelper taskHelper(ProxyProperties proxyProperties, RedisConnectionFactory redisConnectionFactory) {
-        String type = proxyProperties.getTaskStore().getType();
+        ProxyProperties.TaskStore.Type type = proxyProperties.getTaskStore().getType();
         return switch (type) {
-            case "in-memory" -> new InMemoryTaskHelper(proxyProperties);
-            case "redis" -> new RedisTaskHelper(proxyProperties, taskRedisTemplate(redisConnectionFactory));
-            default -> throw new IllegalStateException("Invalid task store type: " + type);
+            case IN_MEMORY -> new InMemoryTaskHelper(proxyProperties);
+            case REDIS -> new RedisTaskHelper(proxyProperties.getTaskStore().getTimeout(), taskRedisTemplate(redisConnectionFactory));
         };
     }
 }

@@ -12,6 +12,7 @@ mj:
     channel-id: xxx
     user-token: xxx
     bot-token: xxx
-  task-store: in_memory
-  task-expiration: 30d
+  task-store:
+    type: in_memory
+    timeout: 30d
   translate-way: null
