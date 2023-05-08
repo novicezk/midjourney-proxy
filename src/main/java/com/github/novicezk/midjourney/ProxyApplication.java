@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney;
 
+import com.github.novicezk.midjourney.enums.TaskStore;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
