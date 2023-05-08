@@ -1,63 +1,55 @@
 package com.github.novicezk.midjourney.support.task;
 
-import com.github.novicezk.midjourney.ProxyProperties;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Component;
 
-import java.util.Iterator;
+import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-@Component
-@Primary
-@ConditionalOnProperty(value = "mj.task-store", havingValue = "redis")
-@RequiredArgsConstructor
 public class RedisTaskHelper implements TaskHelper {
-    String keyPrefix = "mj::task::";
+	private static final String KEY_PREFIX = "mj::task::";
+	private final Duration timeout;
 
-    final ProxyProperties properties;
+	@Autowired
+	private RedisTemplate<String, Task> redisTemplate;
 
-    private final RedisTemplate<String, Task> redisTemplate;
+	public RedisTaskHelper(Duration taskExpiration) {
+		this.timeout = taskExpiration;
+	}
 
-    public void putTask(String key, Task task) {
-        ValueOperations<String, Task> valueOps = redisTemplate.opsForValue();
-        valueOps.set(getRedisKey(key), task, properties.getTaskStore().getTimeout(), TimeUnit.SECONDS);
-    }
+	@Override
+	public void putTask(String key, Task task) {
+		this.redisTemplate.opsForValue().set(getRedisKey(key), task, timeout);
+	}
 
-    public void removeTask(String key) {
-        redisTemplate.delete(getRedisKey(key));
-    }
+	@Override
+	public void removeTask(String key) {
+		this.redisTemplate.delete(getRedisKey(key));
+	}
 
-    public Task getTask(String key) {
-        return redisTemplate.opsForValue().get(getRedisKey(key));
-    }
+	@Override
+	public Task getTask(String key) {
+		return this.redisTemplate.opsForValue().get(getRedisKey(key));
+	}
 
-    private String getRedisKey(String key) {
-        return keyPrefix + key;
-    }
+	@Override
+	public List<Task> listTask() {
+		Set<String> keys = this.redisTemplate.keys(getRedisKey("*"));
+		if (keys == null || keys.isEmpty()) {
+			return Collections.emptyList();
+		}
+		ValueOperations<String, Task> operations = this.redisTemplate.opsForValue();
+		return keys.stream().map(operations::get)
+				.filter(Objects::nonNull)
+				.toList();
+	}
 
-    public List<Task> listTask() {
-        return Objects.requireNonNull(redisTemplate.keys(getRedisKey("*"))).stream()
-                .map(key -> redisTemplate.opsForValue().get(key))
-                .collect(Collectors.toList());
-    }
-
-    public Task findById(String taskId) {
-        return listTask().stream()
-                .filter(task -> taskId.equals(task.getId()))
-                .findFirst().orElse(null);
-    }
-
-    public Iterator<Task> taskIterator() {
-        return Objects.requireNonNull(redisTemplate.keys(getRedisKey("*"))).stream()
-                .map(key -> redisTemplate.opsForValue().get(key))
-                .toList().iterator();
-    }
+	private String getRedisKey(String key) {
+		return KEY_PREFIX + key;
+	}
 
 }

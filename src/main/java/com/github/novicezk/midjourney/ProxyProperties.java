@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney;
 
+import com.github.novicezk.midjourney.enums.TaskStore;
 import com.github.novicezk.midjourney.enums.TranslateWay;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -99,11 +100,11 @@ public class ProxyProperties {
 		/**
 		 * timeout of task: default one day
 		 */
-		private long timeout = 24 * 3600;
+		private Duration timeout = Duration.ofDays(30);
 		/**
-		 * default: "in-memory"
-		 * type: "redis" for Redis TaskStore
+		 * default: TaskStore.IN_MEMORY
+		 * type: TaskStore.REDIS for Redis TaskStore
 		 */
-		private String type = "in-memory";
+		private String type = TaskStore.IN_MEMORY;
 	}
 }

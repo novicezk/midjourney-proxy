@@ -6,40 +6,37 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.stream.StreamUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 
-import java.util.Iterator;
+import java.time.Duration;
 import java.util.List;
 
+
 public class InMemoryTaskHelper implements TaskHelper {
+
 	// 创建缓存
-	private final TimedCache<String, Task> TASK_MAP;
+	private final TimedCache<String, Task> taskMap;
 
 	public InMemoryTaskHelper(ProxyProperties properties) {
-		TASK_MAP = CacheUtil.newTimedCache(properties.getTaskStore().getTimeout());
+		taskMap = CacheUtil.newTimedCache(properties.getTaskStore().getTimeout());
 	}
 
+	@Override
 	public void putTask(String key, Task task) {
-		TASK_MAP.put(key, task);
+		this.taskMap.put(key, task);
 	}
 
+	@Override
 	public void removeTask(String key) {
-		TASK_MAP.remove(key);
+		this.taskMap.remove(key);
 	}
 
+	@Override
 	public Task getTask(String key) {
-		return TASK_MAP.get(key);
+		return this.taskMap.get(key);
 	}
 
+	@Override
 	public List<Task> listTask() {
-		return ListUtil.toList(TASK_MAP.iterator());
-	}
-
-	public Iterator<Task> taskIterator() {
-		return TASK_MAP.iterator();
-	}
-
-	public Task findById(String taskId) {
-		return StreamUtil.of(TASK_MAP.iterator()).filter(t -> taskId.equals(t.getId()))
-				.findFirst().orElse(null);
+		return ListUtil.toList(this.taskMap.iterator());
 	}
 
 }
