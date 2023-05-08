@@ -118,6 +118,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 			String imageUrl = message.getAttachments().get(0).getUrl();
 			task.setImageUrl(imageUrl);
 			int hashStartIndex = imageUrl.lastIndexOf("_");
+			// .webp or .png
 			int hashEndIndex = imageUrl.endsWith(".webp") ? imageUrl.length() - 5 : imageUrl.length() - 4;
 			task.setMessageHash(imageUrl.substring(hashStartIndex + 1, hashEndIndex));
 		} else {
