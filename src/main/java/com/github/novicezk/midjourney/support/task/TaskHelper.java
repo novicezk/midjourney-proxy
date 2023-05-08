@@ -1,21 +1,21 @@
 package com.github.novicezk.midjourney.support.task;
 
-import org.springframework.stereotype.Component;
 
-import java.util.Iterator;
 import java.util.List;
 
-@Component
 public interface TaskHelper {
-    void putTask(String key, Task task);
 
-    void removeTask(String key);
+	void putTask(String key, Task task);
 
-    Task getTask(String key);
+	void removeTask(String key);
 
-    List<Task> listTask();
+	Task getTask(String key);
 
-    Iterator<Task> taskIterator();
+	List<Task> listTask();
 
-    Task findById(String taskId);
+	default Task findById(String taskId) {
+		return listTask().stream()
+				.filter(task -> taskId.equals(task.getId()))
+				.findFirst().orElse(null);
+	}
 }
