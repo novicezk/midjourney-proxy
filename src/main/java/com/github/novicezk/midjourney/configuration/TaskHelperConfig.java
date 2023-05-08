@@ -1,6 +1,10 @@
 package com.github.novicezk.midjourney.configuration;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.support.task.InMemoryTaskHelper;
+import com.github.novicezk.midjourney.support.task.RedisTaskHelper;
+import com.github.novicezk.midjourney.support.task.Task;
+import com.github.novicezk.midjourney.support.task.TaskHelper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -9,12 +13,9 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@ConditionalOnProperty(name = "mj.task-store", havingValue = "redis")
-public class RedisConfig {
-
-    @Bean
-    public RedisTemplate<String, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, ?> redisTemplate = new RedisTemplate<>();
+public class TaskHelperConfig {
+    public RedisTemplate<String, Task> taskRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Task> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
         GenericJackson2JsonRedisSerializer jackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
@@ -28,5 +29,15 @@ public class RedisConfig {
 
         return redisTemplate;
     }
+
+    @Bean
+    public TaskHelper taskHelper(ProxyProperties proxyProperties, RedisConnectionFactory redisConnectionFactory) {
+        ProxyProperties.TaskStore.Type type = proxyProperties.getTaskStore().getType();
+        return switch (type) {
+            case IN_MEMORY -> new InMemoryTaskHelper(proxyProperties);
+            case REDIS -> new RedisTaskHelper(proxyProperties.getTaskStore().getTimeout(), taskRedisTemplate(redisConnectionFactory));
+        };
+    }
 }
+
 
