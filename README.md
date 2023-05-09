@@ -2,6 +2,16 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
+## 现有功能
+- 支持 Imagine、U、V 操作，绘图完成后回调
+- 支持中文 prompt 翻译，需配置百度翻译或 gpt
+
+## 后续计划
+- [ ] prompt 敏感词判断
+- [ ] 支持 describe 指令，根据图片生成 prompt
+- [ ] Imagine 支持垫图
+- [ ] 添加任务队列，防止提交过多，MidJourney触发限制
+
 ## 使用前提
 1. 科学上网
 2. docker环境
