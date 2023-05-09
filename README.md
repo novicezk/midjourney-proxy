@@ -105,7 +105,9 @@ POST  application/json
     "state": "test:22",
     // 任务描述: 选中ID为1320098173412546的第2张图片放大
     // 放大 U1～U4 ，变换 V1～V4
-    "content": "1320098173412546 U2"
+    "content": "1320098173412546 U2",
+    // 支持每个任务配置不同回调地址，非必传
+    "notifyHook": "http://localhost:8113/notify"
 }
 ```
 返回结果同 `/trigger/submit`
