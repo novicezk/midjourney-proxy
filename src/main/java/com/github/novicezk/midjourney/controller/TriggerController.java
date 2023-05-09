@@ -9,9 +9,9 @@ import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.service.DiscordService;
+import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TranslateService;
-import com.github.novicezk.midjourney.support.task.Task;
-import com.github.novicezk.midjourney.support.task.TaskHelper;
+import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.UVData;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TriggerController {
 	private final DiscordService discordService;
 	private final TranslateService translateService;
-	private final TaskHelper taskHelper;
+	private final TaskService taskService;
 	private final ProxyProperties properties;
 
 	@PostMapping("/submit")
@@ -39,30 +39,30 @@ public class TriggerController {
 			return Message.validationError();
 		}
 		Task task = new Task();
-		task.setNotifyHook(submitDTO.getNotifyHook() == null ? this.properties.getNotifyHook() : submitDTO.getNotifyHook());
+		task.setNotifyHook(CharSequenceUtil.isBlank(submitDTO.getNotifyHook()) ? this.properties.getNotifyHook() : submitDTO.getNotifyHook());
 		task.setId(RandomUtil.randomNumbers(16));
 		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(submitDTO.getState());
 		task.setAction(submitDTO.getAction());
-		String key;
 		Message<Void> result;
 		if (Action.IMAGINE.equals(submitDTO.getAction())) {
 			String prompt = submitDTO.getPrompt();
 			if (CharSequenceUtil.isBlank(prompt)) {
 				return Message.validationError();
 			}
-			key = task.getId();
+			task.setKey(task.getId());
 			task.setPrompt(prompt);
 			String promptEn = this.translateService.translateToEnglish(prompt).trim();
+			task.setPromptEn(promptEn);
 			task.setFinalPrompt("[" + task.getId() + "]" + promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
-			this.taskHelper.putTask(task.getId(), task);
+			this.taskService.putTask(task.getId(), task);
 			result = this.discordService.imagine(task.getFinalPrompt());
 		} else {
 			if (CharSequenceUtil.isBlank(submitDTO.getTaskId())) {
 				return Message.validationError();
 			}
-			Task targetTask = this.taskHelper.findById(submitDTO.getTaskId());
+			Task targetTask = this.taskService.getTask(submitDTO.getTaskId());
 			if (targetTask == null) {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
 			}
@@ -70,15 +70,18 @@ public class TriggerController {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
 			}
 			task.setPrompt(targetTask.getPrompt());
+			task.setPromptEn(targetTask.getPromptEn());
 			task.setFinalPrompt(targetTask.getFinalPrompt());
 			task.setRelatedTaskId(ConvertUtils.findTaskIdByFinalPrompt(targetTask.getFinalPrompt()));
-			key = targetTask.getMessageId() + "-" + submitDTO.getAction();
-			this.taskHelper.putTask(key, task);
+			String key = targetTask.getMessageId() + "-" + submitDTO.getAction();
+			task.setKey(key);
 			if (Action.UPSCALE.equals(submitDTO.getAction())) {
 				task.setDescription("/up " + submitDTO.getTaskId() + " U" + submitDTO.getIndex());
+				this.taskService.putTask(key, task);
 				result = this.discordService.upscale(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
 			} else if (Action.VARIATION.equals(submitDTO.getAction())) {
 				task.setDescription("/up " + submitDTO.getTaskId() + " V" + submitDTO.getIndex());
+				this.taskService.putTask(key, task);
 				result = this.discordService.variation(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
 			} else {
 				// todo 暂不支持 reset, 接收mj消息时, 无法找到对应task
@@ -86,7 +89,7 @@ public class TriggerController {
 			}
 		}
 		if (result.getCode() != Message.SUCCESS_CODE) {
-			this.taskHelper.removeTask(key);
+			this.taskService.removeTask(task.getId());
 			return Message.of(result.getCode(), result.getDescription());
 		}
 		return Message.success(task.getId());
