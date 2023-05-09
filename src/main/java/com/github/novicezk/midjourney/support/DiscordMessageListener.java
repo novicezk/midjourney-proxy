@@ -5,8 +5,7 @@ import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.service.NotifyService;
-import com.github.novicezk.midjourney.support.task.Task;
-import com.github.novicezk.midjourney.support.task.TaskHelper;
+import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MessageData;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +18,14 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DiscordMessageListener extends ListenerAdapter {
 	private final ProxyProperties properties;
-	private final TaskHelper taskHelper;
+	private final TaskService taskService;
 	private final NotifyService notifyService;
 
 	private boolean ignoreMessage(Message message) {
@@ -54,17 +53,19 @@ public class DiscordMessageListener extends ListenerAdapter {
 		if (CharSequenceUtil.isBlank(relatedTaskId)) {
 			return;
 		}
-		List<Action> uvActions = List.of(Action.UPSCALE, Action.VARIATION);
-		Task task = this.taskHelper.listTask().stream()
-				.filter(t -> relatedTaskId.equals(t.getRelatedTaskId())
-						&& TaskStatus.NOT_START.equals(t.getStatus())
-						&& uvActions.contains(t.getAction()))
+		TaskCondition condition = new TaskCondition()
+				.setActionSet(Set.of(Action.UPSCALE, Action.VARIATION))
+				.setRelatedTaskId(relatedTaskId)
+				.setStatusSet(Set.of(TaskStatus.NOT_START));
+		Task task = this.taskService.listTask().stream()
+				.filter(condition)
 				.max(Comparator.comparing(Task::getSubmitTime))
 				.orElse(null);
 		if (task == null) {
 			return;
 		}
 		task.setStatus(TaskStatus.IN_PROGRESS);
+		this.taskService.putTask(task.getKey(), task);
 		this.notifyService.notifyTaskChange(task);
 	}
 
@@ -84,7 +85,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 			}
 			// imagine 命令生成的消息: 启动、完成
 			String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
-			Task task = this.taskHelper.getTask(taskId);
+			Task task = this.taskService.getTask(taskId);
 			if (task == null) {
 				return;
 			}
@@ -94,6 +95,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 			} else {
 				finishTask(task, message);
 			}
+			this.taskService.putTask(taskId, task);
 			this.notifyService.notifyTaskChange(task);
 		} else if (MessageType.INLINE_REPLY.equals(message.getType()) && message.getReferencedMessage() != null) {
 			MessageData messageData = ConvertUtils.matchUVContent(content);
@@ -101,12 +103,19 @@ public class DiscordMessageListener extends ListenerAdapter {
 				return;
 			}
 			// uv 变更图片完成后的消息
-			Task task = this.taskHelper.getTask(message.getReferencedMessage().getId() + "-" + messageData.getAction());
+			TaskCondition condition = new TaskCondition()
+					.setKey(message.getReferencedMessage().getId() + "-" + messageData.getAction())
+					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.NOT_START));
+			Task task = this.taskService.listTask().stream()
+					.filter(condition)
+					.max(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}
 			task.setMessageId(messageId);
 			finishTask(task, message);
+			this.taskService.putTask(task.getId(), task);
 			this.notifyService.notifyTaskChange(task);
 		}
 	}

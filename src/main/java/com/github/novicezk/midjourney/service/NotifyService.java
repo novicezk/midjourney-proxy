@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.service;
 
 
-import com.github.novicezk.midjourney.support.task.Task;
+import com.github.novicezk.midjourney.support.Task;
 
 public interface NotifyService {
 

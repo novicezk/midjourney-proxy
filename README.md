@@ -12,7 +12,7 @@
 
 1. 下载镜像
 ```shell
-docker pull novicezk/midjourney-proxy:1.2
+docker pull novicezk/midjourney-proxy:1.3
 ```
 2. 启动容器，并设置参数
 ```shell
@@ -21,7 +21,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /home/xxx/data/application.yml:/home/spring/config/application.yml \
  --restart=always \
- novicezk/midjourney-proxy:1.2
+ novicezk/midjourney-proxy:1.3
 
 # 或者直接在启动命令中设置参数
 docker run -d --name midjourney-proxy \
@@ -31,7 +31,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:1.2
+ novicezk/midjourney-proxy:1.3
 ```
 3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
 4. 检查discord频道中新创建的机器人是否在线
@@ -69,7 +69,7 @@ docker run -d --name midjourney-proxy \
 
 ## API接口说明
 
-### 1. `/trigger/submit` 提交任务
+### 1. `http://ip:port/mj/trigger/submit` 提交任务
 POST  application/json
 ```json
 {
@@ -97,7 +97,7 @@ POST  application/json
 ```
 result: 任务ID，用于后续查询任务或提交变换任务
 
-### 2. `/trigger/submit-uv` 提交选中放大或变换任务
+### 2. `http://ip:port/mj/trigger/submit-uv` 提交选中放大或变换任务
 POST  application/json
 ```json
 {
@@ -112,7 +112,7 @@ POST  application/json
 ```
 返回结果同 `/trigger/submit`
 
-### 3. `/task/{id}/fetch` GET 查询单个任务
+### 3. `http://ip:port/mj/task/{id}/fetch` GET 查询单个任务
 ```json
 {
     // 动作: IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）
@@ -121,6 +121,8 @@ POST  application/json
     "id":"8498455807628990",
     // 绘图参数
     "prompt":"猫猫",
+    // 翻译后的绘图参数
+    "promptEn": "Cat",
     // 执行的命令
     "description":"/imagine 猫猫",
     // 自定义参数
@@ -130,20 +132,21 @@ POST  application/json
     // 结束时间
     "finishTime":null,
     // 生成图片的url, 成功时有值
-    "imageUrl":"https://cdn.discordapp.com/attachments/xxx/xxx/xxxx__xxxx.png",
+    "imageUrl":"https://cdn.discordapp.com/attachments/xxx/xxx/xxxx_xxxx.png",
     // 任务状态: NOT_START（未启动）、IN_PROGRESS（执行中）、FAILURE（失败）、SUCCESS（成功）
     "status":"IN_PROGRESS"
 }
 ```
 
-### 4. `/task/list` GET 查询所有任务
-***任务缓存1天后删除***
+### 4. `http://ip:port/mj/task/list` GET 查询所有任务
+
 ```json
 [
   {
     "action":"IMAGINE",
     "id":"8498455807628990",
     "prompt":"猫猫",
+    "promptEn": "Cat",
     "description":"/imagine 猫猫",
     "state":"test:22",
     "submitTime":1682473784826,
@@ -161,6 +164,7 @@ POST  application/json
     "action":"IMAGINE",
     "id":"8498455807628990",
     "prompt":"猫猫",
+    "promptEn": "Cat",
     "description":"/imagine 猫猫",
     "state":"test:22",
     "submitTime":1682473784826,
