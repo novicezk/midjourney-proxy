@@ -1,0 +1,47 @@
+{
+  "type": 2,
+  "guild_id": "$guild_id",
+  "channel_id": "$channel_id",
+  "application_id": "936929561302675456",
+  "session_id": "c43d67ae725950b207d63ca3c2cc72fa",
+  "data": {
+    "version": "1092492867185950853",
+    "id": "1092492867185950852",
+    "name": "describe",
+    "type": 1,
+    "options": [
+      {
+        "type": 11,
+        "name": "image",
+        "value": 0
+      }
+    ],
+    "attachments": [
+      {
+        "id": "0",
+        "filename": "$file_name",
+        "uploaded_filename": "$final_file_name"
+      }
+    ],
+    "application_command": {
+      "id": "1092492867185950852",
+      "application_id": "936929561302675456",
+      "version": "1092492867185950853",
+      "default_member_permissions": null,
+      "type": 1,
+      "nsfw": false,
+      "name": "describe",
+      "description": "Writes a prompt based on your image.",
+      "dm_permission": true,
+      "contexts": null,
+      "options": [
+        {
+          "type": 11,
+          "name": "image",
+          "description": "The image to describe",
+          "required": true
+        }
+      ]
+    }
+  }
+}
