@@ -54,7 +54,7 @@ public class TriggerController {
 			task.setPrompt(prompt);
 			String promptEn = this.translateService.translateToEnglish(prompt).trim();
 			task.setPromptEn(promptEn);
-			task.setFinalPrompt("[" + task.getId() + "]" + promptEn);
+			task.setFinalPrompt("[" + task.getId() + "] " + promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
 			this.taskService.putTask(task.getId(), task);
 			result = this.discordService.imagine(task.getFinalPrompt());
