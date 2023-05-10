@@ -17,6 +17,10 @@ public enum Action {
 	/**
 	 * 重新生成.
 	 */
-	RESET
+	RESET,
+	/**
+	 * 图转prompt.
+	 */
+	DESCRIBE
 
 }

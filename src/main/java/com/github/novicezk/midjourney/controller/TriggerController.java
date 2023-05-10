@@ -3,6 +3,7 @@ package com.github.novicezk.midjourney.controller;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.dto.DescribeDTO;
 import com.github.novicezk.midjourney.dto.SubmitDTO;
 import com.github.novicezk.midjourney.dto.UVSubmitDTO;
 import com.github.novicezk.midjourney.enums.Action;
@@ -84,8 +85,7 @@ public class TriggerController {
 				this.taskService.putTask(key, task);
 				result = this.discordService.variation(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
 			} else {
-				// todo 暂不支持 reset, 接收mj消息时, 无法找到对应task
-				return Message.of(Message.VALIDATION_ERROR_CODE, "暂不支持 reset 操作");
+				return Message.of(Message.VALIDATION_ERROR_CODE, "不支持的操作");
 			}
 		}
 		if (result.getCode() != Message.SUCCESS_CODE) {
@@ -108,5 +108,30 @@ public class TriggerController {
 		submitDTO.setState(uvSubmitDTO.getState());
 		submitDTO.setNotifyHook(uvSubmitDTO.getNotifyHook());
 		return submit(submitDTO);
+	}
+
+	@PostMapping("/describe")
+	public Message<String> describe(@RequestBody DescribeDTO describeDTO) {
+		if (!CharSequenceUtil.isAllNotBlank(describeDTO.getFileName(), describeDTO.getBase64())) {
+			return Message.validationError();
+		}
+		Message<String> uploadResult = this.discordService.upload(describeDTO.getFileName(), describeDTO.getBase64());
+		if (uploadResult.getCode() != Message.SUCCESS_CODE) {
+			return uploadResult;
+		}
+		String finalFileName = uploadResult.getResult();
+		Task task = new Task();
+		task.setId(RandomUtil.randomNumbers(16));
+		task.setSubmitTime(System.currentTimeMillis());
+		task.setState(describeDTO.getState());
+		task.setAction(Action.DESCRIBE);
+		task.setKey(finalFileName);
+		task.setNotifyHook(CharSequenceUtil.isBlank(describeDTO.getNotifyHook()) ? this.properties.getNotifyHook() : describeDTO.getNotifyHook());
+		this.taskService.putTask(task.getId(), task);
+		Message<Void> message = this.discordService.describe(finalFileName);
+		if (message.getCode() != Message.SUCCESS_CODE) {
+			return Message.of(message.getCode(), message.getDescription());
+		}
+		return Message.success(task.getId());
 	}
 }

@@ -13,4 +13,8 @@ public interface DiscordService {
 
 	Message<Void> reset(String messageId, String messageHash);
 
+	Message<String> upload(String fileName, String imageBase64);
+
+	Message<Void> describe(String finalFileName);
+
 }

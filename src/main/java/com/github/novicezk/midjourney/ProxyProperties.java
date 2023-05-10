@@ -56,6 +56,10 @@ public class ProxyProperties {
          * Midjourney机器人的名称.
          */
         private String mjBotName = "Midjourney Bot";
+        /**
+         * 调用discord接口时的user-agent.
+         */
+        private String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
     }
 
     @Data
