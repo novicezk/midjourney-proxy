@@ -11,6 +11,7 @@ import com.github.novicezk.midjourney.util.MessageData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
@@ -18,6 +19,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -38,6 +40,19 @@ public class DiscordMessageListener extends ListenerAdapter {
 	public void onMessageUpdate(MessageUpdateEvent event) {
 		Message message = event.getMessage();
 		if (ignoreMessage(event.getMessage())) {
+			return;
+		}
+		if (message.getInteraction() != null && "describe".equals(message.getInteraction().getName())) {
+			// describe
+			List<MessageEmbed> embeds = message.getEmbeds();
+			if (embeds.isEmpty()) {
+				return;
+			}
+			String description = embeds.get(0).getDescription();
+			String imageUrl = embeds.get(0).getImage().getUrl();
+			System.out.println(description);
+			// todo imageUrl 跟 task 关联
+			System.out.println(imageUrl);
 			return;
 		}
 		String content = message.getContentRaw();

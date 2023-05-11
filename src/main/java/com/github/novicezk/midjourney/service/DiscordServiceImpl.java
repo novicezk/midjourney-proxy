@@ -12,15 +12,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -128,7 +125,7 @@ public class DiscordServiceImpl implements DiscordService {
 			}
 			String uploadUrl = array.getJSONObject(0).getString("upload_url");
 			String uploadFilename = array.getJSONObject(0).getString("upload_filename");
-			putFile(uploadUrl, fileName, dataUrl);
+			putFile(uploadUrl, dataUrl);
 			return Message.success(uploadFilename);
 		} catch (MalformedURLException e) {
 			return Message.of(Message.VALIDATION_ERROR_CODE, "base64格式错误");
@@ -148,23 +145,12 @@ public class DiscordServiceImpl implements DiscordService {
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
-	private void putFile(String uploadUrl, String fileName, DataUrl dataUrl) {
+	private void putFile(String uploadUrl, DataUrl dataUrl) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("User-Agent", this.userAgent);
-		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-		ByteArrayResource fileAsResource = new ByteArrayResource(dataUrl.getData()) {
-			@Override
-			public String getFilename() {
-				return fileName;
-			}
-
-			@Override
-			public long contentLength() {
-				return dataUrl.getData().length;
-			}
-		};
-		params.add("file", fileAsResource);
-		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(params, headers);
+		headers.setContentType(MediaType.valueOf(dataUrl.getMimeType()));
+		headers.setContentLength(dataUrl.getData().length);
+		HttpEntity<byte[]> requestEntity = new HttpEntity<>(dataUrl.getData(), headers);
 		new RestTemplate().put(uploadUrl, requestEntity);
 	}
 
