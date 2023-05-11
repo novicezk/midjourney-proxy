@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.service;
 
 
 import com.github.novicezk.midjourney.result.Message;
+import eu.maxschuster.dataurl.DataUrl;
 
 public interface DiscordService {
 
@@ -13,7 +14,7 @@ public interface DiscordService {
 
 	Message<Void> reset(String messageId, String messageHash);
 
-	Message<String> upload(String fileName, String imageBase64);
+	Message<String> upload(String fileName, DataUrl dataUrl);
 
 	Message<Void> describe(String finalFileName);
 

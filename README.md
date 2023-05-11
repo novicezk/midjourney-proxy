@@ -3,12 +3,12 @@
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
 ## 现有功能
-- 支持 Imagine、U、V 操作，绘图完成后回调
-- 支持中文 prompt 翻译，需配置百度翻译或 gpt
+- [x] 支持 Imagine、U、V 指令，绘图完成后回调
+- [x] 支持 Describe 指令，根据图片生成 prompt
+- [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
 
 ## 后续计划
 - [ ] prompt 敏感词判断
-- [ ] 支持 describe 指令，根据图片生成 prompt
 - [ ] Imagine 支持垫图
 - [ ] 添加任务队列，防止提交过多，MidJourney触发限制
 
@@ -22,7 +22,7 @@
 
 1. 下载镜像
 ```shell
-docker pull novicezk/midjourney-proxy:1.3
+docker pull novicezk/midjourney-proxy:1.4
 ```
 2. 启动容器，并设置参数
 ```shell
@@ -31,7 +31,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /home/xxx/data/application.yml:/home/spring/config/application.yml \
  --restart=always \
- novicezk/midjourney-proxy:1.3
+ novicezk/midjourney-proxy:1.4
 
 # 或者直接在启动命令中设置参数
 docker run -d --name midjourney-proxy \
@@ -41,7 +41,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:1.3
+ novicezk/midjourney-proxy:1.4
 ```
 3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
 4. 检查discord频道中新创建的机器人是否在线
@@ -122,7 +122,37 @@ POST  application/json
 ```
 返回结果同 `/trigger/submit`
 
-### 3. `http://ip:port/mj/task/{id}/fetch` GET 查询单个任务
+### 3. `http://ip:port/mj/trigger/describe` 提交describe任务
+POST  application/json
+```json
+{
+    // 自定义参数，非必传
+    "state": "test:22",
+    // 图片的base64字符串
+    "base64": "data:image/png;base64,xxx",
+    // 支持每个任务配置不同回调地址，非必传
+    "notifyHook": "http://localhost:8113/notify"
+}
+```
+返回结果同 `/trigger/submit`
+
+后续任务完成后，task中prompt即为图片生成的prompt
+```json
+{
+  "action":"DESCRIBE",
+  "id":"3856553004865376",
+  "prompt":"1️⃣ xxx1 --ar 5:4\n\n2️⃣ xxx2 --ar 5:4\n\n3️⃣ xxx3 --ar 5:4\n\n4️⃣ xxx4 --ar 5:4",
+  "promptEn":"1️⃣ xxx1 --ar 5:4\n\n2️⃣ xxx2 --ar 5:4\n\n3️⃣ xxx3 --ar 5:4\n\n4️⃣ xxx4 --ar 5:4",
+  "description":"/describe 3856553004865376.png",
+  "state":"test:22",
+  "submitTime":1683779732983,
+  "finishTime":1683779741711,
+  "imageUrl":"https://cdn.discordapp.com/ephemeral-attachments/xxxx/xxxx/3856553004865376.png",
+  "status":"SUCCESS"
+}
+```
+
+### 4. `http://ip:port/mj/task/{id}/fetch` GET 查询单个任务
 ```json
 {
     // 动作: IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）
@@ -148,7 +178,7 @@ POST  application/json
 }
 ```
 
-### 4. `http://ip:port/mj/task/list` GET 查询所有任务
+### 5. `http://ip:port/mj/task/list` GET 查询所有任务
 
 ```json
 [
