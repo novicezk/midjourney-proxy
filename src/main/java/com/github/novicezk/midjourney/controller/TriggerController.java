@@ -3,6 +3,7 @@ package com.github.novicezk.midjourney.controller;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.dto.DescribeDTO;
 import com.github.novicezk.midjourney.dto.SubmitDTO;
 import com.github.novicezk.midjourney.dto.UVSubmitDTO;
 import com.github.novicezk.midjourney.enums.Action;
@@ -13,12 +14,18 @@ import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.util.ConvertUtils;
+import com.github.novicezk.midjourney.util.MimeTypeUtils;
 import com.github.novicezk.midjourney.util.UVData;
+import eu.maxschuster.dataurl.DataUrl;
+import eu.maxschuster.dataurl.DataUrlSerializer;
+import eu.maxschuster.dataurl.IDataUrlSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.MalformedURLException;
 
 @RestController
 @RequestMapping("/trigger")
@@ -84,8 +91,7 @@ public class TriggerController {
 				this.taskService.putTask(key, task);
 				result = this.discordService.variation(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
 			} else {
-				// todo 暂不支持 reset, 接收mj消息时, 无法找到对应task
-				return Message.of(Message.VALIDATION_ERROR_CODE, "暂不支持 reset 操作");
+				return Message.of(Message.VALIDATION_ERROR_CODE, "不支持的操作");
 			}
 		}
 		if (result.getCode() != Message.SUCCESS_CODE) {
@@ -108,5 +114,39 @@ public class TriggerController {
 		submitDTO.setState(uvSubmitDTO.getState());
 		submitDTO.setNotifyHook(uvSubmitDTO.getNotifyHook());
 		return submit(submitDTO);
+	}
+
+	@PostMapping("/describe")
+	public Message<String> describe(@RequestBody DescribeDTO describeDTO) {
+		if (CharSequenceUtil.isBlank(describeDTO.getBase64())) {
+			return Message.validationError();
+		}
+		IDataUrlSerializer serializer = new DataUrlSerializer();
+		DataUrl dataUrl;
+		try {
+			dataUrl = serializer.unserialize(describeDTO.getBase64());
+		} catch (MalformedURLException e) {
+			return Message.of(Message.VALIDATION_ERROR_CODE, "base64格式错误");
+		}
+		Task task = new Task();
+		task.setId(RandomUtil.randomNumbers(16));
+		task.setSubmitTime(System.currentTimeMillis());
+		String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
+		Message<String> uploadResult = this.discordService.upload(taskFileName, dataUrl);
+		if (uploadResult.getCode() != Message.SUCCESS_CODE) {
+			return uploadResult;
+		}
+		String finalFileName = uploadResult.getResult();
+		task.setState(describeDTO.getState());
+		task.setAction(Action.DESCRIBE);
+		task.setDescription("/describe " + taskFileName);
+		task.setKey(taskFileName);
+		task.setNotifyHook(CharSequenceUtil.isBlank(describeDTO.getNotifyHook()) ? this.properties.getNotifyHook() : describeDTO.getNotifyHook());
+		this.taskService.putTask(task.getId(), task);
+		Message<Void> message = this.discordService.describe(finalFileName);
+		if (message.getCode() != Message.SUCCESS_CODE) {
+			return Message.of(message.getCode(), message.getDescription());
+		}
+		return Message.success(task.getId());
 	}
 }
