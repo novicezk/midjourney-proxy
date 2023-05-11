@@ -22,17 +22,20 @@ public class DiscordMessageListener extends ListenerAdapter {
 	private final UVMessageHandler uvMessageHandler;
 	private final DescribeMessageHandler describeMessageHandler;
 
-	private boolean ignoreMessage(Message message) {
-		String authorName = message.getAuthor().getName();
+	private boolean ignoreAndLogMessage(Message message, String eventName) {
 		String channelId = message.getChannel().getId();
-		return !this.properties.getDiscord().getMjBotName().equals(authorName) || !this.properties.getDiscord().getChannelId().equals(channelId);
+		if (!this.properties.getDiscord().getChannelId().equals(channelId)) {
+			return true;
+		}
+		String authorName = message.getAuthor().getName();
+		log.debug("{} - {}: {}", eventName, authorName, message.getContentRaw());
+		return !this.properties.getDiscord().getMjBotName().equals(authorName);
 	}
 
 	@Override
 	public void onMessageUpdate(MessageUpdateEvent event) {
 		Message message = event.getMessage();
-		log.debug("消息变更: {}", message.getContentRaw());
-		if (ignoreMessage(event.getMessage())) {
+		if (ignoreAndLogMessage(message, "消息变更")) {
 			return;
 		}
 		if (message.getInteraction() != null && "describe".equals(message.getInteraction().getName())) {
@@ -45,8 +48,7 @@ public class DiscordMessageListener extends ListenerAdapter {
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		Message message = event.getMessage();
-		log.debug("消息接收: {}", message.getContentRaw());
-		if (ignoreMessage(event.getMessage())) {
+		if (ignoreAndLogMessage(message, "消息接收")) {
 			return;
 		}
 		if (MessageType.SLASH_COMMAND.equals(message.getType()) || MessageType.DEFAULT.equals(message.getType())) {
