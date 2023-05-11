@@ -9,10 +9,6 @@ public class DescribeDTO {
 	 */
 	private String state;
 	/**
-	 * 文件名称.
-	 */
-	private String fileName;
-	/**
 	 * 文件base64: data:image/png;base64,xxx.
 	 */
 	private String base64;

@@ -3,11 +3,10 @@ package com.github.novicezk.midjourney.service;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.result.Message;
 import eu.maxschuster.dataurl.DataUrl;
-import eu.maxschuster.dataurl.DataUrlSerializer;
-import eu.maxschuster.dataurl.IDataUrlSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -24,7 +23,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 @Slf4j
 @Service
@@ -104,10 +102,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<String> upload(String fileName, String imageBase64) {
-		IDataUrlSerializer serializer = new DataUrlSerializer();
+	public Message<String> upload(String fileName, DataUrl dataUrl) {
 		try {
-			DataUrl dataUrl = serializer.unserialize(imageBase64);
 			JSONObject fileObj = new JSONObject();
 			fileObj.put("filename", fileName);
 			fileObj.put("file_size", dataUrl.getData().length);
@@ -126,9 +122,7 @@ public class DiscordServiceImpl implements DiscordService {
 			String uploadUrl = array.getJSONObject(0).getString("upload_url");
 			String uploadFilename = array.getJSONObject(0).getString("upload_filename");
 			putFile(uploadUrl, dataUrl);
-			return Message.success(uploadFilename);
-		} catch (MalformedURLException e) {
-			return Message.of(Message.VALIDATION_ERROR_CODE, "base64格式错误");
+			return Message.of(Message.SUCCESS_CODE, MD5.create().digestHex(dataUrl.getData()), uploadFilename);
 		} catch (Exception e) {
 			log.error("上传图片到discord失败", e);
 			return Message.of(Message.FAILURE_CODE, "上传图片到discord失败");

@@ -14,12 +14,18 @@ import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.util.ConvertUtils;
+import com.github.novicezk.midjourney.util.MimeTypeUtils;
 import com.github.novicezk.midjourney.util.UVData;
+import eu.maxschuster.dataurl.DataUrl;
+import eu.maxschuster.dataurl.DataUrlSerializer;
+import eu.maxschuster.dataurl.IDataUrlSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.MalformedURLException;
 
 @RestController
 @RequestMapping("/trigger")
@@ -112,20 +118,29 @@ public class TriggerController {
 
 	@PostMapping("/describe")
 	public Message<String> describe(@RequestBody DescribeDTO describeDTO) {
-		if (!CharSequenceUtil.isAllNotBlank(describeDTO.getFileName(), describeDTO.getBase64())) {
+		if (CharSequenceUtil.isBlank(describeDTO.getBase64())) {
 			return Message.validationError();
 		}
-		Message<String> uploadResult = this.discordService.upload(describeDTO.getFileName(), describeDTO.getBase64());
+		IDataUrlSerializer serializer = new DataUrlSerializer();
+		DataUrl dataUrl;
+		try {
+			dataUrl = serializer.unserialize(describeDTO.getBase64());
+		} catch (MalformedURLException e) {
+			return Message.of(Message.VALIDATION_ERROR_CODE, "base64格式错误");
+		}
+		Task task = new Task();
+		task.setId(RandomUtil.randomNumbers(16));
+		task.setSubmitTime(System.currentTimeMillis());
+		String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
+		Message<String> uploadResult = this.discordService.upload(taskFileName, dataUrl);
 		if (uploadResult.getCode() != Message.SUCCESS_CODE) {
 			return uploadResult;
 		}
 		String finalFileName = uploadResult.getResult();
-		Task task = new Task();
-		task.setId(RandomUtil.randomNumbers(16));
-		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(describeDTO.getState());
 		task.setAction(Action.DESCRIBE);
-		task.setKey(finalFileName);
+		task.setDescription("/describe " + taskFileName);
+		task.setKey(taskFileName);
 		task.setNotifyHook(CharSequenceUtil.isBlank(describeDTO.getNotifyHook()) ? this.properties.getNotifyHook() : describeDTO.getNotifyHook());
 		this.taskService.putTask(task.getId(), task);
 		Message<Void> message = this.discordService.describe(finalFileName);
