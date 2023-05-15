@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.service;
 
 
-import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.crypto.digest.MD5;
 import com.github.novicezk.midjourney.ProxyProperties;
@@ -17,12 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 
 @Slf4j
 @Service
@@ -51,15 +49,11 @@ public class DiscordServiceImpl implements DiscordService {
 		this.discordChannelId = this.properties.getDiscord().getChannelId();
 		this.discordUploadUrl = "https://discord.com/api/v9/channels/" + this.discordChannelId + "/attachments";
 		this.userAgent = this.properties.getDiscord().getUserAgent();
-		try {
-			this.imagineParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/imagine.json").openStream());
-			this.upscaleParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/upscale.json").openStream());
-			this.variationParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/variation.json").openStream());
-			this.resetParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/reset.json").openStream());
-			this.describeParamsJson = IoUtil.readUtf8(ResourceUtils.getURL("classpath:api-params/describe.json").openStream());
-		} catch (IOException e) {
-			// can't happen
-		}
+		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
+		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
+		this.variationParamsJson = ResourceUtil.readUtf8Str("api-params/variation.json");
+		this.resetParamsJson = ResourceUtil.readUtf8Str("api-params/reset.json");
+		this.describeParamsJson = ResourceUtil.readUtf8Str("api-params/describe.json");
 	}
 
 	@Override
