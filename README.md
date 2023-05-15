@@ -6,10 +6,10 @@
 - [x] 支持 Imagine、U、V 指令，绘图完成后回调
 - [x] 支持 Describe 指令，根据图片生成 prompt
 - [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
+- [x] prompt 敏感词判断
 
 ## 后续计划
-- [ ] prompt 敏感词判断
-- [ ] Imagine 支持垫图
+- [ ] Imagine 支持上传图片最为垫图
 - [ ] 添加任务队列，防止提交过多，MidJourney触发限制
 
 ## 使用前提
@@ -22,7 +22,7 @@
 
 1. 下载镜像
 ```shell
-docker pull novicezk/midjourney-proxy:1.4
+docker pull novicezk/midjourney-proxy:1.5
 ```
 2. 启动容器，并设置参数
 ```shell
@@ -31,7 +31,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /home/xxx/data/application.yml:/home/spring/config/application.yml \
  --restart=always \
- novicezk/midjourney-proxy:1.4
+ novicezk/midjourney-proxy:1.5
 
 # 或者直接在启动命令中设置参数
 docker run -d --name midjourney-proxy \
@@ -41,7 +41,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:1.4
+ novicezk/midjourney-proxy:1.5
 ```
 3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
 4. 检查discord频道中新创建的机器人是否在线

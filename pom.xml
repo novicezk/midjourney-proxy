@@ -12,7 +12,7 @@
 
     <groupId>com.github.novicezk</groupId>
     <artifactId>midjourney-proxy</artifactId>
-    <version>1.4</version>
+    <version>1.5</version>
 
     <properties>
         <hutool.version>5.8.18</hutool.version>
