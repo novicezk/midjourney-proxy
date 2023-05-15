@@ -13,6 +13,7 @@ import com.github.novicezk.midjourney.service.DiscordService;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.util.BannedPromptUtils;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
 import com.github.novicezk.midjourney.util.UVData;
@@ -59,7 +60,16 @@ public class TriggerController {
 			}
 			task.setKey(task.getId());
 			task.setPrompt(prompt);
-			String promptEn = this.translateService.translateToEnglish(prompt).trim();
+			String promptEn;
+			int paramStart = prompt.indexOf(" --");
+			if (paramStart > 0) {
+				promptEn = this.translateService.translateToEnglish(prompt.substring(0, paramStart)).trim() + prompt.substring(paramStart);
+			} else {
+				promptEn = this.translateService.translateToEnglish(prompt).trim();
+			}
+			if (BannedPromptUtils.isBanned(promptEn)) {
+				return Message.of(Message.VALIDATION_ERROR_CODE, "可能包含敏感词");
+			}
 			task.setPromptEn(promptEn);
 			task.setFinalPrompt("[" + task.getId() + "] " + promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
