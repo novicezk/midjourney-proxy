@@ -26,7 +26,7 @@ public class MimeTypeUtils {
 		}
 	}
 
-	public String guessFileSuffix(String mimeType) {
+	public static String guessFileSuffix(String mimeType) {
 		if (CharSequenceUtil.isBlank(mimeType)) {
 			return null;
 		}
