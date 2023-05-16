@@ -9,7 +9,7 @@
 - [x] prompt 敏感词判断，支持覆盖调整
 
 ## 后续计划
-- [ ] 任务队列，限制3个并发，10个等待
+- [ ] 任务队列 [Issue](https://github.com/novicezk/midjourney-proxy/issues/45)
 - [ ] 支持mysql存储，优化任务的查询方式
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] Imagine 时支持上传图片，作为垫图
