@@ -3,7 +3,6 @@ package com.github.novicezk.midjourney.service;
 
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.result.Message;
 import eu.maxschuster.dataurl.DataUrl;
@@ -116,7 +115,7 @@ public class DiscordServiceImpl implements DiscordService {
 			String uploadUrl = array.getJSONObject(0).getString("upload_url");
 			String uploadFilename = array.getJSONObject(0).getString("upload_filename");
 			putFile(uploadUrl, dataUrl);
-			return Message.of(Message.SUCCESS_CODE, MD5.create().digestHex(dataUrl.getData()), uploadFilename);
+			return Message.success(uploadFilename);
 		} catch (Exception e) {
 			log.error("上传图片到discord失败", e);
 			return Message.of(Message.FAILURE_CODE, "上传图片到discord失败");

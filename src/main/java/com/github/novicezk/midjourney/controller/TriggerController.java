@@ -12,8 +12,8 @@ import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.service.DiscordService;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TranslateService;
+import com.github.novicezk.midjourney.support.BannedPromptHelper;
 import com.github.novicezk.midjourney.support.Task;
-import com.github.novicezk.midjourney.util.BannedPromptUtils;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
 import com.github.novicezk.midjourney.util.UVData;
@@ -36,6 +36,7 @@ public class TriggerController {
 	private final TranslateService translateService;
 	private final TaskService taskService;
 	private final ProxyProperties properties;
+	private final BannedPromptHelper bannedPromptHelper;
 
 	@PostMapping("/submit")
 	public Message<String> submit(@RequestBody SubmitDTO submitDTO) {
@@ -67,7 +68,7 @@ public class TriggerController {
 			} else {
 				promptEn = this.translateService.translateToEnglish(prompt).trim();
 			}
-			if (BannedPromptUtils.isBanned(promptEn)) {
+			if (this.bannedPromptHelper.isBanned(promptEn)) {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "可能包含敏感词");
 			}
 			task.setPromptEn(promptEn);
