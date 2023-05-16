@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class BannedPromptUtils {
@@ -26,8 +27,8 @@ public class BannedPromptUtils {
 	}
 
 	public static boolean isBanned(String promptEn) {
-		promptEn = promptEn.toLowerCase(Locale.ENGLISH);
-		return BANNED_WORDS.stream().anyMatch(promptEn::contains);
+		String finalPromptEn = promptEn.toLowerCase(Locale.ENGLISH);
+		return BANNED_WORDS.stream().anyMatch(bannedWord -> Pattern.compile("\\b" + bannedWord + "\\b").matcher(finalPromptEn).find());
 	}
 
 }
