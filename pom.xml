@@ -12,7 +12,7 @@
 
     <groupId>com.github.novicezk</groupId>
     <artifactId>midjourney-proxy</artifactId>
-    <version>1.5.1</version>
+    <version>1.5.2</version>
 
     <properties>
         <hutool.version>5.8.18</hutool.version>
@@ -23,6 +23,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <knife4j.verison>2.0.9</knife4j.verison>
     </properties>
 
     <dependencies>
@@ -87,6 +88,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>${knife4j.verison}</version>
         </dependency>
     </dependencies>
 
