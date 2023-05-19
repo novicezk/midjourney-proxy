@@ -30,7 +30,7 @@ public class UVMessageHandler implements MessageHandler {
 			return;
 		}
 		TaskCondition condition = new TaskCondition()
-				.setKey(message.getReferencedMessage().getId() + "-" + messageData.getAction())
+				.setKey(message.getReferencedMessage().getId() + "-" + messageData.getAction() + "-" + messageData.getIndex())
 				.setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.NOT_START));
 		Task task = this.taskService.listTask().stream()
 				.filter(condition)
