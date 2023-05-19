@@ -24,7 +24,7 @@
 
 1. 下载镜像
 ```shell
-docker pull novicezk/midjourney-proxy:1.5.2
+docker pull novicezk/midjourney-proxy
 ```
 2. 启动容器，并设置参数
 ```shell
@@ -34,7 +34,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:1.5.2
+ novicezk/midjourney-proxy
 
 # 或者直接在启动命令中设置参数
 docker run -d --name midjourney-proxy \
@@ -44,7 +44,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:1.5.2
+ novicezk/midjourney-proxy
 ```
 3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
 4. 检查discord频道中新创建的机器人是否在线
