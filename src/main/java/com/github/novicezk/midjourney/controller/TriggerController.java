@@ -89,7 +89,7 @@ public class TriggerController {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
 			}
 			if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误：" + targetTask.getState());
+				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误：" + targetTask.getStatus());
 			}
 			task.setPrompt(targetTask.getPrompt());
 			task.setPromptEn(targetTask.getPromptEn());
