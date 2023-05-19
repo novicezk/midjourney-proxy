@@ -89,13 +89,19 @@ public class TriggerController {
 				return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
 			}
 			if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
+				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误：" + targetTask.getState());
 			}
 			task.setPrompt(targetTask.getPrompt());
 			task.setPromptEn(targetTask.getPromptEn());
 			task.setFinalPrompt(targetTask.getFinalPrompt());
 			task.setRelatedTaskId(ConvertUtils.findTaskIdByFinalPrompt(targetTask.getFinalPrompt()));
-			String key = targetTask.getMessageId() + "-" + submitDTO.getAction();
+			String key = targetTask.getMessageId() + "-" + submitDTO.getAction() + "-" +submitDTO.getIndex();
+			if (submitDTO.getAction() == Action.UPSCALE && taskService.getTask(key) != null) {
+				var uTask  = taskService.getTask(key);
+				if (uTask != null) {
+					return Message.of(Message.SUCCESS_CODE, "UPSCALE任务已存在", uTask.getId());
+				}
+			}
 			task.setKey(key);
 			if (Action.UPSCALE.equals(submitDTO.getAction())) {
 				task.setDescription("/up " + submitDTO.getTaskId() + " U" + submitDTO.getIndex());

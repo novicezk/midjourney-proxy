@@ -42,6 +42,9 @@ public class UVMessageHandler implements MessageHandler {
 		task.setMessageId(message.getId());
 		finishTask(task, message);
 		this.taskService.putTask(task.getId(), task);
+		if (messageData.getAction() == Action.UPSCALE) {
+			this.taskService.putTask(task.getKey(), task);
+		}
 		this.notifyService.notifyTaskChange(task);
 	}
 
