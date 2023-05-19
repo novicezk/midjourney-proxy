@@ -20,6 +20,8 @@ import com.github.novicezk.midjourney.util.UVData;
 import eu.maxschuster.dataurl.DataUrl;
 import eu.maxschuster.dataurl.DataUrlSerializer;
 import eu.maxschuster.dataurl.IDataUrlSerializer;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.MalformedURLException;
 
+@Api(tags = "出图模块")
 @RestController
 @RequestMapping("/trigger")
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class TriggerController {
 	private final ProxyProperties properties;
 	private final BannedPromptHelper bannedPromptHelper;
 
+	@ApiOperation(value = "提交任务")
 	@PostMapping("/submit")
 	public Message<String> submit(@RequestBody SubmitDTO submitDTO) {
 		if (submitDTO.getAction() == null) {
@@ -112,6 +116,7 @@ public class TriggerController {
 		return Message.success(task.getId());
 	}
 
+	@ApiOperation(value = "提交选中放大或变换任务")
 	@PostMapping("/submit-uv")
 	public Message<String> submitUV(@RequestBody UVSubmitDTO uvSubmitDTO) {
 		UVData uvData = ConvertUtils.convertUVData(uvSubmitDTO.getContent());
@@ -127,6 +132,7 @@ public class TriggerController {
 		return submit(submitDTO);
 	}
 
+	@ApiOperation(value = "提交describe任务")
 	@PostMapping("/describe")
 	public Message<String> describe(@RequestBody DescribeDTO describeDTO) {
 		if (CharSequenceUtil.isBlank(describeDTO.getBase64())) {
