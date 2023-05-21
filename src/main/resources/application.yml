@@ -17,9 +17,9 @@ mj:
     timeout: 30d
   translate-way: null
   queue:
-    concurrent: 3
-    size: 10
     timeout-minutes: 2
+    core-size: 3
+    queue-size: 10
 spring:
   mvc:
     pathmatch:
