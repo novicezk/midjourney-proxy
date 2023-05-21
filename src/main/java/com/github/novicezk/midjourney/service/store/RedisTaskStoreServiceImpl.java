@@ -1,6 +1,6 @@
-package com.github.novicezk.midjourney.service.task;
+package com.github.novicezk.midjourney.service.store;
 
-import com.github.novicezk.midjourney.service.TaskService;
+import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.support.Task;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -11,24 +11,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class RedisTaskServiceImpl implements TaskService {
+public class RedisTaskStoreServiceImpl implements TaskStoreService {
 	private static final String KEY_PREFIX = "mj-task::";
 
 	private final Duration timeout;
 	private final RedisTemplate<String, Task> redisTemplate;
 
-	public RedisTaskServiceImpl(Duration timeout, RedisTemplate<String, Task> redisTemplate) {
+	public RedisTaskStoreServiceImpl(Duration timeout, RedisTemplate<String, Task> redisTemplate) {
 		this.timeout = timeout;
 		this.redisTemplate = redisTemplate;
 	}
 
 	@Override
-	public void putTask(String id, Task task) {
-		this.redisTemplate.opsForValue().set(getRedisKey(id), task, timeout);
+	public void saveTask(Task task) {
+		this.redisTemplate.opsForValue().set(getRedisKey(task.getId()), task, this.timeout);
 	}
 
 	@Override
-	public void removeTask(String id) {
+	public void deleteTask(String id) {
 		this.redisTemplate.delete(getRedisKey(id));
 	}
 

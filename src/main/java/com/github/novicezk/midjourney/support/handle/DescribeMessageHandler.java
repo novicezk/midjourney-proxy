@@ -3,7 +3,6 @@ package com.github.novicezk.midjourney.support.handle;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.TaskStatus;
-import com.github.novicezk.midjourney.service.NotifyService;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.support.Task;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +15,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class DescribeMessageHandler implements MessageHandler {
-	private final TaskService taskService;
-	private final NotifyService notifyService;
+	private final TaskService taskQueueService;
 
 	@Override
 	public void onMessageReceived(Message message) {
@@ -33,7 +31,7 @@ public class DescribeMessageHandler implements MessageHandler {
 		String imageUrl = embeds.get(0).getImage().getUrl();
 		int hashStartIndex = imageUrl.lastIndexOf("/");
 		String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
-		Task task = this.taskService.getTask(taskId);
+		Task task = this.taskQueueService.getTask(taskId);
 		if (task == null) {
 			return;
 		}
@@ -43,9 +41,7 @@ public class DescribeMessageHandler implements MessageHandler {
 		task.setImageUrl(imageUrl);
 		task.setFinishTime(System.currentTimeMillis());
 		task.setStatus(TaskStatus.SUCCESS);
-		task.notifyStatusChange();
-		this.taskService.putTask(taskId, task);
-		this.notifyService.notifyTaskChange(task);
+		task.awake();
 	}
 
 }

@@ -1,10 +1,10 @@
 package spring.config;
 
 import com.github.novicezk.midjourney.ProxyProperties;
-import com.github.novicezk.midjourney.service.TaskService;
+import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
-import com.github.novicezk.midjourney.service.task.InMemoryTaskServiceImpl;
-import com.github.novicezk.midjourney.service.task.RedisTaskServiceImpl;
+import com.github.novicezk.midjourney.service.store.InMemoryTaskStoreServiceImpl;
+import com.github.novicezk.midjourney.service.store.RedisTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
 import com.github.novicezk.midjourney.support.Task;
@@ -29,12 +29,12 @@ public class BeanConfig {
 	}
 
 	@Bean
-	TaskService taskService(ProxyProperties proxyProperties, RedisConnectionFactory redisConnectionFactory) {
+	TaskStoreService taskStoreService(ProxyProperties proxyProperties, RedisConnectionFactory redisConnectionFactory) {
 		ProxyProperties.TaskStore.Type type = proxyProperties.getTaskStore().getType();
 		Duration timeout = proxyProperties.getTaskStore().getTimeout();
 		return switch (type) {
-			case IN_MEMORY -> new InMemoryTaskServiceImpl(timeout);
-			case REDIS -> new RedisTaskServiceImpl(timeout, taskRedisTemplate(redisConnectionFactory));
+			case IN_MEMORY -> new InMemoryTaskStoreServiceImpl(timeout);
+			case REDIS -> new RedisTaskStoreServiceImpl(timeout, taskRedisTemplate(redisConnectionFactory));
 		};
 	}
 
