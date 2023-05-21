@@ -7,9 +7,9 @@
 - [x] 支持 Describe 指令，根据图片生成 prompt
 - [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
 - [x] prompt 敏感词判断，支持覆盖调整
+- [x] 任务队列 [Issue](https://github.com/novicezk/midjourney-proxy/issues/45)
 
 ## 后续计划
-- [ ] 任务队列 [Issue](https://github.com/novicezk/midjourney-proxy/issues/45)
 - [ ] 支持mysql存储，优化任务的查询方式
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] Imagine 时支持上传图片，作为垫图
@@ -78,8 +78,12 @@ docker run -d --name midjourney-proxy \
 | mj.openai.model | 否 | openai的模型，默认gpt-3.5-turbo |
 | mj.openai.max-tokens | 否 | 返回结果的最大分词数，默认2048 |
 | mj.openai.temperature | 否 | 相似度(0-2.0)，默认0 |
+| mj.proxy.host | 否 | 代理host |
+| mj.proxy.port | 否 | 代理port |
+| mj.thread.core | 否 | 并发数，默认为3 |
+| mj.thread.queue | 否 | 等待队列，默认为10 |
+| mj.thread.timeout | 否 | 任务超时时间，默认为2分钟 |
 | spring.redis | 否 | 任务存储方式设置为redis，需配置redis相关属性 |
-
 ## API接口说明
 
 ### 1. `http://ip:port/mj/trigger/submit` 提交任务

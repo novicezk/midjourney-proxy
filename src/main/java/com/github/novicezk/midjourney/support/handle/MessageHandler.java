@@ -23,6 +23,7 @@ public interface MessageHandler {
 		} else {
 			task.setStatus(TaskStatus.FAILURE);
 		}
+		task.notifyStatusChange();
 	}
 
 }

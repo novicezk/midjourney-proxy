@@ -43,6 +43,7 @@ public class DescribeMessageHandler implements MessageHandler {
 		task.setImageUrl(imageUrl);
 		task.setFinishTime(System.currentTimeMillis());
 		task.setStatus(TaskStatus.SUCCESS);
+		task.notifyStatusChange();
 		this.taskService.putTask(taskId, task);
 		this.notifyService.notifyTaskChange(task);
 	}
