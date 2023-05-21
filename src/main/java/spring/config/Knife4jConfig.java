@@ -1,4 +1,4 @@
-package com.github.novicezk.midjourney.config;
+package spring.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 @Configuration
 @EnableSwagger2WebMvc
-public class Knife4jConfiguration {
+public class Knife4jConfig {
 
 	@Bean
 	public Docket defaultApi2() {

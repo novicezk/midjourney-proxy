@@ -2,7 +2,6 @@ package com.github.novicezk.midjourney.support.handle;
 
 
 import com.github.novicezk.midjourney.enums.TaskStatus;
-import com.github.novicezk.midjourney.service.NotifyService;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.util.ConvertUtils;
@@ -14,8 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ImagineMessageHandler implements MessageHandler {
-	private final TaskService taskService;
-	private final NotifyService notifyService;
+	private final TaskService taskQueueService;
 
 	@Override
 	public void onMessageReceived(Message message) {
@@ -24,7 +22,7 @@ public class ImagineMessageHandler implements MessageHandler {
 			return;
 		}
 		String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
-		Task task = this.taskService.getTask(taskId);
+		Task task = this.taskQueueService.getTask(taskId);
 		if (task == null) {
 			return;
 		}
@@ -34,8 +32,7 @@ public class ImagineMessageHandler implements MessageHandler {
 		} else {
 			finishTask(task, message);
 		}
-		this.taskService.putTask(taskId, task);
-		this.notifyService.notifyTaskChange(task);
+		task.awake();
 	}
 
 	@Override

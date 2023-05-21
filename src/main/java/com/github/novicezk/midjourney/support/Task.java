@@ -12,10 +12,6 @@ import java.io.Serializable;
 public class Task implements Serializable {
 	@Serial
 	private static final long serialVersionUID = -674915748204390789L;
-	// 每个任务增加锁用于通知机制
-
-	@JsonIgnore
-	private transient final Object lock = new Object();
 
 	private Action action;
 	private String id;
@@ -25,9 +21,11 @@ public class Task implements Serializable {
 	private String description;
 	private String state;
 	private Long submitTime;
+	private Long startTime;
 	private Long finishTime;
 	private String imageUrl;
 	private TaskStatus status = TaskStatus.NOT_START;
+	private String failReason;
 
 	// Hidden -- start
 	@JsonIgnore
@@ -44,16 +42,19 @@ public class Task implements Serializable {
 	private String messageHash;
 	// Hidden -- end
 
-	public void waitForStatusChange() throws InterruptedException {
-		synchronized (lock) {
-			lock.wait();
+	@JsonIgnore
+	private final transient Object lock = new Object();
+
+	public void sleep() throws InterruptedException {
+		synchronized (this.lock) {
+			this.lock.wait();
 		}
 	}
 
-	public void notifyStatusChange() {
-		synchronized (lock) {
-			lock.notifyAll();
+	public void awake() {
+		synchronized (this.lock) {
+			this.lock.notifyAll();
 		}
 	}
+
 }
-

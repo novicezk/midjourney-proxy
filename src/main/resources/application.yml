@@ -16,7 +16,10 @@ mj:
     type: in_memory
     timeout: 30d
   translate-way: null
-
+  queue:
+    concurrent: 3
+    size: 10
+    timeout-minutes: 2
 spring:
   mvc:
     pathmatch:
