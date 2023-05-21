@@ -31,7 +31,7 @@ public class UVMessageHandler implements MessageHandler {
 		}
 		TaskCondition condition = new TaskCondition()
 				.setKey(message.getReferencedMessage().getId() + "-" + messageData.getAction())
-				.setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.NOT_START));
+				.setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.SUBMITTED));
 		Task task = this.taskService.listTask().stream()
 				.filter(condition)
 				.max(Comparator.comparing(Task::getSubmitTime))
@@ -62,7 +62,7 @@ public class UVMessageHandler implements MessageHandler {
 		TaskCondition condition = new TaskCondition()
 				.setActionSet(Set.of(Action.UPSCALE, Action.VARIATION))
 				.setRelatedTaskId(relatedTaskId)
-				.setStatusSet(Set.of(TaskStatus.NOT_START));
+				.setStatusSet(Set.of(TaskStatus.SUBMITTED));
 		Task task = this.taskService.listTask().stream()
 				.filter(condition)
 				.max(Comparator.comparing(Task::getSubmitTime))
@@ -71,7 +71,7 @@ public class UVMessageHandler implements MessageHandler {
 			return;
 		}
 		task.setStatus(TaskStatus.IN_PROGRESS);
-		this.taskService.putTask(task.getKey(), task);
+		this.taskService.putTask(task.getId(), task);
 		this.notifyService.notifyTaskChange(task);
 	}
 

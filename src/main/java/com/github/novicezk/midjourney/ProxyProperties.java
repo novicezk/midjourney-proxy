@@ -18,6 +18,14 @@ public class ProxyProperties {
      */
     private final DiscordConfig discord = new DiscordConfig();
     /**
+     * 代理配置.
+     */
+    private final ProxyConfig proxy = new ProxyConfig();
+    /**
+     * 队列配置.
+     */
+    private final ThreadPoolConfig thread = new ThreadPoolConfig();
+    /**
      * 百度翻译配置.
      */
     private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
@@ -120,5 +128,33 @@ public class ProxyProperties {
              */
             IN_MEMORY
         }
+    }
+
+    @Data
+    public static class ProxyConfig {
+        /**
+         * host
+         */
+        private String host;
+        /**
+         * port
+         */
+        private String port;
+    }
+
+    @Data
+    public static class ThreadPoolConfig {
+        /**
+         * 并发数
+         */
+        private Integer core = 3;
+        /**
+         * 等待队列
+         */
+        private Integer queue = 10;
+        /**
+         * 任务执行超时时间
+         */
+        private Integer timeout = 2;
     }
 }
