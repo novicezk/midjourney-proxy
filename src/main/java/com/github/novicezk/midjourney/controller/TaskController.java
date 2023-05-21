@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Api(tags = "任务模块")
+@Api(tags = "任务查询")
 @RestController
 @RequestMapping("/task")
 @RequiredArgsConstructor

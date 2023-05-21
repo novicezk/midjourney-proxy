@@ -20,16 +20,20 @@
         <jda.version>5.0.0-beta.9</jda.version>
         <openai-gpt3-java.version>0.12.0</openai-gpt3-java.version>
         <dataurl.version>2.0.0</dataurl.version>
+        <knife4j.verison>2.0.9</knife4j.verison>
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <knife4j.verison>2.0.9</knife4j.verison>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
         <dependency>
@@ -73,10 +77,10 @@
             <artifactId>dataurl</artifactId>
             <version>${dataurl.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>${knife4j.verison}</version>
         </dependency>
 
         <dependency>
@@ -88,11 +92,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-spring-boot-starter</artifactId>
-            <version>${knife4j.verison}</version>
         </dependency>
     </dependencies>
 

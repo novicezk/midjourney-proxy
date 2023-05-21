@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.MalformedURLException;
 
-@Api(tags = "出图模块")
+@Api(tags = "任务提交")
 @RestController
 @RequestMapping("/trigger")
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class TriggerController {
 	private final ProxyProperties properties;
 	private final BannedPromptHelper bannedPromptHelper;
 
-	@ApiOperation(value = "提交任务")
+	@ApiOperation(value = "提交Imagine或UV任务")
 	@PostMapping("/submit")
 	public Message<String> submit(@RequestBody SubmitDTO submitDTO) {
 		if (submitDTO.getAction() == null) {
@@ -138,7 +138,7 @@ public class TriggerController {
 		return submit(submitDTO);
 	}
 
-	@ApiOperation(value = "提交describe任务")
+	@ApiOperation(value = "提交Describe图生文任务")
 	@PostMapping("/describe")
 	public Message<String> describe(@RequestBody DescribeDTO describeDTO) {
 		if (CharSequenceUtil.isBlank(describeDTO.getBase64())) {
