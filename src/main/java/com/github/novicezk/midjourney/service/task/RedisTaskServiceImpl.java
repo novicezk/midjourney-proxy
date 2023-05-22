@@ -2,14 +2,13 @@ package com.github.novicezk.midjourney.service.task;
 
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.support.Task;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.*;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class RedisTaskServiceImpl implements TaskService {
 	private static final String KEY_PREFIX = "mj-task::";
@@ -39,7 +38,23 @@ public class RedisTaskServiceImpl implements TaskService {
 
 	@Override
 	public List<Task> listTask() {
-		Set<String> keys = this.redisTemplate.keys(getRedisKey("*"));
+//		Set<String> keys = this.redisTemplate.keys(getRedisKey("*"));
+		//使用scan替换keys
+		Set<String> keys = redisTemplate.execute(new RedisCallback<Set<String>>() {
+
+			@Override
+			public Set<String> doInRedis(RedisConnection connection) throws DataAccessException {
+
+				Set<String> binaryKeys = new HashSet<>();
+
+				Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match(KEY_PREFIX + "*").count(1000).build());
+				while (cursor.hasNext()) {
+					byte[] next = cursor.next();
+					binaryKeys.add(new String(next, StandardCharsets.UTF_8));
+				}
+				return binaryKeys;
+			}
+		});
 		if (keys == null || keys.isEmpty()) {
 			return Collections.emptyList();
 		}

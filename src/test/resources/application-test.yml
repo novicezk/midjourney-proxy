@@ -1,0 +1,10 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password: foobar
+
+mj:
+  task-store:
+    type: REDIS
+    timeout: 30d
