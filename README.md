@@ -70,6 +70,11 @@ docker run -d --name midjourney-proxy \
 | mj.notify-hook | 否 | 任务状态变更回调地址 |
 | mj.task-store.type | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
 | mj.task-store.timeout | 否 | 任务过期时间，过期后删除，默认30天 |
+| mj.proxy.host | 否 | 代理host |
+| mj.proxy.port | 否 | 代理port |
+| mj.queue.core-size | 否 | 并发数，默认为3 |
+| mj.queue.queue-size | 否 | 等待队列，默认长度10 |
+| mj.queue.timeout-minutes | 否 | 任务超时时间，默认为2分钟 |
 | mj.translate-way | 否 | 中文prompt翻译方式，可选null(默认)、baidu、gpt |
 | mj.baidu-translate.appid | 否 | 百度翻译的appid |
 | mj.baidu-translate.app-secret | 否 | 百度翻译的app-secret |
@@ -78,11 +83,6 @@ docker run -d --name midjourney-proxy \
 | mj.openai.model | 否 | openai的模型，默认gpt-3.5-turbo |
 | mj.openai.max-tokens | 否 | 返回结果的最大分词数，默认2048 |
 | mj.openai.temperature | 否 | 相似度(0-2.0)，默认0 |
-| mj.proxy.host | 否 | 代理host |
-| mj.proxy.port | 否 | 代理port |
-| mj.thread.core | 否 | 并发数，默认为3 |
-| mj.thread.queue | 否 | 等待队列，默认为10 |
-| mj.thread.timeout | 否 | 任务超时时间，默认为2分钟 |
 | spring.redis | 否 | 任务存储方式设置为redis，需配置redis相关属性 |
 ## API接口说明
 
