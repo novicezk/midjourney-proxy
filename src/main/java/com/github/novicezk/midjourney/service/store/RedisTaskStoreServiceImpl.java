@@ -2,7 +2,10 @@ package com.github.novicezk.midjourney.service.store;
 
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.support.Task;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.time.Duration;
@@ -10,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RedisTaskStoreServiceImpl implements TaskStoreService {
 	private static final String KEY_PREFIX = "mj-task::";
@@ -39,7 +43,10 @@ public class RedisTaskStoreServiceImpl implements TaskStoreService {
 
 	@Override
 	public List<Task> listTask() {
-		Set<String> keys = this.redisTemplate.keys(getRedisKey("*"));
+		Set<String> keys = redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+			Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match(KEY_PREFIX + "*").count(1000).build());
+			return cursor.stream().map(String::new).collect(Collectors.toSet());
+		});
 		if (keys == null || keys.isEmpty()) {
 			return Collections.emptyList();
 		}
