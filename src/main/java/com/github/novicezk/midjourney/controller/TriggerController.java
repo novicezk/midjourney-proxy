@@ -9,8 +9,8 @@ import com.github.novicezk.midjourney.dto.UVSubmitDTO;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.result.Message;
-import com.github.novicezk.midjourney.service.DiscordService;
 import com.github.novicezk.midjourney.service.TaskService;
+import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.BannedPromptHelper;
 import com.github.novicezk.midjourney.support.Task;
@@ -35,11 +35,11 @@ import java.net.MalformedURLException;
 @RequestMapping("/trigger")
 @RequiredArgsConstructor
 public class TriggerController {
-	private final DiscordService discordService;
 	private final TranslateService translateService;
-	private final TaskService taskService;
+	private final TaskStoreService taskStoreService;
 	private final ProxyProperties properties;
 	private final BannedPromptHelper bannedPromptHelper;
+	private final TaskService taskService;
 
 	@ApiOperation(value = "提交Imagine或UV任务")
 	@PostMapping("/submit")
@@ -57,7 +57,6 @@ public class TriggerController {
 		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(submitDTO.getState());
 		task.setAction(submitDTO.getAction());
-		Message<Void> result;
 		if (Action.IMAGINE.equals(submitDTO.getAction())) {
 			String prompt = submitDTO.getPrompt();
 			if (CharSequenceUtil.isBlank(prompt)) {
@@ -78,42 +77,32 @@ public class TriggerController {
 			task.setPromptEn(promptEn);
 			task.setFinalPrompt("[" + task.getId() + "] " + promptEn);
 			task.setDescription("/imagine " + submitDTO.getPrompt());
-			this.taskService.putTask(task.getId(), task);
-			result = this.discordService.imagine(task.getFinalPrompt());
+			return this.taskService.submitImagine(task);
+		}
+		if (CharSequenceUtil.isBlank(submitDTO.getTaskId())) {
+			return Message.validationError();
+		}
+		Task targetTask = this.taskStoreService.getTask(submitDTO.getTaskId());
+		if (targetTask == null) {
+			return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
+		}
+		if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
+			return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
+		}
+		task.setPrompt(targetTask.getPrompt());
+		task.setPromptEn(targetTask.getPromptEn());
+		task.setFinalPrompt(targetTask.getFinalPrompt());
+		task.setRelatedTaskId(ConvertUtils.findTaskIdByFinalPrompt(targetTask.getFinalPrompt()));
+		task.setKey(targetTask.getMessageId() + "-" + submitDTO.getAction());
+		if (Action.UPSCALE.equals(submitDTO.getAction())) {
+			task.setDescription("/up " + submitDTO.getTaskId() + " U" + submitDTO.getIndex());
+			return this.taskService.submitUpscale(task, targetTask.getMessageId(), targetTask.getMessageHash(), submitDTO.getIndex());
+		} else if (Action.VARIATION.equals(submitDTO.getAction())) {
+			task.setDescription("/up " + submitDTO.getTaskId() + " V" + submitDTO.getIndex());
+			return this.taskService.submitVariation(task, targetTask.getMessageId(), targetTask.getMessageHash(), submitDTO.getIndex());
 		} else {
-			if (CharSequenceUtil.isBlank(submitDTO.getTaskId())) {
-				return Message.validationError();
-			}
-			Task targetTask = this.taskService.getTask(submitDTO.getTaskId());
-			if (targetTask == null) {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "任务不存在或已失效");
-			}
-			if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "关联任务状态错误");
-			}
-			task.setPrompt(targetTask.getPrompt());
-			task.setPromptEn(targetTask.getPromptEn());
-			task.setFinalPrompt(targetTask.getFinalPrompt());
-			task.setRelatedTaskId(ConvertUtils.findTaskIdByFinalPrompt(targetTask.getFinalPrompt()));
-			String key = targetTask.getMessageId() + "-" + submitDTO.getAction();
-			task.setKey(key);
-			if (Action.UPSCALE.equals(submitDTO.getAction())) {
-				task.setDescription("/up " + submitDTO.getTaskId() + " U" + submitDTO.getIndex());
-				this.taskService.putTask(key, task);
-				result = this.discordService.upscale(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
-			} else if (Action.VARIATION.equals(submitDTO.getAction())) {
-				task.setDescription("/up " + submitDTO.getTaskId() + " V" + submitDTO.getIndex());
-				this.taskService.putTask(key, task);
-				result = this.discordService.variation(targetTask.getMessageId(), submitDTO.getIndex(), targetTask.getMessageHash());
-			} else {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "不支持的操作");
-			}
+			return Message.of(Message.VALIDATION_ERROR_CODE, "不支持的操作");
 		}
-		if (result.getCode() != Message.SUCCESS_CODE) {
-			this.taskService.removeTask(task.getId());
-			return Message.of(result.getCode(), result.getDescription());
-		}
-		return Message.success(task.getId());
 	}
 
 	@ApiOperation(value = "提交选中放大或变换任务")
@@ -146,24 +135,15 @@ public class TriggerController {
 			return Message.of(Message.VALIDATION_ERROR_CODE, "base64格式错误");
 		}
 		Task task = new Task();
-		task.setId(RandomUtil.randomNumbers(16));
 		task.setSubmitTime(System.currentTimeMillis());
+		task.setId(RandomUtil.randomNumbers(16));
 		String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
-		Message<String> uploadResult = this.discordService.upload(taskFileName, dataUrl);
-		if (uploadResult.getCode() != Message.SUCCESS_CODE) {
-			return uploadResult;
-		}
-		String finalFileName = uploadResult.getResult();
 		task.setState(describeDTO.getState());
 		task.setAction(Action.DESCRIBE);
 		task.setDescription("/describe " + taskFileName);
 		task.setKey(taskFileName);
 		task.setNotifyHook(CharSequenceUtil.isBlank(describeDTO.getNotifyHook()) ? this.properties.getNotifyHook() : describeDTO.getNotifyHook());
-		this.taskService.putTask(task.getId(), task);
-		Message<Void> message = this.discordService.describe(finalFileName);
-		if (message.getCode() != Message.SUCCESS_CODE) {
-			return Message.of(message.getCode(), message.getDescription());
-		}
-		return Message.success(task.getId());
+		return this.taskService.submitDescribe(task, dataUrl);
 	}
+
 }

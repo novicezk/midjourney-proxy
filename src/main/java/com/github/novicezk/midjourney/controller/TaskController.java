@@ -1,6 +1,6 @@
 package com.github.novicezk.midjourney.controller;
 
-import com.github.novicezk.midjourney.service.TaskService;
+import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.support.Task;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -18,18 +18,18 @@ import java.util.List;
 @RequestMapping("/task")
 @RequiredArgsConstructor
 public class TaskController {
-	private final TaskService taskService;
+	private final TaskStoreService taskStoreService;
 
 	@ApiOperation(value = "列出所有任务信息")
 	@GetMapping("/list")
 	public List<Task> listTask() {
-		return this.taskService.listTask();
+		return this.taskStoreService.listTask();
 	}
 
 	@ApiOperation(value = "列出指定id任务信息")
 	@GetMapping("/{id}/fetch")
 	public Task getTask(@ApiParam(value = "任务id") @PathVariable String id) {
-		return this.taskService.getTask(id);
+		return this.taskStoreService.getTask(id);
 	}
 
 }

@@ -21,9 +21,11 @@ public class Task implements Serializable {
 	private String description;
 	private String state;
 	private Long submitTime;
+	private Long startTime;
 	private Long finishTime;
 	private String imageUrl;
 	private TaskStatus status = TaskStatus.NOT_START;
+	private String failReason;
 
 	// Hidden -- start
 	@JsonIgnore
@@ -39,5 +41,20 @@ public class Task implements Serializable {
 	@JsonIgnore
 	private String messageHash;
 	// Hidden -- end
-}
 
+	@JsonIgnore
+	private final transient Object lock = new Object();
+
+	public void sleep() throws InterruptedException {
+		synchronized (this.lock) {
+			this.lock.wait();
+		}
+	}
+
+	public void awake() {
+		synchronized (this.lock) {
+			this.lock.notifyAll();
+		}
+	}
+
+}

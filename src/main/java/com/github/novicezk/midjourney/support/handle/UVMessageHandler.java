@@ -4,7 +4,6 @@ package com.github.novicezk.midjourney.support.handle;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.Action;
 import com.github.novicezk.midjourney.enums.TaskStatus;
-import com.github.novicezk.midjourney.service.NotifyService;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
@@ -20,8 +19,7 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 public class UVMessageHandler implements MessageHandler {
-	private final TaskService taskService;
-	private final NotifyService notifyService;
+	private final TaskService taskQueueService;
 
 	@Override
 	public void onMessageReceived(Message message) {
@@ -31,9 +29,8 @@ public class UVMessageHandler implements MessageHandler {
 		}
 		TaskCondition condition = new TaskCondition()
 				.setKey(message.getReferencedMessage().getId() + "-" + messageData.getAction())
-				.setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.NOT_START));
-		Task task = this.taskService.listTask().stream()
-				.filter(condition)
+				.setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.SUBMITTED));
+		Task task = this.taskQueueService.findTask(condition)
 				.max(Comparator.comparing(Task::getSubmitTime))
 				.orElse(null);
 		if (task == null) {
@@ -41,8 +38,7 @@ public class UVMessageHandler implements MessageHandler {
 		}
 		task.setMessageId(message.getId());
 		finishTask(task, message);
-		this.taskService.putTask(task.getId(), task);
-		this.notifyService.notifyTaskChange(task);
+		task.awake();
 	}
 
 	@Override
@@ -62,17 +58,15 @@ public class UVMessageHandler implements MessageHandler {
 		TaskCondition condition = new TaskCondition()
 				.setActionSet(Set.of(Action.UPSCALE, Action.VARIATION))
 				.setRelatedTaskId(relatedTaskId)
-				.setStatusSet(Set.of(TaskStatus.NOT_START));
-		Task task = this.taskService.listTask().stream()
-				.filter(condition)
+				.setStatusSet(Set.of(TaskStatus.SUBMITTED));
+		Task task = this.taskQueueService.findTask(condition)
 				.max(Comparator.comparing(Task::getSubmitTime))
 				.orElse(null);
 		if (task == null) {
 			return;
 		}
 		task.setStatus(TaskStatus.IN_PROGRESS);
-		this.taskService.putTask(task.getKey(), task);
-		this.notifyService.notifyTaskChange(task);
+		task.awake();
 	}
 
 }

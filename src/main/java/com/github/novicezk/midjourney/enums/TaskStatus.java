@@ -7,6 +7,10 @@ public enum TaskStatus {
 	 */
 	NOT_START,
 	/**
+	 * 已提交.
+	 */
+	SUBMITTED,
+	/**
 	 * 执行中.
 	 */
 	IN_PROGRESS,
