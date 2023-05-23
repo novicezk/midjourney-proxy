@@ -12,7 +12,7 @@
 
     <groupId>com.github.novicezk</groupId>
     <artifactId>midjourney-proxy</artifactId>
-    <version>1.6</version>
+    <version>1.6.1</version>
 
     <properties>
         <hutool.version>5.8.18</hutool.version>
@@ -20,7 +20,7 @@
         <jda.version>5.0.0-beta.9</jda.version>
         <openai-gpt3-java.version>0.12.0</openai-gpt3-java.version>
         <dataurl.version>2.0.0</dataurl.version>
-        <knife4j.verison>2.0.9</knife4j.verison>
+        <knife4j.verison>4.1.0</knife4j.verison>
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -77,11 +77,11 @@
             <artifactId>dataurl</artifactId>
             <version>${dataurl.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-spring-boot-starter</artifactId>
-            <version>${knife4j.verison}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.github.xiaoymin</groupId>
+			<artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
+			<version>${knife4j.verison}</version>
+		</dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

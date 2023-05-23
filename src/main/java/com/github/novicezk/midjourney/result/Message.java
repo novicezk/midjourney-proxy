@@ -1,10 +1,15 @@
 package com.github.novicezk.midjourney.result;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 
 @Getter
+@ApiModel("返回结果")
 public class Message<T> {
+	@ApiModelProperty("状态码: 1成功, 2提示, 其他错误")
 	private final int code;
+	@ApiModelProperty("描述")
 	private final String description;
 	private final T result;
 
