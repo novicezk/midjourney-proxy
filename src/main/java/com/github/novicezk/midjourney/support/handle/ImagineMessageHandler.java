@@ -22,6 +22,9 @@ public class ImagineMessageHandler implements MessageHandler {
 			return;
 		}
 		String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
+		if (taskId == null) {
+			return;
+		}
 		Task task = this.taskQueueService.getTask(taskId);
 		if (task == null) {
 			return;
