@@ -20,15 +20,15 @@ import java.util.List;
 public class TaskController {
 	private final TaskStoreService taskStoreService;
 
-	@ApiOperation(value = "列出所有任务信息")
+	@ApiOperation(value = "查询所有任务")
 	@GetMapping("/list")
 	public List<Task> listTask() {
 		return this.taskStoreService.listTask();
 	}
 
-	@ApiOperation(value = "列出指定id任务信息")
+	@ApiOperation(value = "指定ID获取任务")
 	@GetMapping("/{id}/fetch")
-	public Task getTask(@ApiParam(value = "任务id") @PathVariable String id) {
+	public Task getTask(@ApiParam(value = "任务ID") @PathVariable String id) {
 		return this.taskStoreService.getTask(id);
 	}
 
