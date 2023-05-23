@@ -24,17 +24,17 @@
 
 1. 下载镜像
 ```shell
-docker pull novicezk/midjourney-proxy:1.6
+docker pull novicezk/midjourney-proxy:1.6.1
 ```
 2. 启动容器，并设置参数
 ```shell
-# /xxx/xxx/config目录下创建 application.yml(配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)
+# /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)
 # 参考src/main/resources下的文件
 docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:1.6
+ novicezk/midjourney-proxy:1.6.1
 
 # 或者直接在启动命令中设置参数
 docker run -d --name midjourney-proxy \
@@ -44,7 +44,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:1.6
+ novicezk/midjourney-proxy:1.6.1
 ```
 3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
 4. 检查discord频道中新创建的机器人是否在线
@@ -74,7 +74,7 @@ docker run -d --name midjourney-proxy \
 | mj.proxy.port | 否 | 代理port，全局代理不生效时设置 |
 | mj.queue.core-size | 否 | 并发数，默认为3 |
 | mj.queue.queue-size | 否 | 等待队列，默认长度10 |
-| mj.queue.timeout-minutes | 否 | 任务超时时间，默认为2分钟 |
+| mj.queue.timeout-minutes | 否 | 任务超时时间，默认为5分钟 |
 | mj.translate-way | 否 | 中文prompt翻译方式，可选null(默认)、baidu、gpt |
 | mj.baidu-translate.appid | 否 | 百度翻译的appid |
 | mj.baidu-translate.app-secret | 否 | 百度翻译的app-secret |

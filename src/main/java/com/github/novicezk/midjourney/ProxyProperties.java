@@ -153,8 +153,8 @@ public class ProxyProperties {
 		 */
 		private int queueSize = 10;
 		/**
-		 * 任务超时时间(分钟), 默认2分钟.
+		 * 任务超时时间(分钟).
 		 */
-		private int timeoutMinutes = 2;
+		private int timeoutMinutes = 5;
 	}
 }

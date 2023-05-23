@@ -6,6 +6,21 @@ logging:
   level:
     ROOT: info
     com.github.novicezk.midjourney: debug
+knife4j:
+  enable: true
+  openapi:
+    title: Midjourney Proxy API文档
+    description: 代理 MidJourney 的discord频道，实现api形式调用AI绘图
+    concat: novicezk
+    url: https://github.com/novicezk/midjourney-proxy
+    version: v1.x
+    terms-of-service-url: https://github.com/novicezk/midjourney-proxy
+    group:
+      api:
+        group-name: API
+        api-rule: package
+        api-rule-resources:
+          - com.github.novicezk.midjourney.controller
 mj:
   discord:
     guild-id: xxx
@@ -17,10 +32,6 @@ mj:
     timeout: 30d
   translate-way: null
   queue:
-    timeout-minutes: 2
+    timeout-minutes: 5
     core-size: 3
     queue-size: 10
-spring:
-  mvc:
-    pathmatch:
-      matching-strategy: ANT_PATH_MATCHER
