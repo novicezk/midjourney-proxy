@@ -48,15 +48,14 @@ docker run -d --name midjourney-proxy \
 ```
 3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
 4. 检查discord频道中新创建的机器人是否在线
-5. 调用api接口的根路径为 `http://ip:port/mj`，接口测试地址：`http://ip:port/mj/doc.html`，具体API接口见下文
+5. 调用api接口的根路径为 `http://ip:port/mj`，接口测试地址：`http://ip:port/mj/doc.html`
 
 ## 注意事项
-1. 启动失败请检查代理问题，尝试设置 mj.proxy.host 和 mj.proxy.port
-2. 若回调通知接口失败，请检查网络设置，容器中的宿主机IP通常为172.17.0.1
-3. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
-4. 感兴趣的朋友也欢迎加入交流群讨论一下
+1. 常见问题及解决办法见 [Wiki/常见问题](./wiki/常见问题) 
+2. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
+3. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
 
- <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/wechat-qrcode.png" width = "330" height = "350" alt="交流群二维码" align=center />
+ <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/manager-qrcode.png" width = "320" height = "320" alt="微信二维码" align=center />
 
 ## 配置项
 
@@ -96,7 +95,7 @@ spring:
 
 ## API接口说明
 
-### 1. `http://ip:port/mj/trigger/submit` 提交任务
+### 1. `/mj/trigger/submit` 提交任务
 POST  application/json
 ```json
 {
@@ -133,7 +132,7 @@ POST  application/json
     ```
 - other: 提交错误，description为错误描述
 
-### 2. `http://ip:port/mj/trigger/submit-uv` 提交选中放大或变换任务
+### 2. `/mj/trigger/submit-uv` 提交选中放大或变换任务
 POST  application/json
 ```json
 {
@@ -148,7 +147,7 @@ POST  application/json
 ```
 返回结果同 `/trigger/submit`
 
-### 3. `http://ip:port/mj/trigger/describe` 提交describe任务
+### 3. `/mj/trigger/describe` 提交describe任务
 POST  application/json
 ```json
 {
@@ -160,7 +159,7 @@ POST  application/json
     "notifyHook": "http://localhost:8113/notify"
 }
 ```
-返回结果同 `/trigger/submit`
+返回结果同 `/mj/trigger/submit`
 
 后续任务完成后，task中prompt即为图片生成的prompt
 ```json
@@ -179,7 +178,7 @@ POST  application/json
 }
 ```
 
-### 4. `http://ip:port/mj/task/{id}/fetch` GET 查询单个任务
+### 4. `/mj/task/{id}/fetch` GET 查询单个任务
 ```json
 {
     // 动作: IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）
@@ -209,7 +208,7 @@ POST  application/json
 }
 ```
 
-### 5. `http://ip:port/mj/task/list` GET 查询所有任务
+### 5. `/mj/task/list` GET 查询所有任务
 
 ```json
 [
@@ -251,4 +250,4 @@ POST  application/json
 
 ## 应用项目
 
-- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney
+- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再维护
