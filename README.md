@@ -51,7 +51,7 @@ docker run -d --name midjourney-proxy \
 5. 调用api接口的根路径为 `http://ip:port/mj`，接口测试地址：`http://ip:port/mj/doc.html`
 
 ## 注意事项
-1. 常见问题及解决办法见 [Wiki/常见问题](./wiki/常见问题) 
+1. 常见问题及解决办法见 [Wiki / 常见问题](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98) 
 2. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
 3. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
 
