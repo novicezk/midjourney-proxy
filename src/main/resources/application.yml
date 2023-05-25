@@ -21,12 +21,13 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.github.novicezk.midjourney.controller
+## ${NACOS_PASS:qGLPu7PhiuqeMlFY}
 mj:
   discord:
-    guild-id: xxx
-    channel-id: xxx
-    user-token: xxx
-    bot-token: xxx
+    guild-id: 1110847497938665552
+    channel-id: 1111181051906228315
+    user-token: MTA3NTU1ODk2NDE1NjE3ODQzNA.Ggcts4.sRW0rkPTBfBcMnqtvv77jrQtArssMAENEx7tHU
+    bot-token: MTExMTE3NzAyMTUxNTY0NDk0OA.GRcIST.MNbVhJAPLsfsmUeYIJUpv5REQqyOwKYMF-_9fk
   task-store:
     type: in_memory
     timeout: 30d
@@ -35,3 +36,4 @@ mj:
     timeout-minutes: 5
     core-size: 3
     queue-size: 10
+
