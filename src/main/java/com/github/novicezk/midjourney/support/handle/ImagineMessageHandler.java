@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.support.handle;
 
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.support.Task;
@@ -22,6 +23,9 @@ public class ImagineMessageHandler implements MessageHandler {
 			return;
 		}
 		String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
+		if (CharSequenceUtil.isBlank(taskId)) {
+			return;
+		}
 		Task task = this.taskQueueService.getTask(taskId);
 		if (task == null) {
 			return;
