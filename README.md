@@ -10,8 +10,10 @@
 - [x] 任务队列，默认队列10，并发3。可参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整mj.queue
 
 ## 后续计划
-- [ ] 支持mysql存储，优化任务的查询方式
+- [ ] 支持 Blend 指令，多个图片混合
+- [ ] 用户token连接wss，支持获取错误信息
 - [ ] 支持配置账号池，分发绘图任务
+- [ ] 支持mysql存储，优化任务的查询方式
 - [ ] Imagine 时支持上传图片，作为垫图
 
 ## 使用前提
