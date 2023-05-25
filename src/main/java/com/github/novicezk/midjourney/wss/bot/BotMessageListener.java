@@ -1,9 +1,9 @@
-package com.github.novicezk.midjourney.support;
+package com.github.novicezk.midjourney.wss.bot;
 
 import com.github.novicezk.midjourney.ProxyProperties;
-import com.github.novicezk.midjourney.support.handle.DescribeMessageHandler;
-import com.github.novicezk.midjourney.support.handle.ImagineMessageHandler;
-import com.github.novicezk.midjourney.support.handle.UVMessageHandler;
+import com.github.novicezk.midjourney.wss.handle.DescribeMessageHandler;
+import com.github.novicezk.midjourney.wss.handle.ImagineMessageHandler;
+import com.github.novicezk.midjourney.wss.handle.UVMessageHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DiscordMessageListener extends ListenerAdapter {
+public class BotMessageListener extends ListenerAdapter {
 	private final ProxyProperties properties;
 	private final ImagineMessageHandler imagineMessageHandler;
 	private final UVMessageHandler uvMessageHandler;

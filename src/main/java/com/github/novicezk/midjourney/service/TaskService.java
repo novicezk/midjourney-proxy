@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 
 public interface TaskService {
 
-	Task getTask(String id);
+	Task getRunningTask(String id);
 
-	Stream<Task> findTask(TaskCondition condition);
+	Stream<Task> findRunningTask(TaskCondition condition);
 
 	Message<String> submitImagine(Task task);
 
