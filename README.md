@@ -8,10 +8,10 @@
 - [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
 - [x] prompt 敏感词判断，支持覆盖调整
 - [x] 任务队列，默认队列10，并发3。可参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整mj.queue
+- [x] 可选用户token连接wss，以获取错误信息
 
 ## 后续计划
 - [ ] 支持 Blend 指令，多个图片混合
-- [ ] 用户token连接wss，支持获取错误信息
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] 支持mysql存储，优化任务的查询方式
 - [ ] Imagine 时支持上传图片，作为垫图
@@ -68,6 +68,7 @@ docker run -d --name midjourney-proxy \
 | mj.discord.user-token | 是 | discord用户Token |
 | mj.discord.bot-token | 是 | 自定义机器人Token |
 | mj.discord.mj-bot-name | 否 | mj机器人名称，默认 "Midjourney Bot" |
+| mj.user-wss | 否 | 是否用户token连接wss，默认false |
 | mj.notify-hook | 否 | 任务状态变更回调地址 |
 | mj.task-store.type | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
 | mj.task-store.timeout | 否 | 任务过期时间，过期后删除，默认30天 |
