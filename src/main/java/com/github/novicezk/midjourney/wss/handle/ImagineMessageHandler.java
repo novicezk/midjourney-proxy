@@ -1,7 +1,6 @@
-package com.github.novicezk.midjourney.support.handle;
+package com.github.novicezk.midjourney.wss.handle;
 
 
-import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.support.Task;
@@ -9,6 +8,7 @@ import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MessageData;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,10 +23,7 @@ public class ImagineMessageHandler implements MessageHandler {
 			return;
 		}
 		String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
-		if (CharSequenceUtil.isBlank(taskId)) {
-			return;
-		}
-		Task task = this.taskQueueService.getTask(taskId);
+		Task task = this.taskQueueService.getRunningTask(taskId);
 		if (task == null) {
 			return;
 		}
@@ -41,6 +38,30 @@ public class ImagineMessageHandler implements MessageHandler {
 
 	@Override
 	public void onMessageUpdate(Message message) {
+	}
+
+	@Override
+	public void onMessageReceived(DataObject data) {
+		MessageData messageData = ConvertUtils.matchImagineContent(data.getString("content"));
+		if (messageData == null) {
+			return;
+		}
+		String taskId = ConvertUtils.findTaskIdByFinalPrompt(messageData.getPrompt());
+		Task task = this.taskQueueService.getRunningTask(taskId);
+		if (task == null) {
+			return;
+		}
+		task.setMessageId(data.getString("id"));
+		if ("Waiting to start".equals(messageData.getStatus())) {
+			task.setStatus(TaskStatus.IN_PROGRESS);
+		} else {
+			finishTask(task, data);
+		}
+		task.awake();
+	}
+
+	@Override
+	public void onMessageUpdate(DataObject data) {
 	}
 
 }

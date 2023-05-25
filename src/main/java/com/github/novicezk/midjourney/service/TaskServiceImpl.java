@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney.service;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.result.Message;
@@ -45,12 +46,15 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Task getTask(String id) {
+	public Task getRunningTask(String id) {
+		if (CharSequenceUtil.isBlank(id)) {
+			return null;
+		}
 		return this.runningTasks.stream().filter(t -> id.equals(t.getId())).findFirst().orElse(null);
 	}
 
 	@Override
-	public Stream<Task> findTask(TaskCondition condition) {
+	public Stream<Task> findRunningTask(TaskCondition condition) {
 		return this.runningTasks.stream().filter(condition);
 	}
 

@@ -1,29 +1,30 @@
-package com.github.novicezk.midjourney.support;
+package com.github.novicezk.midjourney.wss.bot;
 
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import com.neovisionaries.ws.client.ProxySettings;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
-@Component
-public class DiscordStarter implements ApplicationListener<ApplicationStartedEvent> {
+public class BotWebSocketStarter implements WebSocketStarter {
 	@Resource
-	private ProxyProperties properties;
-	@Resource
-	private DiscordMessageListener discordMessageListener;
+	private BotMessageListener botMessageListener;
+
+	private final ProxyProperties properties;
+
+	public BotWebSocketStarter(ProxyProperties properties) {
+		this.properties = properties;
+	}
 
 	@Override
-	public void onApplicationEvent(ApplicationStartedEvent event) {
+	public void start() throws Exception {
 		DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault(this.properties.getDiscord().getBotToken(),
 				GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT);
-		builder.addEventListeners(this.discordMessageListener);
+		builder.addEventListeners(this.botMessageListener);
 		ProxyProperties.ProxyConfig proxy = this.properties.getProxy();
 		if (Strings.isNotBlank(proxy.getHost())) {
 			System.setProperty("http.proxyHost", proxy.getHost());
@@ -38,5 +39,4 @@ public class DiscordStarter implements ApplicationListener<ApplicationStartedEve
 		}
 		builder.build();
 	}
-
 }
