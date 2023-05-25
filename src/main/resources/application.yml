@@ -24,10 +24,10 @@ knife4j:
 ## ${NACOS_PASS:qGLPu7PhiuqeMlFY}
 mj:
   discord:
-    guild-id: 1110847497938665552
-    channel-id: 1111181051906228315
-    user-token: MTA3NTU1ODk2NDE1NjE3ODQzNA.Ggcts4.sRW0rkPTBfBcMnqtvv77jrQtArssMAENEx7tHU
-    bot-token: MTExMTE3NzAyMTUxNTY0NDk0OA.GRcIST.MNbVhJAPLsfsmUeYIJUpv5REQqyOwKYMF-_9fk
+    guild-id: ${GUILD_ID:1110847497938665552}
+    channel-id: ${CHANNEL_ID:1111181051906228315}
+    user-token: ${USER_TOKEN:123}
+    bot-token:  ${BOT_TOKEN:123}
   task-store:
     type: in_memory
     timeout: 30d
