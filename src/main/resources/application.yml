@@ -1,31 +1,10 @@
-server:
-  port: 8080
-  servlet:
-    context-path: /mj
-logging:
-  level:
-    ROOT: info
-    com.github.novicezk.midjourney: debug
-knife4j:
-  enable: true
-  openapi:
-    title: Midjourney Proxy API文档
-    description: 代理 MidJourney 的discord频道，实现api形式调用AI绘图
-    concat: novicezk
-    url: https://github.com/novicezk/midjourney-proxy
-    version: v1.x
-    terms-of-service-url: https://github.com/novicezk/midjourney-proxy
-    group:
-      api:
-        group-name: API
-        api-rule: package
-        api-rule-resources:
-          - com.github.novicezk.midjourney.controller
 mj:
   discord:
     guild-id: xxx
     channel-id: xxx
     user-token: xxx
+    user-wss: false
+    user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
     bot-token: xxx
   task-store:
     type: in_memory

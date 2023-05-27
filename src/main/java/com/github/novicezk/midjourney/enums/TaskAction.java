@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.enums;
 
 
-public enum Action {
+public enum TaskAction {
 	/**
 	 * 生成图片.
 	 */

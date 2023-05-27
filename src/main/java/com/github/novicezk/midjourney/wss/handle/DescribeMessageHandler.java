@@ -2,10 +2,8 @@ package com.github.novicezk.midjourney.wss.handle;
 
 
 import cn.hutool.core.text.CharSequenceUtil;
-import com.github.novicezk.midjourney.enums.TaskStatus;
-import com.github.novicezk.midjourney.service.TaskService;
+import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.support.Task;
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.data.DataArray;
@@ -13,18 +11,46 @@ import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
-public class DescribeMessageHandler implements MessageHandler {
-	private final TaskService taskQueueService;
+public class DescribeMessageHandler extends MessageHandler {
 
 	@Override
-	public void onMessageReceived(Message message) {
+	public void handle(MessageType messageType, DataObject message) {
+		Optional<DataObject> interaction = message.optObject("interaction");
+		if (interaction.isEmpty() || !"describe".equals(interaction.get().getString("name"))) {
+			return;
+		}
+		DataArray embeds = message.getArray("embeds");
+		if (embeds.isEmpty()) {
+			return;
+		}
+		String prompt = embeds.getObject(0).getString("description");
+		Optional<DataObject> imageOptional = embeds.getObject(0).optObject("image");
+		if (imageOptional.isEmpty()) {
+			return;
+		}
+		String imageUrl = imageOptional.get().getString("url");
+		int hashStartIndex = imageUrl.lastIndexOf("/");
+		String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
+		Task task = this.taskService.getRunningTask(taskId);
+		if (task == null) {
+			return;
+		}
+		task.setMessageId(message.getString("id"));
+		task.setPrompt(prompt);
+		task.setPromptEn(prompt);
+		task.setImageUrl(imageUrl);
+		task.success();
+		task.awake();
 	}
 
 	@Override
-	public void onMessageUpdate(Message message) {
+	public void handle(MessageType messageType, Message message) {
+		if (message.getInteraction() == null || !"describe".equals(message.getInteraction().getName())) {
+			return;
+		}
 		List<MessageEmbed> embeds = message.getEmbeds();
 		if (embeds.isEmpty()) {
 			return;
@@ -33,7 +59,7 @@ public class DescribeMessageHandler implements MessageHandler {
 		String imageUrl = embeds.get(0).getImage().getUrl();
 		int hashStartIndex = imageUrl.lastIndexOf("/");
 		String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
-		Task task = this.taskQueueService.getRunningTask(taskId);
+		Task task = this.taskService.getRunningTask(taskId);
 		if (task == null) {
 			return;
 		}
@@ -41,36 +67,9 @@ public class DescribeMessageHandler implements MessageHandler {
 		task.setPrompt(prompt);
 		task.setPromptEn(prompt);
 		task.setImageUrl(imageUrl);
-		task.setFinishTime(System.currentTimeMillis());
-		task.setStatus(TaskStatus.SUCCESS);
-		task.awake();
-	}
-
-	@Override
-	public void onMessageReceived(DataObject data) {
-	}
-
-	@Override
-	public void onMessageUpdate(DataObject data) {
-		DataArray embeds = data.getArray("embeds");
-		if (embeds.isEmpty()) {
-			return;
-		}
-		String prompt = embeds.getObject(0).getString("description");
-		String imageUrl = embeds.getObject(0).getObject("image").getString("url");
-		int hashStartIndex = imageUrl.lastIndexOf("/");
-		String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
-		Task task = this.taskQueueService.getRunningTask(taskId);
-		if (task == null) {
-			return;
-		}
-		task.setMessageId(data.getString("id"));
-		task.setPrompt(prompt);
-		task.setPromptEn(prompt);
-		task.setImageUrl(imageUrl);
-		task.setFinishTime(System.currentTimeMillis());
-		task.setStatus(TaskStatus.SUCCESS);
+		task.success();
 		task.awake();
 	}
 
 }
+

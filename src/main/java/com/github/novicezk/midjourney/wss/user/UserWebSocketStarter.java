@@ -1,11 +1,7 @@
 package com.github.novicezk.midjourney.wss.user;
 
-import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
-import com.github.novicezk.midjourney.exception.ConnectionManuallyClosedException;
-import com.github.novicezk.midjourney.exception.ConnectionResumableException;
-import com.github.novicezk.midjourney.exception.InvalidSessionException;
-import com.github.novicezk.midjourney.exception.NeedToReconnectException;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
@@ -24,26 +20,28 @@ import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketStarter {
-	private static final String GATEWAY_URL = "wss://gateway-us-east1-d.discord.gg/?encoding=json&v=9&compress=zlib-stream";
-	private final Decompressor decompressor = new ZlibDecompressor(2048);
+	private static final String GATEWAY_URL = "wss://gateway.discord.gg/?encoding=json&v=9&compress=zlib-stream";
+	private final ScheduledExecutorService heartExecutor = Executors.newSingleThreadScheduledExecutor();
 
-	private final DataObject auth;
-	private boolean connected = false;
-	private boolean resumable = false;
-	private int sequence = 0;
-	private long interval = 0L;
-	private long lastAck = 0L;
-	private long latency = 0L;
-	private Throwable lastException = null;
-
-	private String sessionId;
 	private final String userToken;
 	private final String userAgent;
+	private final DataObject auth;
+
 	private WebSocket socket = null;
+	private String sessionId;
+	private Future<?> heartbeatTask;
+	private Decompressor decompressor;
+
+	private boolean connected = false;
+	private final AtomicInteger sequence = new AtomicInteger(0);
 
 	@Resource
 	private UserMessageListener userMessageListener;
@@ -51,14 +49,14 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	public UserWebSocketStarter(ProxyProperties properties) {
 		this.userToken = properties.getDiscord().getUserToken();
 		this.userAgent = properties.getDiscord().getUserAgent();
-		UserAgent agent = UserAgent.parseUserAgentString(userAgent);
+		UserAgent agent = UserAgent.parseUserAgentString(this.userAgent);
 		DataObject connectionProperties = DataObject.empty()
 				.put("os", agent.getOperatingSystem().getName())
 				.put("browser", agent.getBrowser().getGroup().getName())
 				.put("device", "")
 				.put("system_locale", "zh-CN")
 				.put("browser_version", agent.getBrowserVersion().toString())
-				.put("browser_user_agent", userAgent)
+				.put("browser_user_agent", this.userAgent)
 				.put("referer", "")
 				.put("referring_domain", "")
 				.put("referrer_current", "")
@@ -87,9 +85,12 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	}
 
 	@Override
-	public void start() throws Exception {
-		WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
-		this.socket = factory.createSocket(GATEWAY_URL);
+	public synchronized void start() throws Exception {
+		if (this.socket != null) {
+			throw new IllegalStateException("Websocket already started");
+		}
+		this.decompressor = new ZlibDecompressor(2048);
+		this.socket = new WebSocketFactory().setConnectionTimeout(5000).createSocket(GATEWAY_URL);
 		this.socket.addListener(this);
 		this.socket.addHeader("Accept-Encoding", "gzip, deflate, br")
 				.addHeader("Accept-Language", "en-US,en;q=0.9")
@@ -104,22 +105,24 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	public void onConnected(WebSocket websocket, Map<String, List<String>> headers) {
 		log.debug("[gateway] Connected to websocket.");
 		this.connected = true;
-		if (!this.resumable) {
-			DataObject data = DataObject.empty()
+	}
+
+	private void sayHello() {
+		DataObject data;
+		if (CharSequenceUtil.isBlank(this.sessionId)) {
+			data = DataObject.empty()
 					.put("op", WebSocketCode.IDENTIFY)
 					.put("d", this.auth);
-			send(data);
 		} else {
-			this.resumable = false;
-			DataObject data = DataObject.empty()
+			data = DataObject.empty()
 					.put("op", WebSocketCode.RESUME)
 					.put("d", DataObject.empty()
 							.put("token", this.userToken)
 							.put("session_id", this.sessionId)
-							.put("seq", Math.max(this.sequence - 1, 0))
+							.put("seq", Math.max(this.sequence.get() - 1, 0))
 					);
-			send(data);
 		}
+		send(data);
 	}
 
 	@Override
@@ -132,29 +135,22 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		DataObject data = DataObject.fromJson(json);
 		int opCode = data.getInt("op");
 		if (opCode != WebSocketCode.HEARTBEAT_ACK) {
-			this.sequence += 1;
+			this.sequence.incrementAndGet();
 		}
 		if (opCode == WebSocketCode.HELLO) {
-			this.interval = data.getObject("d").getLong("heartbeat_interval");
-			ThreadUtil.execute(this::heartbeat);
+			long interval = data.getObject("d").getLong("heartbeat_interval");
+			this.heartbeatTask = this.heartExecutor.scheduleAtFixedRate(this::heartbeat, interval, interval, TimeUnit.MILLISECONDS);
+			sayHello();
 		} else if (opCode == WebSocketCode.HEARTBEAT_ACK) {
-			if (this.lastAck != 0) {
-				this.latency = System.currentTimeMillis() - this.lastAck;
-			}
+			log.trace("[gateway] Heartbeat ack.");
 		} else if (opCode == WebSocketCode.HEARTBEAT) {
 			send(DataObject.empty().put("op", WebSocketCode.HEARTBEAT).put("d", this.sequence));
 		} else if (opCode == WebSocketCode.INVALIDATE_SESSION) {
 			log.debug("[gateway] Invalid session.");
-			this.lastException = new InvalidSessionException("Invalid Session Error.");
-			if (this.resumable) {
-				this.resumable = false;
-			}
-			this.sequence = 0;
-			close();
+			close("session invalid");
 		} else if (opCode == WebSocketCode.RECONNECT) {
 			log.debug("[gateway] Received opcode 7 (reconnect).");
-			this.lastException = new NeedToReconnectException("Discord sent an opcode 7 (reconnect).");
-			close();
+			close("reconnect");
 		} else if (opCode == WebSocketCode.DISPATCH) {
 			onDispatch(data);
 		}
@@ -163,51 +159,48 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	@Override
 	public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
 		log.error("[gateway] There was some websocket error", cause);
-		this.lastException = cause;
 	}
 
 	@Override
 	public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) {
+		clearHeartbeat();
 		this.connected = false;
+		this.sequence.set(0);
+		this.socket = null;
+		this.decompressor = null;
 		if (clientCloseFrame != null) {
 			int code = clientCloseFrame.getCloseCode();
-			log.debug("[gateway] websocket client closed. status code: {}, reason: {}", code, clientCloseFrame.getCloseReason());
-			if (code <= 4000 || code > 4010) {
-				this.resumable = true;
-				this.lastException = new ConnectionResumableException("Connection is resumable.");
-			} else if (Set.of(1000, 1001, 1006).contains(code)) {
-				this.lastException = new ConnectionManuallyClosedException("Disconnection initiated by client using close function.");
-			}
+			log.debug("[gateway] Websocket client closed. status code: {}, reason: {}", code, clientCloseFrame.getCloseReason());
 		} else if (serverCloseFrame != null) {
-			log.debug("[gateway] websocket server closed. status code: {}, reason: {}", serverCloseFrame.getCloseCode(), serverCloseFrame.getCloseReason());
+			log.debug("[gateway] Websocket server closed. status code: {}, reason: {}", serverCloseFrame.getCloseCode(), serverCloseFrame.getCloseReason());
+		}
+		try {
+			log.debug("[gateway] Websocket reconnect...");
+			start();
+		} catch (Exception e) {
+			log.error("[gateway] Websocket reconnect error", e);
+			Thread.currentThread().interrupt();
 		}
 	}
 
-	private void close() {
-		this.connected = false;
-		if (!(this.lastException instanceof InvalidSessionException || this.lastException instanceof NeedToReconnectException)) {
-			this.lastException = new ConnectionManuallyClosedException("Disconnection initiated by client using close function.");
+	private void clearHeartbeat() {
+		if (this.heartbeatTask != null) {
+			this.heartbeatTask.cancel(true);
+			this.heartbeatTask = null;
 		}
-		log.debug("[gateway] websocket closed");
-		this.socket.disconnect();
+	}
+
+	private void close(String reason) {
+		this.connected = false;
+		clearHeartbeat();
+		this.socket.disconnect(1000, reason);
 	}
 
 	private void heartbeat() {
-		while (this.connected) {
-			if (this.interval == 0) {
-				this.interval = 41250L;
-			}
-			try {
-				Thread.sleep(this.interval);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-			if (!this.connected) {
-				break;
-			}
-			send(DataObject.empty().put("op", WebSocketCode.HEARTBEAT).put("d", this.sequence));
-			this.lastAck = System.currentTimeMillis();
+		if (!this.connected) {
+			return;
 		}
+		send(DataObject.empty().put("op", WebSocketCode.HEARTBEAT).put("d", this.sequence));
 	}
 
 	private void onDispatch(DataObject raw) {
@@ -217,14 +210,13 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		DataObject content = raw.getObject("d");
 		String t = raw.getString("t", null);
 		if ("READY".equals(t)) {
-			this.lastException = null;
 			this.sessionId = content.getString("session_id");
 			return;
 		}
 		try {
-			this.userMessageListener.handle(raw);
+			this.userMessageListener.onMessage(raw);
 		} catch (Exception e) {
-			log.warn("handle message error: {}", e.getMessage());
+			log.error("user-wss handle message error", e);
 		}
 	}
 

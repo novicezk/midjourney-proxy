@@ -1,0 +1,121 @@
+package com.github.novicezk.midjourney.wss.handle;
+
+import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.enums.TaskStatus;
+import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskCondition;
+import com.github.novicezk.midjourney.util.UVContentParseData;
+import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.data.DataObject;
+import org.springframework.stereotype.Component;
+
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * upscale消息处理.
+ * 开始(create): Upscaling image #1 with **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
+ * 进度: 无
+ * 完成(create): **[0152010266005012] cat** - Image #1 <@1012983546824114217>
+ */
+@Slf4j
+@Component
+public class UpscaleMessageHandler extends MessageHandler {
+	private static final String START_CONTENT_REGEX = "Upscaling image #(\\d) with \\*\\*\\[(\\d+)\\] (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String END_CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Image #(\\d) <@\\d+>";
+
+	@Override
+	public void handle(MessageType messageType, DataObject message) {
+		if (MessageType.CREATE != messageType) {
+			return;
+		}
+		String content = message.getString("content");
+		UVContentParseData start = parseStart(content);
+		if (start != null) {
+			TaskCondition condition = new TaskCondition()
+					.setDescription("/up " + start.getTaskId() + " U" + start.getIndex())
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED));
+			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			if (task == null) {
+				return;
+			}
+			task.setStatus(TaskStatus.IN_PROGRESS);
+			task.awake();
+			return;
+		}
+		UVContentParseData end = parseEnd(content);
+		if (end != null) {
+			TaskCondition condition = new TaskCondition()
+					.setDescription("/up " + end.getTaskId() + " U" + end.getIndex())
+					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			if (task == null) {
+				return;
+			}
+			finishTask(task, message);
+			task.awake();
+		}
+	}
+
+	@Override
+	public void handle(MessageType messageType, Message message) {
+		if (MessageType.CREATE != messageType) {
+			return;
+		}
+		String content = message.getContentRaw();
+		UVContentParseData start = parseStart(content);
+		if (start != null) {
+			TaskCondition condition = new TaskCondition()
+					.setDescription("/up " + start.getTaskId() + " U" + start.getIndex())
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED));
+			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			if (task == null) {
+				return;
+			}
+			task.setStatus(TaskStatus.IN_PROGRESS);
+			task.awake();
+			return;
+		}
+		UVContentParseData end = parseEnd(content);
+		if (end != null) {
+			TaskCondition condition = new TaskCondition()
+					.setDescription("/up " + end.getTaskId() + " U" + end.getIndex())
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
+			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			if (task == null) {
+				return;
+			}
+			finishTask(task, message);
+			task.awake();
+		}
+	}
+
+	private UVContentParseData parseStart(String content) {
+		Matcher matcher = Pattern.compile(START_CONTENT_REGEX).matcher(content);
+		if (!matcher.find()) {
+			return null;
+		}
+		UVContentParseData parseData = new UVContentParseData();
+		parseData.setIndex(Integer.parseInt(matcher.group(1)));
+		parseData.setTaskId(matcher.group(2));
+		parseData.setPrompt(matcher.group(3));
+		parseData.setStatus(matcher.group(4));
+		return parseData;
+	}
+
+	private UVContentParseData parseEnd(String content) {
+		Matcher matcher = Pattern.compile(END_CONTENT_REGEX).matcher(content);
+		if (!matcher.find()) {
+			return null;
+		}
+		UVContentParseData parseData = new UVContentParseData();
+		parseData.setTaskId(matcher.group(1));
+		parseData.setPrompt(matcher.group(2));
+		parseData.setIndex(Integer.parseInt(matcher.group(3)));
+		parseData.setStatus("done");
+		return parseData;
+	}
+
+}
