@@ -17,7 +17,7 @@ public enum TaskAction {
 	/**
 	 * 重新生成.
 	 */
-	RESET,
+	REROLL,
 	/**
 	 * 图转prompt.
 	 */

@@ -1,6 +1,8 @@
 package com.github.novicezk.midjourney.wss.handle;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
@@ -10,6 +12,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,9 +38,13 @@ public class UpscaleMessageHandler extends MessageHandler {
 		UVContentParseData start = parseStart(content);
 		if (start != null) {
 			TaskCondition condition = new TaskCondition()
-					.setDescription("/up " + start.getTaskId() + " U" + start.getIndex())
+					.setRelatedTaskId(start.getTaskId())
+					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.taskService.findRunningTask(condition)
+					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + start.getIndex()))
+					.min(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -48,9 +55,13 @@ public class UpscaleMessageHandler extends MessageHandler {
 		UVContentParseData end = parseEnd(content);
 		if (end != null) {
 			TaskCondition condition = new TaskCondition()
-					.setDescription("/up " + end.getTaskId() + " U" + end.getIndex())
+					.setRelatedTaskId(end.getTaskId())
+					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.taskService.findRunningTask(condition)
+					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + end.getIndex()))
+					.min(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -65,25 +76,16 @@ public class UpscaleMessageHandler extends MessageHandler {
 			return;
 		}
 		String content = message.getContentRaw();
-		UVContentParseData start = parseStart(content);
-		if (start != null) {
+		UVContentParseData parseData = parseEnd(content);
+		if (parseData != null) {
 			TaskCondition condition = new TaskCondition()
-					.setDescription("/up " + start.getTaskId() + " U" + start.getIndex())
-					.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
-			if (task == null) {
-				return;
-			}
-			task.setStatus(TaskStatus.IN_PROGRESS);
-			task.awake();
-			return;
-		}
-		UVContentParseData end = parseEnd(content);
-		if (end != null) {
-			TaskCondition condition = new TaskCondition()
-					.setDescription("/up " + end.getTaskId() + " U" + end.getIndex())
+					.setRelatedTaskId(parseData.getTaskId())
+					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.taskService.findRunningTask(condition)
+					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + parseData.getIndex()))
+					.min(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}

@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.wss.handle;
 
 
 import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
@@ -38,6 +39,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				// 开始
 				TaskCondition condition = new TaskCondition()
 						.setId(parseData.getTaskId())
+						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
 				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
@@ -49,6 +51,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				// 完成
 				TaskCondition condition = new TaskCondition()
 						.setId(parseData.getTaskId())
+						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
@@ -61,6 +64,7 @@ public class ImagineMessageHandler extends MessageHandler {
 			// 进度
 			TaskCondition condition = new TaskCondition()
 					.setId(parseData.getTaskId())
+					.setActionSet(Set.of(TaskAction.IMAGINE))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
@@ -84,6 +88,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				// 开始
 				TaskCondition condition = new TaskCondition()
 						.setId(parseData.getTaskId())
+						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
 				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
@@ -95,6 +100,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				// 完成
 				TaskCondition condition = new TaskCondition()
 						.setId(parseData.getTaskId())
+						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
@@ -107,6 +113,7 @@ public class ImagineMessageHandler extends MessageHandler {
 			// 进度
 			TaskCondition condition = new TaskCondition()
 					.setId(parseData.getTaskId())
+					.setActionSet(Set.of(TaskAction.IMAGINE))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
