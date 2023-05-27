@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.wss.handle;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,9 +37,13 @@ public class VariationMessageHandler extends MessageHandler {
 			if (start != null) {
 				// 开始
 				TaskCondition condition = new TaskCondition()
-						.setDescription("/up " + start.getTaskId() + " V" + start.getIndex())
+						.setRelatedTaskId(start.getTaskId())
+						.setActionSet(Set.of(TaskAction.VARIATION))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+				Task task = this.taskService.findRunningTask(condition)
+						.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "V" + start.getIndex()))
+						.min(Comparator.comparing(Task::getSubmitTime))
+						.orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -49,12 +55,13 @@ public class VariationMessageHandler extends MessageHandler {
 			if (end == null) {
 				return;
 			}
-			String key = "/up " + end.getTaskId() + " V";
-			// 完成
-			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+			TaskCondition condition = new TaskCondition()
+					.setRelatedTaskId(end.getTaskId())
+					.setActionSet(Set.of(TaskAction.VARIATION))
+					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition)
-					.filter(t -> CharSequenceUtil.startWith(t.getDescription(), key))
-					.findFirst().orElse(null);
+					.min(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -62,15 +69,16 @@ public class VariationMessageHandler extends MessageHandler {
 			task.awake();
 		} else if (MessageType.UPDATE == messageType) {
 			UVContentParseData parseData = parse(content);
-			if (parseData == null) {
+			if (parseData == null || CharSequenceUtil.equalsAny(parseData.getStatus(), "relaxed", "fast")) {
 				return;
 			}
-			String key = "/up " + parseData.getTaskId() + " V";
-			// 进度
-			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+			TaskCondition condition = new TaskCondition()
+					.setRelatedTaskId(parseData.getTaskId())
+					.setActionSet(Set.of(TaskAction.VARIATION))
+					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition)
-					.filter(t -> CharSequenceUtil.startWith(t.getDescription(), key))
-					.findFirst().orElse(null);
+					.min(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -90,51 +98,21 @@ public class VariationMessageHandler extends MessageHandler {
 	public void handle(MessageType messageType, Message message) {
 		String content = message.getContentRaw();
 		if (MessageType.CREATE.equals(messageType)) {
-			UVContentParseData start = parseStart(content);
-			if (start != null) {
-				// 开始
-				TaskCondition condition = new TaskCondition()
-						.setDescription("/up " + start.getTaskId() + " V" + start.getIndex())
-						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
-				if (task == null) {
-					return;
-				}
-				task.setStatus(TaskStatus.IN_PROGRESS);
-				task.awake();
-				return;
-			}
-			UVContentParseData end = parse(content);
-			if (end == null) {
-				return;
-			}
-			String key = "/up " + end.getTaskId() + " V";
-			// 完成
-			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
-					.filter(t -> CharSequenceUtil.startWith(t.getDescription(), key))
-					.findFirst().orElse(null);
-			if (task == null) {
-				return;
-			}
-			finishTask(task, message);
-			task.awake();
-		} else if (MessageType.UPDATE == messageType) {
 			UVContentParseData parseData = parse(content);
 			if (parseData == null) {
 				return;
 			}
-			String key = "/up " + parseData.getTaskId() + " V";
-			// 进度
-			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+			TaskCondition condition = new TaskCondition()
+					.setRelatedTaskId(parseData.getTaskId())
+					.setActionSet(Set.of(TaskAction.VARIATION))
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition)
-					.filter(t -> CharSequenceUtil.startWith(t.getDescription(), key))
-					.findFirst().orElse(null);
+					.min(Comparator.comparing(Task::getSubmitTime))
+					.orElse(null);
 			if (task == null) {
 				return;
 			}
-			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			finishTask(task, message);
 			task.awake();
 		}
 	}

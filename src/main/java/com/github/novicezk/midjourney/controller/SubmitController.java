@@ -45,7 +45,7 @@ public class SubmitController {
 	private final ProxyProperties properties;
 	private final TaskService taskService;
 
-	@ApiOperation(value = "提交Imagine")
+	@ApiOperation(value = "提交Imagine任务")
 	@PostMapping("/imagine")
 	public SubmitResultVO imagine(@RequestBody SubmitImagineDTO imagineDTO) {
 		String prompt = imagineDTO.getPrompt();
@@ -93,11 +93,11 @@ public class SubmitController {
 		if (CharSequenceUtil.isBlank(changeDTO.getTaskId())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "taskId不能为空");
 		}
-		if (!Set.of(TaskAction.UPSCALE, TaskAction.VARIATION, TaskAction.RESET).contains(changeDTO.getAction())) {
+		if (!Set.of(TaskAction.UPSCALE, TaskAction.VARIATION, TaskAction.REROLL).contains(changeDTO.getAction())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "action参数错误");
 		}
 		String description = "/up " + changeDTO.getTaskId();
-		if (TaskAction.RESET.equals(changeDTO.getAction())) {
+		if (TaskAction.REROLL.equals(changeDTO.getAction())) {
 			description += " R";
 		} else {
 			description += " " + changeDTO.getAction().name().charAt(0) + changeDTO.getIndex();
@@ -128,7 +128,7 @@ public class SubmitController {
 		} else if (TaskAction.VARIATION.equals(changeDTO.getAction())) {
 			return this.taskService.submitVariation(task, targetTask.getMessageId(), targetTask.getMessageHash(), changeDTO.getIndex());
 		} else {
-			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "不支持的操作reset");
+			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "不支持的操作: " + changeDTO.getAction());
 		}
 	}
 

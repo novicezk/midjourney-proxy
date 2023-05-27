@@ -35,7 +35,7 @@ public class DiscordServiceImpl implements DiscordService {
 	private String imagineParamsJson;
 	private String upscaleParamsJson;
 	private String variationParamsJson;
-	private String resetParamsJson;
+	private String rerollParamsJson;
 	private String describeParamsJson;
 
 	private String discordUserToken;
@@ -52,7 +52,7 @@ public class DiscordServiceImpl implements DiscordService {
 		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
 		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
 		this.variationParamsJson = ResourceUtil.readUtf8Str("api-params/variation.json");
-		this.resetParamsJson = ResourceUtil.readUtf8Str("api-params/reset.json");
+		this.rerollParamsJson = ResourceUtil.readUtf8Str("api-params/reroll.json");
 		this.describeParamsJson = ResourceUtil.readUtf8Str("api-params/describe.json");
 	}
 
@@ -87,8 +87,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> reset(String messageId, String messageHash) {
-		String paramsStr = this.resetParamsJson.replace("$guild_id", this.discordGuildId)
+	public Message<Void> reroll(String messageId, String messageHash) {
+		String paramsStr = this.rerollParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$message_id", messageId)
 				.replace("$message_hash", messageHash);

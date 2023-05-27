@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 @Data
 @Accessors(chain = true)
 public class TaskCondition implements Predicate<Task> {
-
 	private String id;
 
 	private String prompt;

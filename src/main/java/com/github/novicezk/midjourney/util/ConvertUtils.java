@@ -25,7 +25,7 @@ public class ConvertUtils {
 		} else if (action.charAt(0) == 'v') {
 			changeParams.setAction(TaskAction.VARIATION);
 		} else if (action.equals("r")) {
-			changeParams.setAction(TaskAction.RESET);
+			changeParams.setAction(TaskAction.REROLL);
 		} else {
 			return null;
 		}

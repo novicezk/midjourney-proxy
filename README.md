@@ -3,7 +3,7 @@
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
 ## 现有功能
-- [x] 支持 Imagine、U、V 指令，绘图完成后回调
+- [x] 支持 Imagine 指令和相关U、V操作
 - [x] 支持 Describe 指令，根据图片生成 prompt
 - [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
 - [x] prompt 敏感词判断，支持覆盖调整
@@ -13,10 +13,11 @@
 
 ## 后续计划
 - [ ] 支持 Blend 指令，多个图片混合
+- [ ] 支持 Reroll 操作
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] 支持mysql存储，优化任务的查询方式
 - [ ] Imagine 时支持上传图片，作为垫图
-- [ ] 修复已知bug，[Wiki / 现有问题列表](https://github.com/novicezk/midjourney-proxy/wiki/%E7%8E%B0%E6%9C%89%E9%97%AE%E9%A2%98%E5%88%97%E8%A1%A8)
+- [ ] 修复相关Bug，[Wiki / 现有问题列表](https://github.com/novicezk/midjourney-proxy/wiki/%E7%8E%B0%E6%9C%89%E9%97%AE%E9%A2%98%E5%88%97%E8%A1%A8)
 
 ## 使用前提
 1. 科学上网
@@ -74,7 +75,7 @@ docker run -d --name midjourney-proxy \
 | mj.discord.user-agent | 否 | 调用discord接口、连接wss时的user-agent，建议从浏览器network复制 |
 | mj.discord.bot-token | 否 | 自定义机器人Token，user-wss=false时必填 |
 | mj.discord.mj-bot-name | 否 | midjourney官方机器人名称，默认 "Midjourney Bot" |
-| mj.notify-hook | 否 | 任务状态变更回调地址 |
+| mj.notify-hook | 否 | 全局的任务状态变更回调地址 |
 | mj.task-store.type | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
 | mj.task-store.timeout | 否 | 任务过期时间，过期后删除，默认30天 |
 | mj.proxy.host | 否 | 代理host，全局代理不生效时设置 |
@@ -191,7 +192,9 @@ POST  application/json
   "startTime":1683779737321,
   "finishTime":1683779741711,
   "imageUrl":"https://cdn.discordapp.com/ephemeral-attachments/xxxx/xxxx/3856553004865376.png",
-  "status":"SUCCESS"
+  "status":"SUCCESS",
+  "progress":"100%",
+  "failReason":""
 }
 ```
 
