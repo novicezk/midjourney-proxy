@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.enums;
 
 
-public enum Action {
+public enum TaskAction {
 	/**
 	 * 生成图片.
 	 */
@@ -17,7 +17,7 @@ public enum Action {
 	/**
 	 * 重新生成.
 	 */
-	RESET,
+	REROLL,
 	/**
 	 * 图转prompt.
 	 */

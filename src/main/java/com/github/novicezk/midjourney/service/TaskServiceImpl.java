@@ -1,8 +1,11 @@
 package com.github.novicezk.midjourney.service;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.result.Message;
+import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
@@ -45,17 +48,20 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Task getTask(String id) {
+	public Task getRunningTask(String id) {
+		if (CharSequenceUtil.isBlank(id)) {
+			return null;
+		}
 		return this.runningTasks.stream().filter(t -> id.equals(t.getId())).findFirst().orElse(null);
 	}
 
 	@Override
-	public Stream<Task> findTask(TaskCondition condition) {
+	public Stream<Task> findRunningTask(TaskCondition condition) {
 		return this.runningTasks.stream().filter(condition);
 	}
 
 	@Override
-	public Message<String> submitImagine(Task task) {
+	public SubmitResultVO submitImagine(Task task) {
 		return submitTask(task, () -> {
 			Message<Void> result = this.discordService.imagine(task.getFinalPrompt());
 			checkAndWait(task, result);
@@ -63,7 +69,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Message<String> submitUpscale(Task task, String targetMessageId, String targetMessageHash, int index) {
+	public SubmitResultVO submitUpscale(Task task, String targetMessageId, String targetMessageHash, int index) {
 		return submitTask(task, () -> {
 			Message<Void> result = this.discordService.upscale(targetMessageId, index, targetMessageHash);
 			checkAndWait(task, result);
@@ -71,7 +77,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Message<String> submitVariation(Task task, String targetMessageId, String targetMessageHash, int index) {
+	public SubmitResultVO submitVariation(Task task, String targetMessageId, String targetMessageHash, int index) {
 		return submitTask(task, () -> {
 			Message<Void> result = this.discordService.variation(targetMessageId, index, targetMessageHash);
 			checkAndWait(task, result);
@@ -79,13 +85,12 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Message<String> submitDescribe(Task task, DataUrl dataUrl) {
+	public SubmitResultVO submitDescribe(Task task, DataUrl dataUrl) {
 		return submitTask(task, () -> {
 			String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
 			Message<String> uploadResult = this.discordService.upload(taskFileName, dataUrl);
-			if (uploadResult.getCode() != Message.SUCCESS_CODE) {
-				task.setFinishTime(System.currentTimeMillis());
-				task.setFailReason(uploadResult.getDescription());
+			if (uploadResult.getCode() != ReturnCode.SUCCESS) {
+				task.fail(uploadResult.getDescription());
 				changeStatusAndNotify(task, TaskStatus.FAILURE);
 				return;
 			}
@@ -95,39 +100,38 @@ public class TaskServiceImpl implements TaskService {
 		});
 	}
 
-	private Message<String> submitTask(Task task, Runnable runnable) {
-		this.taskStoreService.saveTask(task);
+	private SubmitResultVO submitTask(Task task, Runnable runnable) {
+		this.taskStoreService.save(task);
 		int size;
 		try {
 			size = this.taskExecutor.getThreadPoolExecutor().getQueue().size();
 			this.taskExecutor.execute(() -> {
-				task.setStartTime(System.currentTimeMillis());
 				this.runningTasks.add(task);
 				try {
-					this.taskStoreService.saveTask(task);
 					runnable.run();
 				} finally {
 					this.runningTasks.remove(task);
 				}
 			});
 		} catch (RejectedExecutionException e) {
-			this.taskStoreService.deleteTask(task.getId());
-			return Message.failure("队列已满，请稍后尝试");
+			this.taskStoreService.delete(task.getId());
+			return SubmitResultVO.fail(ReturnCode.QUEUE_REJECTED, "队列已满，请稍后尝试");
 		}
 		if (size == 0) {
-			return Message.success(task.getId());
+			return SubmitResultVO.of(ReturnCode.SUCCESS, "提交成功", task.getId());
 		} else {
-			return Message.success(Message.WAITING_CODE, "排队中，前面还有" + size + "个任务", task.getId());
+			return SubmitResultVO.of(ReturnCode.IN_QUEUE, "排队中，前面还有" + size + "个任务", task.getId())
+					.setProperty("numberOfQueues", size);
 		}
 	}
 
 	private void checkAndWait(Task task, Message<Void> result) {
-		if (result.getCode() != Message.SUCCESS_CODE) {
-			task.setFinishTime(System.currentTimeMillis());
-			task.setFailReason(result.getDescription());
+		if (result.getCode() != ReturnCode.SUCCESS) {
+			task.fail(result.getDescription());
 			changeStatusAndNotify(task, TaskStatus.FAILURE);
 			return;
 		}
+		task.start();
 		changeStatusAndNotify(task, TaskStatus.SUBMITTED);
 		do {
 			try {
@@ -143,7 +147,7 @@ public class TaskServiceImpl implements TaskService {
 
 	private void changeStatusAndNotify(Task task, TaskStatus status) {
 		task.setStatus(status);
-		this.taskStoreService.saveTask(task);
+		this.taskStoreService.save(task);
 		this.notifyService.notifyTaskChange(task);
 	}
 

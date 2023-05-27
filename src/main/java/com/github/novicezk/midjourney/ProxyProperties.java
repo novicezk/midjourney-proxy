@@ -11,7 +11,9 @@ import java.time.Duration;
 @Component
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
-
+	/**
+	 * task存储配置.
+	 */
 	private final TaskStore taskStore = new TaskStore();
 	/**
 	 * discord配置.
@@ -57,6 +59,14 @@ public class ProxyProperties {
 		 */
 		private String userToken;
 		/**
+		 * 是否使用user_token连接wss，默认false(使用bot_token).
+		 */
+		private boolean userWss = false;
+		/**
+		 * 调用discord接口、连接wss时的user-agent.
+		 */
+		private String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
+		/**
 		 * 你的机器人token.
 		 */
 		private String botToken;
@@ -64,10 +74,6 @@ public class ProxyProperties {
 		 * Midjourney机器人的名称.
 		 */
 		private String mjBotName = "Midjourney Bot";
-		/**
-		 * 调用discord接口时的user-agent.
-		 */
-		private String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
 	}
 
 	@Data
@@ -109,12 +115,11 @@ public class ProxyProperties {
 	@Data
 	public static class TaskStore {
 		/**
-		 * timeout of task: default 30 days
+		 * 任务过期时间，默认30天.
 		 */
 		private Duration timeout = Duration.ofDays(30);
 		/**
-		 * default: TaskStore.IN_MEMORY
-		 * type: TaskStore.REDIS for Redis TaskStore
+		 * 任务存储方式: redis(默认)、in_memory.
 		 */
 		private Type type = Type.IN_MEMORY;
 

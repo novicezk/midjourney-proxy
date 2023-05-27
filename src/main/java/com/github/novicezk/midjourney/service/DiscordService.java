@@ -12,7 +12,7 @@ public interface DiscordService {
 
 	Message<Void> variation(String messageId, int index, String messageHash);
 
-	Message<Void> reset(String messageId, String messageHash);
+	Message<Void> reroll(String messageId, String messageHash);
 
 	Message<String> upload(String fileName, DataUrl dataUrl);
 

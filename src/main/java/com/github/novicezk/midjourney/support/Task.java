@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.support;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.novicezk.midjourney.enums.Action;
+import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,7 +16,7 @@ public class Task implements Serializable {
 	@Serial
 	private static final long serialVersionUID = -674915748204390789L;
 
-	private Action action;
+	private TaskAction action;
 	@ApiModelProperty("任务ID")
 	private String id;
 	@ApiModelProperty("提示词")
@@ -36,13 +36,14 @@ public class Task implements Serializable {
 	private Long finishTime;
 	@ApiModelProperty("图片url")
 	private String imageUrl;
+	@ApiModelProperty("任务状态")
 	private TaskStatus status = TaskStatus.NOT_START;
+	@ApiModelProperty("任务进度")
+	private String progress;
 	@ApiModelProperty("失败原因")
 	private String failReason;
 
 	// Hidden -- start
-	@JsonIgnore
-	private String key;
 	@JsonIgnore
 	private String finalPrompt;
 	@JsonIgnore
@@ -58,16 +59,39 @@ public class Task implements Serializable {
 	@JsonIgnore
 	private final transient Object lock = new Object();
 
+	@JsonIgnore
 	public void sleep() throws InterruptedException {
 		synchronized (this.lock) {
 			this.lock.wait();
 		}
 	}
 
+	@JsonIgnore
 	public void awake() {
 		synchronized (this.lock) {
 			this.lock.notifyAll();
 		}
+	}
+
+	@JsonIgnore
+	public void start() {
+		this.startTime = System.currentTimeMillis();
+		this.status = TaskStatus.SUBMITTED;
+		this.progress = "0%";
+	}
+
+	@JsonIgnore
+	public void success() {
+		this.finishTime = System.currentTimeMillis();
+		this.status = TaskStatus.SUCCESS;
+		this.progress = "100%";
+	}
+
+	public void fail(String reason) {
+		this.finishTime = System.currentTimeMillis();
+		this.status = TaskStatus.FAILURE;
+		this.failReason = reason;
+		this.progress = "";
 	}
 
 }

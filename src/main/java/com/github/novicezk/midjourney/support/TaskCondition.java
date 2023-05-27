@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.support;
 
 import cn.hutool.core.text.CharSequenceUtil;
-import com.github.novicezk.midjourney.enums.Action;
+import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -13,22 +13,22 @@ import java.util.function.Predicate;
 @Data
 @Accessors(chain = true)
 public class TaskCondition implements Predicate<Task> {
-
-	private String key;
+	private String id;
 
 	private String prompt;
 	private String promptEn;
 	private String finalPrompt;
+	private String description;
 
 	private String relatedTaskId;
 	private String messageId;
 
 	private Set<TaskStatus> statusSet;
-	private Set<Action> actionSet;
+	private Set<TaskAction> actionSet;
 
 	@Override
 	public boolean test(Task task) {
-		if (CharSequenceUtil.isNotBlank(this.key) && !this.key.equals(task.getKey())) {
+		if (CharSequenceUtil.isNotBlank(this.id) && !this.id.equals(task.getId())) {
 			return false;
 		}
 		if (CharSequenceUtil.isNotBlank(this.prompt) && !this.prompt.equals(task.getPrompt())) {
@@ -38,6 +38,9 @@ public class TaskCondition implements Predicate<Task> {
 			return false;
 		}
 		if (CharSequenceUtil.isNotBlank(this.finalPrompt) && !this.finalPrompt.equals(task.getFinalPrompt())) {
+			return false;
+		}
+		if (CharSequenceUtil.isNotBlank(this.description) && !this.description.equals(task.getDescription())) {
 			return false;
 		}
 		if (CharSequenceUtil.isNotBlank(this.relatedTaskId) && !this.relatedTaskId.equals(task.getRelatedTaskId())) {
