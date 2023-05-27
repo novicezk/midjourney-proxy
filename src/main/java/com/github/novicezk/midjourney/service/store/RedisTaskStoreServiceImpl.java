@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.service.store;
 
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskCondition;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,23 +28,23 @@ public class RedisTaskStoreServiceImpl implements TaskStoreService {
 	}
 
 	@Override
-	public void saveTask(Task task) {
+	public void save(Task task) {
 		this.redisTemplate.opsForValue().set(getRedisKey(task.getId()), task, this.timeout);
 	}
 
 	@Override
-	public void deleteTask(String id) {
+	public void delete(String id) {
 		this.redisTemplate.delete(getRedisKey(id));
 	}
 
 	@Override
-	public Task getTask(String id) {
+	public Task get(String id) {
 		return this.redisTemplate.opsForValue().get(getRedisKey(id));
 	}
 
 	@Override
-	public List<Task> listTask() {
-		Set<String> keys = redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+	public List<Task> list() {
+		Set<String> keys = this.redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
 			Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match(KEY_PREFIX + "*").count(1000).build());
 			return cursor.stream().map(String::new).collect(Collectors.toSet());
 		});
@@ -54,6 +55,16 @@ public class RedisTaskStoreServiceImpl implements TaskStoreService {
 		return keys.stream().map(operations::get)
 				.filter(Objects::nonNull)
 				.toList();
+	}
+
+	@Override
+	public List<Task> list(TaskCondition condition) {
+		return list().stream().filter(condition).toList();
+	}
+
+	@Override
+	public Task findOne(TaskCondition condition) {
+		return list().stream().filter(condition).findFirst().orElse(null);
 	}
 
 	private String getRedisKey(String id) {

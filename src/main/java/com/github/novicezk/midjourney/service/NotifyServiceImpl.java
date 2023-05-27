@@ -27,22 +27,22 @@ public class NotifyServiceImpl implements NotifyService {
 		}
 		try {
 			String paramsStr = OBJECT_MAPPER.writeValueAsString(task);
-			log.debug("任务变更, 触发推送, task: {}", paramsStr);
-			postJson(notifyHook, paramsStr);
+			ResponseEntity<String> responseEntity = postJson(notifyHook, paramsStr);
+			if (responseEntity.getStatusCode() == HttpStatus.OK) {
+				log.debug("推送任务变更成功, 任务ID: {}, status: {}", task.getId(), task.getStatus());
+			} else {
+				log.warn("推送任务变更失败, 任务ID: {}, code: {}, msg: {}", task.getId(), responseEntity.getStatusCodeValue(), responseEntity.getBody());
+			}
 		} catch (Exception e) {
-			log.warn("回调通知接口失败: {}", e.getMessage());
+			log.warn("推送任务变更失败, 任务ID: {}, 描述: {}", task.getId(), e.getMessage());
 		}
 	}
 
-	private void postJson(String notifyHook, String paramsJson) {
+	private ResponseEntity<String> postJson(String notifyHook, String paramsJson) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<String> httpEntity = new HttpEntity<>(paramsJson, headers);
-		ResponseEntity<String> responseEntity = new RestTemplate().postForEntity(notifyHook, httpEntity, String.class);
-		if (responseEntity.getStatusCode() == HttpStatus.OK) {
-			return;
-		}
-		log.warn("回调通知接口失败, code: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
+		return new RestTemplate().postForEntity(notifyHook, httpEntity, String.class);
 	}
 
 }
