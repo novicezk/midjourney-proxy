@@ -8,6 +8,13 @@ import com.github.novicezk.midjourney.service.store.RedisTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.wss.WebSocketStarter;
+import com.github.novicezk.midjourney.wss.bot.BotMessageListener;
+import com.github.novicezk.midjourney.wss.bot.BotWebSocketStarter;
+import com.github.novicezk.midjourney.wss.user.UserMessageListener;
+import com.github.novicezk.midjourney.wss.user.UserWebSocketStarter;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -45,6 +52,28 @@ public class BeanConfig {
 		redisTemplate.setKeySerializer(new StringRedisSerializer());
 		redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 		return redisTemplate;
+	}
+
+	@Bean
+	WebSocketStarter webSocketStarter(ProxyProperties properties) {
+		return properties.getDiscord().isUserWss() ? new UserWebSocketStarter(properties) : new BotWebSocketStarter(properties);
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "mj.discord", name = "user-wss", havingValue = "true")
+	UserMessageListener userMessageListener() {
+		return new UserMessageListener();
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "mj.discord", name = "user-wss", havingValue = "false")
+	BotMessageListener botMessageListener() {
+		return new BotMessageListener();
+	}
+
+	@Bean
+	ApplicationRunner enableMetaChangeReceiverInitializer(WebSocketStarter webSocketStarter) {
+		return args -> webSocketStarter.start();
 	}
 
 }

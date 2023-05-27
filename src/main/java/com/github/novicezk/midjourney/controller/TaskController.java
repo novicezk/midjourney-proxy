@@ -22,14 +22,14 @@ public class TaskController {
 
 	@ApiOperation(value = "查询所有任务")
 	@GetMapping("/list")
-	public List<Task> listTask() {
-		return this.taskStoreService.listTask();
+	public List<Task> list() {
+		return this.taskStoreService.list();
 	}
 
 	@ApiOperation(value = "指定ID获取任务")
 	@GetMapping("/{id}/fetch")
-	public Task getTask(@ApiParam(value = "任务ID") @PathVariable String id) {
-		return this.taskStoreService.getTask(id);
+	public Task fetch(@ApiParam(value = "任务ID") @PathVariable String id) {
+		return this.taskStoreService.get(id);
 	}
 
 }

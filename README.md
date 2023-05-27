@@ -3,30 +3,37 @@
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
 ## 现有功能
-- [x] 支持 Imagine、U、V 指令，绘图完成后回调
+- [x] 支持 Imagine 指令和相关U、V操作
 - [x] 支持 Describe 指令，根据图片生成 prompt
 - [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
 - [x] prompt 敏感词判断，支持覆盖调整
 - [x] 任务队列，默认队列10，并发3。可参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整mj.queue
+- [x] 支持图片生成进度
+- [x] 可选 user-token 连接 wss，以获取错误信息和完整功能
 
 ## 后续计划
 - [ ] 支持 Blend 指令，多个图片混合
-- [ ] 用户token连接wss，支持获取错误信息
+- [ ] 支持 Reroll 操作
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] 支持mysql存储，优化任务的查询方式
 - [ ] Imagine 时支持上传图片，作为垫图
+- [ ] 修复相关Bug，[Wiki / 现有问题列表](https://github.com/novicezk/midjourney-proxy/wiki/%E7%8E%B0%E6%9C%89%E9%97%AE%E9%A2%98%E5%88%97%E8%A1%A8)
 
 ## 使用前提
 1. 科学上网
 2. docker环境
 3. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
-4. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
+4. 添加自己的机器人（使用user-wss方式时，可跳过该流程）: [流程说明](./docs/discord-bot.md)
+
+## 风险须知
+1. 作图频繁等行为，触发midjourney验证码后，需尽快人工验证
+2. user-wss方式可以获取midjourney的错误信息、支持图片变换进度，但可能会增加账号风险
 
 ## 快速启动
 
 1. 下载镜像
 ```shell
-docker pull novicezk/midjourney-proxy:1.6.1
+docker pull novicezk/midjourney-proxy:2.0
 ```
 2. 启动容器，并设置参数
 ```shell
@@ -36,7 +43,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:1.6.1
+ novicezk/midjourney-proxy:2.0
 
 # 或者直接在启动命令中设置参数
 docker run -d --name midjourney-proxy \
@@ -46,14 +53,12 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:1.6.1
+ novicezk/midjourney-proxy:2.0
 ```
-3. 访问 http://localhost:8080/mj 提示 "项目启动成功"
-4. 检查discord频道中新创建的机器人是否在线
-5. 调用api接口的根路径为 `http://ip:port/mj`，接口测试地址：`http://ip:port/mj/doc.html`
+3. 访问 `http://ip:port/mj` 查看API文档
 
 ## 注意事项
-1. 常见问题及解决办法见 [Wiki / 常见问题](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98) 
+1. 常见问题及解决办法见 [Wiki / 常见问题及解决](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98) 
 2. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
 3. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
 
@@ -66,9 +71,11 @@ docker run -d --name midjourney-proxy \
 | mj.discord.guild-id | 是 | discord服务器ID |
 | mj.discord.channel-id | 是 | discord频道ID |
 | mj.discord.user-token | 是 | discord用户Token |
-| mj.discord.bot-token | 是 | 自定义机器人Token |
-| mj.discord.mj-bot-name | 否 | mj机器人名称，默认 "Midjourney Bot" |
-| mj.notify-hook | 否 | 任务状态变更回调地址 |
+| mj.discord.user-wss | 否 | 是否使用user-token连接wss，默认false(使用bot-token) |
+| mj.discord.user-agent | 否 | 调用discord接口、连接wss时的user-agent，建议从浏览器network复制 |
+| mj.discord.bot-token | 否 | 自定义机器人Token，user-wss=false时必填 |
+| mj.discord.mj-bot-name | 否 | midjourney官方机器人名称，默认 "Midjourney Bot" |
+| mj.notify-hook | 否 | 全局的任务状态变更回调地址 |
 | mj.task-store.type | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
 | mj.task-store.timeout | 否 | 任务过期时间，过期后删除，默认30天 |
 | mj.proxy.host | 否 | 代理host，全局代理不生效时设置 |
@@ -97,18 +104,12 @@ spring:
 
 ## API接口说明
 
-### 1. `/mj/trigger/submit` 提交任务
+### 1. `/mj/submit/imagine` 提交imagine任务
 POST  application/json
 ```json
 {
-    // 动作: 必传，IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）
-    "action":"IMAGINE",
     // 绘图参数: IMAGINE时必传
-    "prompt": "猫猫",
-    // 任务ID: UPSCALE、VARIATION时必传
-    "taskId": "1320098173412546",
-    // 图序号: 1～4，UPSCALE、VARIATION时必传，表示第几张图
-    "index": 3,
+    "prompt": "Cat",
     // 自定义字符串: 非必传，供回调到业务系统里使用
     "state": "test:22",
     // 支持每个任务配置不同回调地址，非必传
@@ -124,17 +125,32 @@ POST  application/json
       "result": "8498455807619990"
     }
     ```
-- code=2: 提交成功，进入队列等待
+- code=21: 任务已存在，UV时可能发生
     ```json
     {
-        "code": 2,
+        "code": 21,
+        "description": "任务已存在",
+        "result": "0741798445574458",
+        "properties": {
+            "status": "SUCCESS",
+            "imageUrl": "https://xxxx"
+         }
+    }
+    ```
+- code=22: 提交成功，进入队列等待
+    ```json
+    {
+        "code": 22,
         "description": "排队中，前面还有1个任务",
-        "result": "0741798445574458"
+        "result": "0741798445574458",
+        "properties": {
+            "numberOfQueues": 1
+         }
     }
     ```
 - other: 提交错误，description为错误描述
 
-### 2. `/mj/trigger/submit-uv` 提交选中放大或变换任务
+### 2. `/mj/submit/simple-change` 绘图变化-simple
 POST  application/json
 ```json
 {
@@ -147,9 +163,9 @@ POST  application/json
     "notifyHook": "http://localhost:8113/notify"
 }
 ```
-返回结果同 `/trigger/submit`
+返回结果同 `/mj/submit/imagine`
 
-### 3. `/mj/trigger/describe` 提交describe任务
+### 3. `/mj/submit/describe` 提交describe任务
 POST  application/json
 ```json
 {
@@ -161,7 +177,7 @@ POST  application/json
     "notifyHook": "http://localhost:8113/notify"
 }
 ```
-返回结果同 `/mj/trigger/submit`
+返回结果同 `/mj/submit/imagine`
 
 后续任务完成后，task中prompt即为图片生成的prompt
 ```json
@@ -176,7 +192,9 @@ POST  application/json
   "startTime":1683779737321,
   "finishTime":1683779741711,
   "imageUrl":"https://cdn.discordapp.com/ephemeral-attachments/xxxx/xxxx/3856553004865376.png",
-  "status":"SUCCESS"
+  "status":"SUCCESS",
+  "progress":"100%",
+  "failReason":""
 }
 ```
 
@@ -200,11 +218,13 @@ POST  application/json
     // 开始处理时间
     "startTime":1682473785130,
     // 结束时间
-    "finishTime":null,
-    // 生成图片的url, 成功时有值
+    "finishTime":1682473935151,
+    // 生成图片的url, 成功或执行中时有值，可能为png或webp
     "imageUrl":"https://cdn.discordapp.com/attachments/xxx/xxx/xxxx_xxxx.png",
     // 任务状态: NOT_START（未启动）、SUBMITTED（已提交处理）、IN_PROGRESS（执行中）、FAILURE（失败）、SUCCESS（成功）
-    "status":"IN_PROGRESS",
+    "status":"SUCCESS",
+    // 进度，可能为空字符或百分比
+    "progress":"100%",
     // 失败原因, 失败时有值
     "failReason":""
 }
@@ -226,6 +246,7 @@ POST  application/json
     "finishTime":null,
     "imageUrl":null,
     "status":"IN_PROGRESS",
+    "progress":"0%",
     "failReason":""
   }
 ]
@@ -246,6 +267,7 @@ POST  application/json
     "finishTime":null,
     "imageUrl":null,
     "status":"IN_PROGRESS",
+    "progress":"0%",
     "failReason":""
 }
 ```

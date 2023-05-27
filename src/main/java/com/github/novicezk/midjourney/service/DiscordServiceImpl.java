@@ -4,6 +4,7 @@ package com.github.novicezk.midjourney.service;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.result.Message;
 import eu.maxschuster.dataurl.DataUrl;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class DiscordServiceImpl implements DiscordService {
 	private String imagineParamsJson;
 	private String upscaleParamsJson;
 	private String variationParamsJson;
-	private String resetParamsJson;
+	private String rerollParamsJson;
 	private String describeParamsJson;
 
 	private String discordUserToken;
@@ -51,7 +52,7 @@ public class DiscordServiceImpl implements DiscordService {
 		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
 		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
 		this.variationParamsJson = ResourceUtil.readUtf8Str("api-params/variation.json");
-		this.resetParamsJson = ResourceUtil.readUtf8Str("api-params/reset.json");
+		this.rerollParamsJson = ResourceUtil.readUtf8Str("api-params/reroll.json");
 		this.describeParamsJson = ResourceUtil.readUtf8Str("api-params/describe.json");
 	}
 
@@ -86,8 +87,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> reset(String messageId, String messageHash) {
-		String paramsStr = this.resetParamsJson.replace("$guild_id", this.discordGuildId)
+	public Message<Void> reroll(String messageId, String messageHash) {
+		String paramsStr = this.rerollParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$message_id", messageId)
 				.replace("$message_hash", messageHash);
@@ -106,11 +107,11 @@ public class DiscordServiceImpl implements DiscordService {
 			ResponseEntity<String> responseEntity = postJson(this.discordUploadUrl, params.toString());
 			if (responseEntity.getStatusCode() != HttpStatus.OK) {
 				log.error("上传图片到discord失败, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
-				return Message.of(Message.VALIDATION_ERROR_CODE, "上传图片到discord失败");
+				return Message.of(ReturnCode.VALIDATION_ERROR, "上传图片到discord失败");
 			}
 			JSONArray array = new JSONObject(responseEntity.getBody()).getJSONArray("attachments");
 			if (array.length() == 0) {
-				return Message.of(Message.VALIDATION_ERROR_CODE, "上传图片到discord失败");
+				return Message.of(ReturnCode.VALIDATION_ERROR, "上传图片到discord失败");
 			}
 			String uploadUrl = array.getJSONObject(0).getString("upload_url");
 			String uploadFilename = array.getJSONObject(0).getString("upload_filename");
@@ -118,7 +119,7 @@ public class DiscordServiceImpl implements DiscordService {
 			return Message.success(uploadFilename);
 		} catch (Exception e) {
 			log.error("上传图片到discord失败", e);
-			return Message.of(Message.FAILURE_CODE, "上传图片到discord失败");
+			return Message.of(ReturnCode.FAILURE, "上传图片到discord失败");
 		}
 	}
 

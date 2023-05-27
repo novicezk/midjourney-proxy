@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
-public class ScheduledTasks {
+public class TaskTimeoutSchedule {
 	private final TaskService taskService;
 	private final ProxyProperties properties;
 
@@ -22,12 +22,10 @@ public class ScheduledTasks {
 		long timeout = TimeUnit.MINUTES.toMillis(this.properties.getQueue().getTimeoutMinutes());
 		TaskCondition condition = new TaskCondition()
 				.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-		this.taskService.findTask(condition)
+		this.taskService.findRunningTask(condition)
 				.filter(t -> currentTime - t.getStartTime() > timeout)
 				.forEach(task -> {
-					task.setFinishTime(System.currentTimeMillis());
-					task.setFailReason("任务超时");
-					task.setStatus(TaskStatus.FAILURE);
+					task.fail("任务超时");
 					task.awake();
 				});
 	}
