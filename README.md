@@ -2,6 +2,9 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.0&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+
 ## 现有功能
 - [x] 支持 Imagine 指令和相关U、V操作
 - [x] 支持 Describe 指令，根据图片生成 prompt
@@ -57,12 +60,19 @@ docker run -d --name midjourney-proxy \
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
+## 镜像构建
+```shell
+git clone git@github.com:novicezk/midjourney-proxy.git
+cd midjourney-proxy
+docker build . -t midjourney-proxy
+```
+
 ## 注意事项
 1. 常见问题及解决办法见 [Wiki / 常见问题及解决](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98) 
 2. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
 3. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
 
- <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/manager-qrcode.png" width = "320" height = "320" alt="微信二维码" align=center />
+ <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/manager-qrcode.png" width="320" alt="微信二维码"/>
 
 ## 配置项
 
@@ -273,5 +283,10 @@ POST  application/json
 ```
 
 ## 应用项目
+- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
+- 依赖此项目且开源的，欢迎联系作者，加到此处展示
 
-- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再维护
+## 其它
+如果觉得这个项目对你有所帮助，请帮忙点个star；也可以请作者喝杯茶～
+
+ <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/receipt-code.png" width="220" alt="二维码"/>
