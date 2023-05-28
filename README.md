@@ -2,7 +2,7 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.0&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.0.1&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 现有功能
@@ -20,35 +20,33 @@
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] 支持mysql存储，优化任务的查询方式
 - [ ] Imagine 时支持上传图片，作为垫图
-- [ ] 修复相关Bug，[Wiki / 现有问题列表](https://github.com/novicezk/midjourney-proxy/wiki/%E7%8E%B0%E6%9C%89%E9%97%AE%E9%A2%98%E5%88%97%E8%A1%A8)
+- [ ] 修复相关Bug，[Wiki / 已知问题](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98)
 
 ## 使用前提
 1. 科学上网
 2. docker环境
 3. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
-4. 添加自己的机器人（使用user-wss方式时，可跳过该流程）: [流程说明](./docs/discord-bot.md)
+4. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
+5. user-wss方式，可不添加自己的机器人，但仍需参考[流程说明](./docs/discord-bot.md)的第4、5步，获取用户Token、服务器ID、频道ID
 
 ## 风险须知
 1. 作图频繁等行为，触发midjourney验证码后，需尽快人工验证
 2. user-wss方式可以获取midjourney的错误信息、支持图片变换进度，但可能会增加账号风险
 
 ## 快速启动
-
-1. 下载镜像
+1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
+2. 启动容器，映射config目录
 ```shell
-docker pull novicezk/midjourney-proxy:2.0
-```
-2. 启动容器，并设置参数
-```shell
-# /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)
-# 参考src/main/resources下的文件
 docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:2.0
+ novicezk/midjourney-proxy:2.0.1
+```
+3. 访问 `http://ip:port/mj` 查看API文档
 
-# 或者直接在启动命令中设置参数
+附: 不映射config目录方式，直接在启动命令中设置参数
+```shell
 docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -e mj.discord.guild-id=xxx \
@@ -56,61 +54,34 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.user-token=xxx \
  -e mj.discord.bot-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:2.0
+ novicezk/midjourney-proxy:2.0.1
 ```
-3. 访问 `http://ip:port/mj` 查看API文档
 
 ## 注意事项
-1. 常见问题及解决办法见 [Wiki / 常见问题及解决](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98) 
+1. 常见问题及解决办法见 [Wiki / FAQ](https://github.com/novicezk/midjourney-proxy/wiki/FAQ) 
 2. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
 3. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
 
  <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/manager-qrcode.png" width="320" alt="微信二维码"/>
 
 ## 配置项
+- mj.discord.guild-id：discord服务器ID
+- mj.discord.channel-id：discord频道ID
+- mj.discord.user-token：discord用户Token
+- mj.discord.user-wss：是否使用user-token连接wss，默认false(使用bot-token)
+- mj.discord.user-agent：调用discord接口、连接wss时的user-agent，默认使用作者的，建议从浏览器network复制替换掉
+- mj.discord.bot-token：自定义机器人Token，user-wss=false时必填
+- 更多配置查看 [Wiki / 配置项](https://github.com/novicezk/midjourney-proxy/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9)
 
-| 变量名 | 非空 | 描述 |
-| :-----| :----: | :---- |
-| mj.discord.guild-id | 是 | discord服务器ID |
-| mj.discord.channel-id | 是 | discord频道ID |
-| mj.discord.user-token | 是 | discord用户Token |
-| mj.discord.user-wss | 否 | 是否使用user-token连接wss，默认false(使用bot-token) |
-| mj.discord.user-agent | 否 | 调用discord接口、连接wss时的user-agent，建议从浏览器network复制 |
-| mj.discord.bot-token | 否 | 自定义机器人Token，user-wss=false时必填 |
-| mj.discord.mj-bot-name | 否 | midjourney官方机器人名称，默认 "Midjourney Bot" |
-| mj.notify-hook | 否 | 全局的任务状态变更回调地址 |
-| mj.task-store.type | 否 | 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis |
-| mj.task-store.timeout | 否 | 任务过期时间，过期后删除，默认30天 |
-| mj.proxy.host | 否 | 代理host，全局代理不生效时设置 |
-| mj.proxy.port | 否 | 代理port，全局代理不生效时设置 |
-| mj.queue.core-size | 否 | 并发数，默认为3 |
-| mj.queue.queue-size | 否 | 等待队列，默认长度10 |
-| mj.queue.timeout-minutes | 否 | 任务超时时间，默认为5分钟 |
-| mj.translate-way | 否 | 中文prompt翻译方式，可选null(默认)、baidu、gpt |
-| mj.baidu-translate.appid | 否 | 百度翻译的appid |
-| mj.baidu-translate.app-secret | 否 | 百度翻译的app-secret |
-| mj.openai.gpt-api-key | 否 | gpt的api-key |
-| mj.openai.timeout | 否 | openai调用的超时时间，默认30秒 |
-| mj.openai.model | 否 | openai的模型，默认gpt-3.5-turbo |
-| mj.openai.max-tokens | 否 | 返回结果的最大分词数，默认2048 |
-| mj.openai.temperature | 否 | 相似度(0-2.0)，默认0 |
-| spring.redis | 否 | 任务存储方式设置为redis，需配置redis相关属性 |
+## 本地开发
+- 依赖java17和maven
+- 更改配置项: 修改src/main/application.yml
+- 项目运行: 启动ProxyApplication的main函数
+- 更改代码后，构建镜像: `docker build . -t midjourney-proxy`
 
-spring.redis配置参考
-```yaml
-spring:
-  redis:
-    host: 10.107.xxx.xxx
-    port: 6379
-    password: xxx
-```
-
-## 本地开发-镜像构建
-```shell
-git clone git@github.com:novicezk/midjourney-proxy.git
-cd midjourney-proxy
-docker build . -t midjourney-proxy
-```
+## Wiki链接
+1. [Wiki / API接口说明](https://github.com/novicezk/midjourney-proxy/wiki/API%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E)
+2. [Wiki / 任务变更回调](https://github.com/novicezk/midjourney-proxy/wiki/%E4%BB%BB%E5%8A%A1%E5%8F%98%E6%9B%B4%E5%9B%9E%E8%B0%83)
 
 ## 应用项目
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
@@ -120,116 +91,3 @@ docker build . -t midjourney-proxy
 如果觉得这个项目对你有所帮助，请帮忙点个star；也可以请作者喝杯茶～
 
  <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/receipt-code.png" width="220" alt="二维码"/>
-
-
-## 附: API接口说明
-`http://ip:port/mj` 已有api文档，此处仅作补充
-
-### 1. 任务提交返回
-- code=1: 提交成功，result为任务ID
-    ```json
-    {
-      "code": 1,
-      "description": "成功",
-      "result": "8498455807619990"
-    }
-    ```
-- code=21: 任务已存在，UV时可能发生
-    ```json
-    {
-        "code": 21,
-        "description": "任务已存在",
-        "result": "0741798445574458",
-        "properties": {
-            "status": "SUCCESS",
-            "imageUrl": "https://xxxx"
-         }
-    }
-    ```
-- code=22: 提交成功，进入队列等待
-    ```json
-    {
-        "code": 22,
-        "description": "排队中，前面还有1个任务",
-        "result": "0741798445574458",
-        "properties": {
-            "numberOfQueues": 1
-         }
-    }
-    ```
-- other: 提交错误，description为错误描述
-
-### 2. `/mj/submit/simple-change` 绘图变化-simple
-接口作用同 `/mj/submit/change`(绘图变化)，传参方式不同，该接口接收content，格式为`ID 操作`，例如：1320098173412546 U2
-
-- 放大 U1～U4
-- 变换 V1～V4
-
-### 3. `/mj/submit/describe` 提交describe任务
-```json
-{
-    // 图片的base64字符串
-    "base64": "data:image/png;base64,xxx"
-}
-```
-
-后续任务完成后，task中prompt即为图片生成的prompt
-```json
-{
-  "action":"DESCRIBE",
-  "id":"3856553004865376",
-  "prompt":"1️⃣ xxx1 --ar 5:4\n\n2️⃣ xxx2 --ar 5:4\n\n3️⃣ xxx3 --ar 5:4\n\n4️⃣ xxx4 --ar 5:4",
-  "promptEn":"1️⃣ xxx1 --ar 5:4\n\n2️⃣ xxx2 --ar 5:4\n\n3️⃣ xxx3 --ar 5:4\n\n4️⃣ xxx4 --ar 5:4",
-  "description":"/describe 3856553004865376.png",
-  "imageUrl":"https://cdn.discordapp.com/ephemeral-attachments/xxxx/xxxx/3856553004865376.png",
-  // ...
-}
-```
-
-### 4. 任务字段说明
-```json
-{
-    // 动作: IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）、DESCRIBE（图生文）
-    "action":"IMAGINE",
-    // 任务ID
-    "id":"8498455807628990",
-    // 绘图参数
-    "prompt":"猫猫",
-    // 翻译后的绘图参数
-    "promptEn": "Cat",
-    // 执行的命令
-    "description":"/imagine 猫猫",
-    // 自定义参数
-    "state":"test:22",
-    // 提交时间
-    "submitTime":1682473784826,
-    // 开始处理时间
-    "startTime":1682473785130,
-    // 结束时间
-    "finishTime":1682473935151,
-    // 生成图片的url, 成功或执行中时有值，可能为png或webp
-    "imageUrl":"https://cdn.discordapp.com/attachments/xxx/xxx/xxxx_xxxx.png",
-    // 任务状态: NOT_START（未启动）、SUBMITTED（已提交处理）、IN_PROGRESS（执行中）、FAILURE（失败）、SUCCESS（成功）
-    "status":"SUCCESS",
-    // 进度，可能为空字符或百分比
-    "progress":"100%",
-    // 失败原因, 失败时有值
-    "failReason":""
-}
-```
-
-## `mj.notify-hook` 任务变更回调
-任务状态变化或进度改变时，会触发回调到业务系统，默认地址为配置的mj.notify-hook，任务提交时支持传`notifyHook`以改变此任务的回调地址
-
-POST  application/json
-```json
-{
-    "action":"IMAGINE",
-    "id":"8498455807628990",
-    "prompt":"猫猫",
-    "promptEn": "Cat",
-    "description":"/imagine 猫猫",
-    "state":"test:22"
-    // 更多字段参考 4. 任务字段说明
-}
-```
