@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.wss.user;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import com.neovisionaries.ws.client.WebSocket;
@@ -45,8 +46,11 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 
 	@Resource
 	private UserMessageListener userMessageListener;
+	private final ProxyProperties properties;
 
 	public UserWebSocketStarter(ProxyProperties properties) {
+		this.properties = properties;
+		initProxy(properties);
 		this.userToken = properties.getDiscord().getUserToken();
 		this.userAgent = properties.getDiscord().getUserAgent();
 		UserAgent agent = UserAgent.parseUserAgentString(this.userAgent);
@@ -90,7 +94,8 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 			throw new IllegalStateException("Websocket already started");
 		}
 		this.decompressor = new ZlibDecompressor(2048);
-		this.socket = new WebSocketFactory().setConnectionTimeout(5000).createSocket(GATEWAY_URL);
+		WebSocketFactory webSocketFactory = createWebSocketFactory(this.properties);
+		this.socket = webSocketFactory.createSocket(GATEWAY_URL);
 		this.socket.addListener(this);
 		this.socket.addHeader("Accept-Encoding", "gzip, deflate, br")
 				.addHeader("Accept-Language", "en-US,en;q=0.9")
@@ -107,24 +112,6 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		this.connected = true;
 	}
 
-	private void sayHello() {
-		DataObject data;
-		if (CharSequenceUtil.isBlank(this.sessionId)) {
-			data = DataObject.empty()
-					.put("op", WebSocketCode.IDENTIFY)
-					.put("d", this.auth);
-		} else {
-			data = DataObject.empty()
-					.put("op", WebSocketCode.RESUME)
-					.put("d", DataObject.empty()
-							.put("token", this.userToken)
-							.put("session_id", this.sessionId)
-							.put("seq", Math.max(this.sequence.get() - 1, 0))
-					);
-		}
-		send(data);
-	}
-
 	@Override
 	public void onBinaryMessage(WebSocket websocket, byte[] binary) throws Exception {
 		byte[] decompressBinary = this.decompressor.decompress(binary);
@@ -138,8 +125,10 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 			this.sequence.incrementAndGet();
 		}
 		if (opCode == WebSocketCode.HELLO) {
-			long interval = data.getObject("d").getLong("heartbeat_interval");
-			this.heartbeatTask = this.heartExecutor.scheduleAtFixedRate(this::heartbeat, interval, interval, TimeUnit.MILLISECONDS);
+			if (this.heartbeatTask == null) {
+				long interval = data.getObject("d").getLong("heartbeat_interval");
+				this.heartbeatTask = this.heartExecutor.scheduleAtFixedRate(this::heartbeat, interval, interval, TimeUnit.MILLISECONDS);
+			}
 			sayHello();
 		} else if (opCode == WebSocketCode.HEARTBEAT_ACK) {
 			log.trace("[gateway] Heartbeat ack.");
@@ -157,43 +146,72 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	}
 
 	@Override
+	public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) {
+		reset();
+		int code = 1000;
+		String closeReason = "";
+		if (clientCloseFrame != null) {
+			code = clientCloseFrame.getCloseCode();
+			closeReason = clientCloseFrame.getCloseReason();
+		} else if (serverCloseFrame != null) {
+			code = serverCloseFrame.getCloseCode();
+			closeReason = serverCloseFrame.getCloseReason();
+		}
+		if (code >= 4010 || code == 4004) {
+			log.warn("[gateway] Websocket closed and can't reconnect! code: {}, reason: {}", code, closeReason);
+			return;
+		}
+		log.warn("[gateway] Websocket closed and will be reconnect... code: {}, reason: {}", code, closeReason);
+		ThreadUtil.execute(() -> {
+			try {
+				start();
+			} catch (Exception e) {
+				log.error("[gateway] Websocket reconnect error", e);
+				Thread.currentThread().interrupt();
+			}
+		});
+	}
+
+	@Override
 	public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
 		log.error("[gateway] There was some websocket error", cause);
 	}
 
-	@Override
-	public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) {
-		clearHeartbeat();
-		this.connected = false;
-		this.sequence.set(0);
-		this.socket = null;
-		this.decompressor = null;
-		if (clientCloseFrame != null) {
-			int code = clientCloseFrame.getCloseCode();
-			log.debug("[gateway] Websocket client closed. status code: {}, reason: {}", code, clientCloseFrame.getCloseReason());
-		} else if (serverCloseFrame != null) {
-			log.debug("[gateway] Websocket server closed. status code: {}, reason: {}", serverCloseFrame.getCloseCode(), serverCloseFrame.getCloseReason());
+	private void sayHello() {
+		DataObject data;
+		if (CharSequenceUtil.isBlank(this.sessionId)) {
+			data = DataObject.empty()
+					.put("op", WebSocketCode.IDENTIFY)
+					.put("d", this.auth);
+			log.trace("[gateway] Say hello: identify");
+		} else {
+			data = DataObject.empty()
+					.put("op", WebSocketCode.RESUME)
+					.put("d", DataObject.empty()
+							.put("token", this.userToken)
+							.put("session_id", this.sessionId)
+							.put("seq", Math.max(this.sequence.get() - 1, 0))
+					);
+			log.trace("[gateway] Say hello: resume");
 		}
-		try {
-			log.debug("[gateway] Websocket reconnect...");
-			start();
-		} catch (Exception e) {
-			log.error("[gateway] Websocket reconnect error", e);
-			Thread.currentThread().interrupt();
-		}
-	}
-
-	private void clearHeartbeat() {
-		if (this.heartbeatTask != null) {
-			this.heartbeatTask.cancel(true);
-			this.heartbeatTask = null;
-		}
+		send(data);
 	}
 
 	private void close(String reason) {
 		this.connected = false;
-		clearHeartbeat();
 		this.socket.disconnect(1000, reason);
+	}
+
+	private void reset() {
+		this.connected = false;
+		this.sessionId = null;
+		this.sequence.set(0);
+		this.decompressor = null;
+		this.socket = null;
+		if (this.heartbeatTask != null) {
+			this.heartbeatTask.cancel(true);
+			this.heartbeatTask = null;
+		}
 	}
 
 	private void heartbeat() {
