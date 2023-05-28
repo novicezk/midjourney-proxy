@@ -60,13 +60,6 @@ docker run -d --name midjourney-proxy \
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
-## 镜像构建
-```shell
-git clone git@github.com:novicezk/midjourney-proxy.git
-cd midjourney-proxy
-docker build . -t midjourney-proxy
-```
-
 ## 注意事项
 1. 常见问题及解决办法见 [Wiki / 常见问题及解决](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98) 
 2. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
@@ -112,21 +105,27 @@ spring:
     password: xxx
 ```
 
-## API接口说明
-
-### 1. `/mj/submit/imagine` 提交imagine任务
-POST  application/json
-```json
-{
-    // 绘图参数: IMAGINE时必传
-    "prompt": "Cat",
-    // 自定义字符串: 非必传，供回调到业务系统里使用
-    "state": "test:22",
-    // 支持每个任务配置不同回调地址，非必传
-    "notifyHook": "http://localhost:8113/notify"
-}
+## 本地开发-镜像构建
+```shell
+git clone git@github.com:novicezk/midjourney-proxy.git
+cd midjourney-proxy
+docker build . -t midjourney-proxy
 ```
-返回 `Message` 描述
+
+## 应用项目
+- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
+- 依赖此项目且开源的，欢迎联系作者，加到此处展示
+
+## 其它
+如果觉得这个项目对你有所帮助，请帮忙点个star；也可以请作者喝杯茶～
+
+ <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/receipt-code.png" width="220" alt="二维码"/>
+
+
+## 附: API接口说明
+`http://ip:port/mj` 已有api文档，此处仅作补充
+
+### 1. 任务提交返回
 - code=1: 提交成功，result为任务ID
     ```json
     {
@@ -161,33 +160,18 @@ POST  application/json
 - other: 提交错误，description为错误描述
 
 ### 2. `/mj/submit/simple-change` 绘图变化-simple
-POST  application/json
-```json
-{
-    // 自定义参数，非必传
-    "state": "test:22",
-    // 任务描述: 选中ID为1320098173412546的第2张图片放大
-    // 放大 U1～U4 ，变换 V1～V4
-    "content": "1320098173412546 U2",
-    // 支持每个任务配置不同回调地址，非必传
-    "notifyHook": "http://localhost:8113/notify"
-}
-```
-返回结果同 `/mj/submit/imagine`
+接口作用同 `/mj/submit/change`(绘图变化)，传参方式不同，该接口接收content，格式为`ID 操作`，例如：1320098173412546 U2
+
+- 放大 U1～U4
+- 变换 V1～V4
 
 ### 3. `/mj/submit/describe` 提交describe任务
-POST  application/json
 ```json
 {
-    // 自定义参数，非必传
-    "state": "test:22",
     // 图片的base64字符串
-    "base64": "data:image/png;base64,xxx",
-    // 支持每个任务配置不同回调地址，非必传
-    "notifyHook": "http://localhost:8113/notify"
+    "base64": "data:image/png;base64,xxx"
 }
 ```
-返回结果同 `/mj/submit/imagine`
 
 后续任务完成后，task中prompt即为图片生成的prompt
 ```json
@@ -197,21 +181,15 @@ POST  application/json
   "prompt":"1️⃣ xxx1 --ar 5:4\n\n2️⃣ xxx2 --ar 5:4\n\n3️⃣ xxx3 --ar 5:4\n\n4️⃣ xxx4 --ar 5:4",
   "promptEn":"1️⃣ xxx1 --ar 5:4\n\n2️⃣ xxx2 --ar 5:4\n\n3️⃣ xxx3 --ar 5:4\n\n4️⃣ xxx4 --ar 5:4",
   "description":"/describe 3856553004865376.png",
-  "state":"test:22",
-  "submitTime":1683779732983,
-  "startTime":1683779737321,
-  "finishTime":1683779741711,
   "imageUrl":"https://cdn.discordapp.com/ephemeral-attachments/xxxx/xxxx/3856553004865376.png",
-  "status":"SUCCESS",
-  "progress":"100%",
-  "failReason":""
+  // ...
 }
 ```
 
-### 4. `/mj/task/{id}/fetch` GET 查询单个任务
+### 4. 任务字段说明
 ```json
 {
-    // 动作: IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）
+    // 动作: IMAGINE（绘图）、UPSCALE（选中放大）、VARIATION（选中变换）、DESCRIBE（图生文）
     "action":"IMAGINE",
     // 任务ID
     "id":"8498455807628990",
@@ -240,29 +218,9 @@ POST  application/json
 }
 ```
 
-### 5. `/mj/task/list` GET 查询所有任务
-
-```json
-[
-  {
-    "action":"IMAGINE",
-    "id":"8498455807628990",
-    "prompt":"猫猫",
-    "promptEn": "Cat",
-    "description":"/imagine 猫猫",
-    "state":"test:22",
-    "submitTime":1682473784826,
-    "startTime":1682473785130,
-    "finishTime":null,
-    "imageUrl":null,
-    "status":"IN_PROGRESS",
-    "progress":"0%",
-    "failReason":""
-  }
-]
-```
-
 ## `mj.notify-hook` 任务变更回调
+任务状态变化或进度改变时，会触发回调到业务系统，默认地址为配置的mj.notify-hook，任务提交时支持传`notifyHook`以改变此任务的回调地址
+
 POST  application/json
 ```json
 {
@@ -271,22 +229,7 @@ POST  application/json
     "prompt":"猫猫",
     "promptEn": "Cat",
     "description":"/imagine 猫猫",
-    "state":"test:22",
-    "submitTime":1682473784826,
-    "startTime":1682473785130,
-    "finishTime":null,
-    "imageUrl":null,
-    "status":"IN_PROGRESS",
-    "progress":"0%",
-    "failReason":""
+    "state":"test:22"
+    // 更多字段参考 4. 任务字段说明
 }
 ```
-
-## 应用项目
-- [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
-- 依赖此项目且开源的，欢迎联系作者，加到此处展示
-
-## 其它
-如果觉得这个项目对你有所帮助，请帮忙点个star；也可以请作者喝杯茶～
-
- <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/receipt-code.png" width="220" alt="二维码"/>
