@@ -1,14 +1,12 @@
 #!/bin/bash
 set -e -u -o pipefail
 
-VERSION=latest
-
-if [ $# -ge 1 ]; then
-  VERSION=$1
+if [ $# -lt 1 ]; then
+  echo 'version is required'
+  exit 1
 fi
 
-echo "remove old manifest..."
-docker manifest rm novicezk/midjourney-proxy:${VERSION}
+VERSION=$1
 
 echo "create manifest..."
 docker manifest create novicezk/midjourney-proxy:${VERSION} novicezk/midjourney-proxy-amd64:${VERSION} novicezk/midjourney-proxy-arm64v8:${VERSION}
