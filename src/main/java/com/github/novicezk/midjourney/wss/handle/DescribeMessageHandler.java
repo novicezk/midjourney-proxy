@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * describe消息处理.
+ */
 @Component
 public class DescribeMessageHandler extends MessageHandler {
 
