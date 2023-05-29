@@ -21,6 +21,11 @@ public enum TaskAction {
 	/**
 	 * 图转prompt.
 	 */
-	DESCRIBE
+	DESCRIBE,
+	/**
+	 * 多图混合.
+	 */
+	BLEND
+
 
 }

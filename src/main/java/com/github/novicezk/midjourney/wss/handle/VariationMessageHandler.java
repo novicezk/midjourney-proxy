@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * variation消息处理; todo: 进度、完成的content不包含index，同个任务不同变换对应不上.
+ * variation消息处理. todo: 待兼容blend
  * 开始(create): Making variations for image #1 with prompt **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
  * 进度(update): **[0152010266005012] cat** - Variations by <@1012983546824114217> (0%) (relaxed)
  * 完成(create): **[0152010266005012] cat** - Variations by <@1012983546824114217> (relaxed)
@@ -47,6 +47,7 @@ public class VariationMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
+				task.setMessageId(message.getString("id"));
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 				return;
@@ -60,7 +61,7 @@ public class VariationMessageHandler extends MessageHandler {
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition)
-					.min(Comparator.comparing(Task::getSubmitTime))
+					.max(Comparator.comparing(Task::getProgress))
 					.orElse(null);
 			if (task == null) {
 				return;
@@ -73,12 +74,11 @@ public class VariationMessageHandler extends MessageHandler {
 				return;
 			}
 			TaskCondition condition = new TaskCondition()
-					.setRelatedTaskId(parseData.getTaskId())
+					.setMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskService.findRunningTask(condition)
-					.min(Comparator.comparing(Task::getSubmitTime))
-					.orElse(null);
+					.findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -89,7 +89,7 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	/**
-	 * bot-wss模式，取不到执行进度.
+	 * bot-wss模式，取不到执行进度; todo: 同个任务不同变换对应不上.
 	 *
 	 * @param messageType messageType
 	 * @param message     message

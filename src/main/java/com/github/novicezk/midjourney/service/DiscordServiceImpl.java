@@ -21,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -31,12 +32,15 @@ public class DiscordServiceImpl implements DiscordService {
 	private String userAgent;
 
 	private String discordUploadUrl;
+	private String discordSendMessageUrl;
 
 	private String imagineParamsJson;
 	private String upscaleParamsJson;
 	private String variationParamsJson;
 	private String rerollParamsJson;
 	private String describeParamsJson;
+	private String blendParamsJson;
+	private String messageParamsJson;
 
 	private String discordUserToken;
 	private String discordGuildId;
@@ -48,12 +52,15 @@ public class DiscordServiceImpl implements DiscordService {
 		this.discordGuildId = this.properties.getDiscord().getGuildId();
 		this.discordChannelId = this.properties.getDiscord().getChannelId();
 		this.discordUploadUrl = "https://discord.com/api/v9/channels/" + this.discordChannelId + "/attachments";
+		this.discordSendMessageUrl = "https://discord.com/api/v9/channels/" + this.discordChannelId + "/messages";
 		this.userAgent = this.properties.getDiscord().getUserAgent();
 		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
 		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
 		this.variationParamsJson = ResourceUtil.readUtf8Str("api-params/variation.json");
 		this.rerollParamsJson = ResourceUtil.readUtf8Str("api-params/reroll.json");
 		this.describeParamsJson = ResourceUtil.readUtf8Str("api-params/describe.json");
+		this.blendParamsJson = ResourceUtil.readUtf8Str("api-params/blend.json");
+		this.messageParamsJson = ResourceUtil.readUtf8Str("api-params/message.json");
 	}
 
 	@Override
@@ -96,6 +103,38 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
+	public Message<Void> describe(String finalFileName) {
+		String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
+		String paramsStr = this.describeParamsJson.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId)
+				.replace("$file_name", fileName)
+				.replace("$final_file_name", finalFileName);
+		return postJsonAndCheckStatus(paramsStr);
+	}
+
+	@Override
+	public Message<Void> blend(List<String> finalFileNames) {
+		String paramsStr = this.blendParamsJson.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId);
+		JSONObject params = new JSONObject(paramsStr);
+		JSONArray options = params.getJSONObject("data").getJSONArray("options");
+		JSONArray attachments = params.getJSONObject("data").getJSONArray("attachments");
+		for (int i = 0; i < finalFileNames.size(); i++) {
+			String finalFileName = finalFileNames.get(i);
+			String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
+			JSONObject attachment = new JSONObject().put("id", String.valueOf(i))
+					.put("filename", fileName)
+					.put("uploaded_filename", finalFileName);
+			attachments.put(attachment);
+			JSONObject option = new JSONObject().put("type", 11)
+					.put("name", "image" + (i + 1))
+					.put("value", i);
+			options.put(option);
+		}
+		return postJsonAndCheckStatus(params.toString());
+	}
+
+	@Override
 	public Message<String> upload(String fileName, DataUrl dataUrl) {
 		try {
 			JSONObject fileObj = new JSONObject();
@@ -124,13 +163,23 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> describe(String finalFileName) {
+	public Message<String> sendImageMessage(String content, String finalFileName) {
 		String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
-		String paramsStr = this.describeParamsJson.replace("$guild_id", this.discordGuildId)
+		String paramsStr = this.messageParamsJson.replace("$content", content)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$file_name", fileName)
 				.replace("$final_file_name", finalFileName);
-		return postJsonAndCheckStatus(paramsStr);
+		ResponseEntity<String> responseEntity = postJson(this.discordSendMessageUrl, paramsStr);
+		if (responseEntity.getStatusCode() != HttpStatus.OK) {
+			log.error("发送图片消息到discord失败, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
+			return Message.of(ReturnCode.VALIDATION_ERROR, "发送图片消息到discord失败");
+		}
+		JSONObject result = new JSONObject(responseEntity.getBody());
+		JSONArray attachments = result.optJSONArray("attachments");
+		if (!attachments.isEmpty()) {
+			return Message.success(attachments.getJSONObject(0).optString("url"));
+		}
+		return Message.failure("发送图片消息到discord失败: 图片不存在");
 	}
 
 	private void putFile(String uploadUrl, DataUrl dataUrl) {

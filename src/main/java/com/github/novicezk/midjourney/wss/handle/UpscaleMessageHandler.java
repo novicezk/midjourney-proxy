@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * upscale消息处理.
+ * upscale消息处理. todo: 待兼容blend
  * 开始(create): Upscaling image #1 with **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
  * 进度: 无
  * 完成(create): **[0152010266005012] cat** - Image #1 <@1012983546824114217>

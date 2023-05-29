@@ -24,15 +24,17 @@ public class ErrorMessageHandler extends MessageHandler {
 		}
 		DataObject embed = embeds.getObject(0);
 		String title = embed.getString("title", null);
-		if (!CharSequenceUtil.equalsAny(title, "Action needed to continue", "Action required to continue", "Internal error")) {
-			return;
-		}
 		String description = embed.getString("description", null);
 		String footerText = "";
 		Optional<DataObject> footer = embed.optObject("footer");
 		if (footer.isPresent()) {
 			footerText = footer.get().getString("text", "");
 		}
+		if (!CharSequenceUtil.equalsAny(title, "Action needed to continue", "Action required to continue", "Internal error")) {
+			log.warn("discord任务失败, {}: {} \n{}", title, description, footerText);
+			return;
+		}
+
 		Task targetTask = null;
 		if (CharSequenceUtil.startWith(footerText, "/imagine ")) {
 			String finalPrompt = CharSequenceUtil.subAfter(footerText, "/imagine ", false);
@@ -54,8 +56,7 @@ public class ErrorMessageHandler extends MessageHandler {
 			log.error("discord任务失败, 需要人工验证, {}", footerText);
 			reason = "需要人工验证，请联系管理员";
 		} else {
-			// 图片验证码
-			log.error("discord任务失败, {}, {}", description, footerText);
+			log.error("discord任务失败, {}: {}\n {}", title, description, footerText);
 			reason = description;
 		}
 		if (targetTask != null) {
