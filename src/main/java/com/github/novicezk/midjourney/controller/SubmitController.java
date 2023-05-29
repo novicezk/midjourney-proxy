@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.dto.BaseSubmitDTO;
+import com.github.novicezk.midjourney.dto.SubmitBlendDTO;
 import com.github.novicezk.midjourney.dto.SubmitChangeDTO;
 import com.github.novicezk.midjourney.dto.SubmitDescribeDTO;
 import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
@@ -33,6 +34,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Api(tags = "任务提交")
@@ -65,10 +68,19 @@ public class SubmitController {
 		if (BannedPromptUtils.isBanned(promptEn)) {
 			return SubmitResultVO.fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词");
 		}
+		DataUrl dataUrl = null;
+		if (CharSequenceUtil.isNotBlank(imagineDTO.getBase64())) {
+			IDataUrlSerializer serializer = new DataUrlSerializer();
+			try {
+				dataUrl = serializer.unserialize(imagineDTO.getBase64());
+			} catch (MalformedURLException e) {
+				return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "basisImageBase64格式错误");
+			}
+		}
 		task.setPromptEn(promptEn);
 		task.setFinalPrompt("[" + task.getId() + "] " + promptEn);
 		task.setDescription("/imagine " + imagineDTO.getPrompt());
-		return this.taskService.submitImagine(task);
+		return this.taskService.submitImagine(task, dataUrl);
 	}
 
 	@ApiOperation(value = "绘图变化-simple")
@@ -111,10 +123,13 @@ public class SubmitController {
 		}
 		Task targetTask = this.taskStoreService.get(changeDTO.getTaskId());
 		if (targetTask == null) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "任务不存在或已失效");
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "关联任务不存在或已失效");
 		}
 		if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "关联任务状态错误");
+		}
+		if (Set.of(TaskAction.IMAGINE, TaskAction.VARIATION).contains(targetTask.getAction())) {
+			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "关联任务不允许执行变化");
 		}
 		Task task = newTask(changeDTO);
 		task.setAction(changeDTO.getAction());
@@ -150,6 +165,29 @@ public class SubmitController {
 		String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
 		task.setDescription("/describe " + taskFileName);
 		return this.taskService.submitDescribe(task, dataUrl);
+	}
+
+	@ApiOperation(value = "提交Blend任务")
+	@PostMapping("/blend")
+	public SubmitResultVO blend(@RequestBody SubmitBlendDTO blendDTO) {
+		List<String> base64Array = blendDTO.getBase64Array();
+		if (base64Array == null || base64Array.size() < 2 || base64Array.size() > 5) {
+			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "base64List参数错误");
+		}
+		IDataUrlSerializer serializer = new DataUrlSerializer();
+		List<DataUrl> dataUrlList = new ArrayList<>();
+		try {
+			for (String base64 : base64Array) {
+				DataUrl dataUrl = serializer.unserialize(base64);
+				dataUrlList.add(dataUrl);
+			}
+		} catch (MalformedURLException e) {
+			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "base64格式错误");
+		}
+		Task task = newTask(blendDTO);
+		task.setAction(TaskAction.BLEND);
+		task.setDescription("/blend " + task.getId() + " " + dataUrlList.size());
+		return this.taskService.submitBlend(task, dataUrlList);
 	}
 
 	private Task newTask(BaseSubmitDTO base) {

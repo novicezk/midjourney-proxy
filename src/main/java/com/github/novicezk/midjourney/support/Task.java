@@ -54,10 +54,9 @@ public class Task implements Serializable {
 	private String messageId;
 	@JsonIgnore
 	private String messageHash;
-	// Hidden -- end
-
 	@JsonIgnore
 	private final transient Object lock = new Object();
+	// Hidden -- end
 
 	@JsonIgnore
 	public void sleep() throws InterruptedException {
