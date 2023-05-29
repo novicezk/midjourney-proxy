@@ -27,7 +27,7 @@
 2. docker环境
 3. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
 4. 添加自己的机器人: [流程说明](./docs/discord-bot.md)
-5. user-wss方式，可不添加自己的机器人，但仍需参考[流程说明](./docs/discord-bot.md)的第4、5步，获取用户Token、服务器ID、频道ID
+5. user-wss方式，可不添加自己的机器人，但仍需参考流程的第4、5步，获取用户Token、服务器ID、频道ID
 
 ## 风险须知
 1. 作图频繁等行为，触发midjourney验证码后，需尽快人工验证
@@ -86,6 +86,7 @@ docker run -d --name midjourney-proxy \
 
 ## 应用项目
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
+- [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI，基于本接口和SD，可一键打包生成H5和小程序
 - 依赖此项目且开源的，欢迎联系作者，加到此处展示
 
 ## 其它
