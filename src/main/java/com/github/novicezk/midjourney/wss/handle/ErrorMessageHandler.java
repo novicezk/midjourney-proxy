@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Slf4j
 @Component
 public class ErrorMessageHandler extends MessageHandler {
@@ -26,7 +28,11 @@ public class ErrorMessageHandler extends MessageHandler {
 			return;
 		}
 		String description = embed.getString("description", null);
-		String footerText = embed.getObject("footer").getString("text", "");
+		String footerText = "";
+		Optional<DataObject> footer = embed.optObject("footer");
+		if (footer.isPresent()) {
+			footerText = footer.get().getString("text", "");
+		}
 		Task targetTask = null;
 		if (CharSequenceUtil.startWith(footerText, "/imagine ")) {
 			String finalPrompt = CharSequenceUtil.subAfter(footerText, "/imagine ", false);
