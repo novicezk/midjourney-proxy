@@ -61,8 +61,28 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public SubmitResultVO submitImagine(Task task) {
+	public SubmitResultVO submitImagine(Task task,  DataUrl dataUrl) {
 		return submitTask(task, () -> {
+			if (dataUrl != null) {
+				String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
+				Message<String> uploadResult = this.discordService.upload(taskFileName, dataUrl);
+				if (uploadResult.getCode() != ReturnCode.SUCCESS) {
+					task.fail(uploadResult.getDescription());
+					changeStatusAndNotify(task, TaskStatus.FAILURE);
+					return;
+				}
+				String finalFileName = uploadResult.getResult();
+				Message<String> sendImageResult = this.discordService.sendImageMessage("upload image: " + finalFileName, finalFileName);
+				if (sendImageResult.getCode() != ReturnCode.SUCCESS) {
+					task.fail(sendImageResult.getDescription());
+					changeStatusAndNotify(task, TaskStatus.FAILURE);
+					return;
+				}
+				task.setPrompt(sendImageResult.getResult() + " " + task.getPrompt());
+				task.setPromptEn(sendImageResult.getResult() + " " + task.getPromptEn());
+				task.setFinalPrompt("[" + task.getId() + "] " + task.getPromptEn());
+				this.taskStoreService.save(task);
+			}
 			Message<Void> result = this.discordService.imagine(task.getFinalPrompt());
 			checkAndWait(task, result);
 		});
@@ -96,6 +116,25 @@ public class TaskServiceImpl implements TaskService {
 			}
 			String finalFileName = uploadResult.getResult();
 			Message<Void> result = this.discordService.describe(finalFileName);
+			checkAndWait(task, result);
+		});
+	}
+
+	@Override
+	public SubmitResultVO submitBlend(Task task, List<DataUrl> dataUrls) {
+		return submitTask(task, () -> {
+			List<String> finalFileNames = new ArrayList<>();
+			for (DataUrl dataUrl : dataUrls) {
+				String taskFileName = task.getId() + "." + MimeTypeUtils.guessFileSuffix(dataUrl.getMimeType());
+				Message<String> uploadResult = this.discordService.upload(taskFileName, dataUrl);
+				if (uploadResult.getCode() != ReturnCode.SUCCESS) {
+					task.fail(uploadResult.getDescription());
+					changeStatusAndNotify(task, TaskStatus.FAILURE);
+					return;
+				}
+				finalFileNames.add(uploadResult.getResult());
+			}
+			Message<Void> result = this.discordService.blend(finalFileNames);
 			checkAndWait(task, result);
 		});
 	}
