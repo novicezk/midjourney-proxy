@@ -21,7 +21,8 @@ public interface WebSocketStarter {
 
 	default WebSocketFactory createWebSocketFactory(ProxyProperties properties) {
 		ProxyProperties.ProxyConfig proxy = properties.getProxy();
-		WebSocketFactory webSocketFactory = new WebSocketFactory().setConnectionTimeout(5000);
+		WebSocketFactory webSocketFactory = new WebSocketFactory()
+				.setConnectionTimeout(20000).setSocketTimeout(20000);
 		if (Strings.isNotBlank(proxy.getHost())) {
 			ProxySettings proxySettings = webSocketFactory.getProxySettings();
 			proxySettings.setHost(proxy.getHost());
