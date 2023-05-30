@@ -30,12 +30,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketStarter {
 	private static final String GATEWAY_URL = "wss://gateway.discord.gg/?encoding=json&v=9&compress=zlib-stream";
-	private final ScheduledExecutorService heartExecutor = Executors.newSingleThreadScheduledExecutor();
+	private static final int CONNECT_RETRY_LIMIT = 3;
 
 	private final String userToken;
 	private final String userAgent;
 	private final DataObject auth;
 
+	private ScheduledExecutorService heartExecutor;
 	private WebSocket socket = null;
 	private String sessionId;
 	private Future<?> heartbeatTask;
@@ -46,6 +47,7 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 
 	@Resource
 	private UserMessageListener userMessageListener;
+
 	private final ProxyProperties properties;
 
 	public UserWebSocketStarter(ProxyProperties properties) {
@@ -53,47 +55,13 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		initProxy(properties);
 		this.userToken = properties.getDiscord().getUserToken();
 		this.userAgent = properties.getDiscord().getUserAgent();
-		UserAgent agent = UserAgent.parseUserAgentString(this.userAgent);
-		DataObject connectionProperties = DataObject.empty()
-				.put("os", agent.getOperatingSystem().getName())
-				.put("browser", agent.getBrowser().getGroup().getName())
-				.put("device", "")
-				.put("system_locale", "zh-CN")
-				.put("browser_version", agent.getBrowserVersion().toString())
-				.put("browser_user_agent", this.userAgent)
-				.put("referer", "")
-				.put("referring_domain", "")
-				.put("referrer_current", "")
-				.put("referring_domain_current", "")
-				.put("release_channel", "stable")
-				.put("client_build_number", 117300)
-				.put("client_event_source", null);
-		DataObject presence = DataObject.empty()
-				.put("status", "online")
-				.put("since", 0)
-				.put("activities", DataArray.empty())
-				.put("afk", false);
-		DataObject clientState = DataObject.empty()
-				.put("guild_hashes", DataArray.empty())
-				.put("highest_last_message_id", "0")
-				.put("read_state_version", 0)
-				.put("user_guild_settings_version", -1)
-				.put("user_settings_version", -1);
-		this.auth = DataObject.empty()
-				.put("token", this.userToken)
-				.put("capabilities", 4093)
-				.put("properties", connectionProperties)
-				.put("presence", presence)
-				.put("compress", false)
-				.put("client_state", clientState);
+		this.auth = createAuthData();
 	}
 
 	@Override
 	public synchronized void start() throws Exception {
-		if (this.socket != null) {
-			throw new IllegalStateException("Websocket already started");
-		}
 		this.decompressor = new ZlibDecompressor(2048);
+		this.heartExecutor = Executors.newSingleThreadScheduledExecutor();
 		WebSocketFactory webSocketFactory = createWebSocketFactory(this.properties);
 		this.socket = webSocketFactory.createSocket(GATEWAY_URL);
 		this.socket.addListener(this);
@@ -125,7 +93,7 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 			this.sequence.incrementAndGet();
 		}
 		if (opCode == WebSocketCode.HELLO) {
-			if (this.heartbeatTask == null) {
+			if (this.heartbeatTask == null && this.heartExecutor != null) {
 				long interval = data.getObject("d").getLong("heartbeat_interval");
 				this.heartbeatTask = this.heartExecutor.scheduleAtFixedRate(this::heartbeat, interval, interval, TimeUnit.MILLISECONDS);
 			}
@@ -159,17 +127,33 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		}
 		if (code >= 4010 || code == 4004) {
 			log.warn("[gateway] Websocket closed and can't reconnect! code: {}, reason: {}", code, closeReason);
+			System.exit(code);
 			return;
 		}
 		log.warn("[gateway] Websocket closed and will be reconnect... code: {}, reason: {}", code, closeReason);
 		ThreadUtil.execute(() -> {
 			try {
-				start();
+				retryStart(0);
 			} catch (Exception e) {
 				log.error("[gateway] Websocket reconnect error", e);
-				Thread.currentThread().interrupt();
+				System.exit(1);
 			}
 		});
+	}
+
+	private void retryStart(int currentRetryTime) throws Exception {
+		try {
+			start();
+		} catch (Exception e) {
+			if (currentRetryTime < CONNECT_RETRY_LIMIT) {
+				currentRetryTime++;
+				log.warn("[gateway] Websocket start fail, retry {} time... error: {}", currentRetryTime, e.getMessage());
+				Thread.sleep(5000L);
+				retryStart(currentRetryTime);
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	@Override
@@ -241,6 +225,42 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	protected void send(DataObject message) {
 		log.trace("[gateway] > {}", message);
 		this.socket.sendText(message.toString());
+	}
+
+	private DataObject createAuthData() {
+		UserAgent agent = UserAgent.parseUserAgentString(this.userAgent);
+		DataObject connectionProperties = DataObject.empty()
+				.put("os", agent.getOperatingSystem().getName())
+				.put("browser", agent.getBrowser().getGroup().getName())
+				.put("device", "")
+				.put("system_locale", "zh-CN")
+				.put("browser_version", agent.getBrowserVersion().toString())
+				.put("browser_user_agent", this.userAgent)
+				.put("referer", "")
+				.put("referring_domain", "")
+				.put("referrer_current", "")
+				.put("referring_domain_current", "")
+				.put("release_channel", "stable")
+				.put("client_build_number", 117300)
+				.put("client_event_source", null);
+		DataObject presence = DataObject.empty()
+				.put("status", "online")
+				.put("since", 0)
+				.put("activities", DataArray.empty())
+				.put("afk", false);
+		DataObject clientState = DataObject.empty()
+				.put("guild_hashes", DataArray.empty())
+				.put("highest_last_message_id", "0")
+				.put("read_state_version", 0)
+				.put("user_guild_settings_version", -1)
+				.put("user_settings_version", -1);
+		return DataObject.empty()
+				.put("token", this.userToken)
+				.put("capabilities", 4093)
+				.put("properties", connectionProperties)
+				.put("presence", presence)
+				.put("compress", false)
+				.put("client_state", clientState);
 	}
 
 }
