@@ -28,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DiscordServiceImpl implements DiscordService {
 	private final ProxyProperties properties;
-	private static final String DISCORD_API_URL = "https://discord.com/api/v9/interactions";
+	private String discordApiUrl;
 	private String userAgent;
 
 	private String discordUploadUrl;
@@ -51,8 +51,13 @@ public class DiscordServiceImpl implements DiscordService {
 		this.discordUserToken = this.properties.getDiscord().getUserToken();
 		this.discordGuildId = this.properties.getDiscord().getGuildId();
 		this.discordChannelId = this.properties.getDiscord().getChannelId();
-		this.discordUploadUrl = "https://discord.com/api/v9/channels/" + this.discordChannelId + "/attachments";
-		this.discordSendMessageUrl = "https://discord.com/api/v9/channels/" + this.discordChannelId + "/messages";
+        String baseUrl = this.properties.getNg().getHttps();
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
+		this.discordApiUrl = baseUrl + "api/v9/interactions";
+		this.discordUploadUrl =  baseUrl + "api/v9/channels/" + this.discordChannelId + "/attachments";
+		this.discordSendMessageUrl = baseUrl +  "api/v9/channels/" + this.discordChannelId + "/messages";
 		this.userAgent = this.properties.getDiscord().getUserAgent();
 		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
 		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
@@ -192,7 +197,7 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	private ResponseEntity<String> postJson(String paramsStr) {
-		return postJson(DISCORD_API_URL, paramsStr);
+		return postJson(discordApiUrl, paramsStr);
 	}
 
 	private ResponseEntity<String> postJson(String url, String paramsStr) {
