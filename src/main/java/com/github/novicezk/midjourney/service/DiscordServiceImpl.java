@@ -6,6 +6,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.result.Message;
+import com.github.novicezk.midjourney.support.DiscordHelper;
 import eu.maxschuster.dataurl.DataUrl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DiscordServiceImpl implements DiscordService {
 	private final ProxyProperties properties;
+	private final DiscordHelper discordHelper;
+
 	private String discordApiUrl;
 	private String userAgent;
 
@@ -48,17 +51,17 @@ public class DiscordServiceImpl implements DiscordService {
 
 	@PostConstruct
 	void init() {
-		this.discordUserToken = this.properties.getDiscord().getUserToken();
-		this.discordGuildId = this.properties.getDiscord().getGuildId();
-		this.discordChannelId = this.properties.getDiscord().getChannelId();
-        String baseUrl = this.properties.getNg().getHttps();
-        if (!baseUrl.endsWith("/")) {
-            baseUrl += "/";
-        }
-		this.discordApiUrl = baseUrl + "api/v9/interactions";
-		this.discordUploadUrl =  baseUrl + "api/v9/channels/" + this.discordChannelId + "/attachments";
-		this.discordSendMessageUrl = baseUrl +  "api/v9/channels/" + this.discordChannelId + "/messages";
-		this.userAgent = this.properties.getDiscord().getUserAgent();
+		ProxyProperties.DiscordConfig discord = this.properties.getDiscord();
+		this.discordUserToken = discord.getUserToken();
+		this.discordGuildId = discord.getGuildId();
+		this.discordChannelId = discord.getChannelId();
+		this.userAgent = discord.getUserAgent();
+
+		String serverUrl = this.discordHelper.getServer();
+		this.discordApiUrl = serverUrl + "/api/v9/interactions";
+		this.discordUploadUrl = serverUrl + "/api/v9/channels/" + this.discordChannelId + "/attachments";
+		this.discordSendMessageUrl = serverUrl + "/api/v9/channels/" + this.discordChannelId + "/messages";
+
 		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
 		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
 		this.variationParamsJson = ResourceUtil.readUtf8Str("api-params/variation.json");

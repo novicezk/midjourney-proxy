@@ -40,7 +40,7 @@ public class VariationMessageHandler extends MessageHandler {
 						.setRelatedTaskId(start.getTaskId())
 						.setActionSet(Set.of(TaskAction.VARIATION))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition)
+				Task task = this.taskQueueHelper.findRunningTask(condition)
 						.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "V" + start.getIndex()))
 						.min(Comparator.comparing(Task::getSubmitTime))
 						.orElse(null);
@@ -60,7 +60,7 @@ public class VariationMessageHandler extends MessageHandler {
 					.setRelatedTaskId(end.getTaskId())
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.max(Comparator.comparing(Task::getProgress))
 					.orElse(null);
 			if (task == null) {
@@ -77,7 +77,7 @@ public class VariationMessageHandler extends MessageHandler {
 					.setMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.findFirst().orElse(null);
 			if (task == null) {
 				return;
@@ -106,7 +106,7 @@ public class VariationMessageHandler extends MessageHandler {
 					.setRelatedTaskId(parseData.getTaskId())
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
 			if (task == null) {
