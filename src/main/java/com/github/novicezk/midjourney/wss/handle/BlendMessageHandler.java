@@ -54,7 +54,7 @@ public class BlendMessageHandler extends MessageHandler {
 						.setId(taskId)
 						.setActionSet(Set.of(TaskAction.BLEND))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+				Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -68,7 +68,7 @@ public class BlendMessageHandler extends MessageHandler {
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.BLEND))
 						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-				Task task = this.taskService.findRunningTask(condition)
+				Task task = this.taskQueueHelper.findRunningTask(condition)
 						.max(Comparator.comparing(Task::getProgress))
 						.orElse(null);
 				if (task == null) {
@@ -84,7 +84,7 @@ public class BlendMessageHandler extends MessageHandler {
 					.setMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.BLEND))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -118,7 +118,7 @@ public class BlendMessageHandler extends MessageHandler {
 						.setId(taskId)
 						.setActionSet(Set.of(TaskAction.BLEND))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+				Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -132,7 +132,7 @@ public class BlendMessageHandler extends MessageHandler {
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.BLEND))
 						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-				Task task = this.taskService.findRunningTask(condition)
+				Task task = this.taskQueueHelper.findRunningTask(condition)
 						.max(Comparator.comparing(Task::getProgress))
 						.orElse(null);
 				if (task == null) {
@@ -148,7 +148,7 @@ public class BlendMessageHandler extends MessageHandler {
 					.setMessageId(message.getId())
 					.setActionSet(Set.of(TaskAction.BLEND))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
