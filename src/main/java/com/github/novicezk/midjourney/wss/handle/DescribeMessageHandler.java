@@ -1,6 +1,5 @@
 package com.github.novicezk.midjourney.wss.handle;
 
-
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.support.Task;
@@ -37,14 +36,14 @@ public class DescribeMessageHandler extends MessageHandler {
 		String imageUrl = imageOptional.get().getString("url");
 		int hashStartIndex = imageUrl.lastIndexOf("/");
 		String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
-		Task task = this.taskService.getRunningTask(taskId);
+		Task task = this.taskQueueHelper.getRunningTask(taskId);
 		if (task == null) {
 			return;
 		}
 		task.setMessageId(message.getString("id"));
 		task.setPrompt(prompt);
 		task.setPromptEn(prompt);
-		task.setImageUrl(imageUrl);
+		task.setImageUrl(replaceCdnUrl(imageUrl));
 		task.success();
 		task.awake();
 	}
@@ -62,17 +61,16 @@ public class DescribeMessageHandler extends MessageHandler {
 		String imageUrl = embeds.get(0).getImage().getUrl();
 		int hashStartIndex = imageUrl.lastIndexOf("/");
 		String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
-		Task task = this.taskService.getRunningTask(taskId);
+		Task task = this.taskQueueHelper.getRunningTask(taskId);
 		if (task == null) {
 			return;
 		}
 		task.setMessageId(message.getId());
 		task.setPrompt(prompt);
 		task.setPromptEn(prompt);
-		task.setImageUrl(imageUrl);
+		task.setImageUrl(replaceCdnUrl(imageUrl));
 		task.success();
 		task.awake();
 	}
 
 }
-

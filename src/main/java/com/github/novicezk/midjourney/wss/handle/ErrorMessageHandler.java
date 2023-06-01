@@ -39,12 +39,12 @@ public class ErrorMessageHandler extends MessageHandler {
 		if (CharSequenceUtil.startWith(footerText, "/imagine ")) {
 			String finalPrompt = CharSequenceUtil.subAfter(footerText, "/imagine ", false);
 			String taskId = ConvertUtils.findTaskIdByFinalPrompt(finalPrompt);
-			targetTask = this.taskService.getRunningTask(taskId);
+			targetTask = this.taskQueueHelper.getRunningTask(taskId);
 		} else if (CharSequenceUtil.startWith(footerText, "/describe ")) {
 			String imageUrl = CharSequenceUtil.subAfter(footerText, "/describe ", false);
 			int hashStartIndex = imageUrl.lastIndexOf("/");
 			String taskId = CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
-			targetTask = this.taskService.getRunningTask(taskId);
+			targetTask = this.taskQueueHelper.getRunningTask(taskId);
 		}
 		if (targetTask == null) {
 			return;

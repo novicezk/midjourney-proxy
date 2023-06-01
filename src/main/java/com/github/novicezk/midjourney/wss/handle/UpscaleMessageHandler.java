@@ -43,7 +43,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 					.setRelatedTaskId(start.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + start.getIndex()))
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
@@ -60,7 +60,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 					.setRelatedTaskId(end.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + end.getIndex()))
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
@@ -77,7 +77,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 					.setRelatedTaskId(end2.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
 			if (task == null) {
@@ -100,7 +100,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 					.setRelatedTaskId(parseData.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + parseData.getIndex()))
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
@@ -117,7 +117,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 					.setRelatedTaskId(end2.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition)
+			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
 			if (task == null) {

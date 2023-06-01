@@ -41,7 +41,7 @@ public class ImagineMessageHandler extends MessageHandler {
 						.setId(parseData.getTaskId())
 						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+				Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -52,8 +52,8 @@ public class ImagineMessageHandler extends MessageHandler {
 				TaskCondition condition = new TaskCondition()
 						.setId(parseData.getTaskId())
 						.setActionSet(Set.of(TaskAction.IMAGINE))
-						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+						.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
+				Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -65,8 +65,8 @@ public class ImagineMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setId(parseData.getTaskId())
 					.setActionSet(Set.of(TaskAction.IMAGINE))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
+			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
@@ -90,7 +90,7 @@ public class ImagineMessageHandler extends MessageHandler {
 						.setId(parseData.getTaskId())
 						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+				Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -101,8 +101,8 @@ public class ImagineMessageHandler extends MessageHandler {
 				TaskCondition condition = new TaskCondition()
 						.setId(parseData.getTaskId())
 						.setActionSet(Set.of(TaskAction.IMAGINE))
-						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-				Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+						.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
+				Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 				if (task == null) {
 					return;
 				}
@@ -114,8 +114,8 @@ public class ImagineMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setId(parseData.getTaskId())
 					.setActionSet(Set.of(TaskAction.IMAGINE))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
-			Task task = this.taskService.findRunningTask(condition).findFirst().orElse(null);
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
+			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
