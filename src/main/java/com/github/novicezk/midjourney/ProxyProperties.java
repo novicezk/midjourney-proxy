@@ -24,6 +24,10 @@ public class ProxyProperties {
 	 */
 	private final ProxyConfig proxy = new ProxyConfig();
 	/**
+	 * 反代配置.
+	 */
+	private final NgDiscordConfig ngDiscord = new NgDiscordConfig();
+	/**
 	 * 任务队列配置.
 	 */
 	private final TaskQueueConfig queue = new TaskQueueConfig();
@@ -145,6 +149,22 @@ public class ProxyProperties {
 		 * 代理端口.
 		 */
 		private Integer port;
+	}
+
+	@Data
+	public static class NgDiscordConfig {
+		/**
+		 * https://discord.com 反代.
+		 */
+		private String server;
+		/**
+		 * https://cdn.discordapp.com 反代.
+		 */
+		private String cdn;
+		/**
+		 * wss://gateway.discord.gg 反代.
+		 */
+		private String wss;
 	}
 
 	@Data

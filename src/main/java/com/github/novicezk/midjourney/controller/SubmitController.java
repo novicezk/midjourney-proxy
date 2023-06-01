@@ -65,6 +65,9 @@ public class SubmitController {
 		} else {
 			promptEn = this.translateService.translateToEnglish(prompt).trim();
 		}
+		if (CharSequenceUtil.isBlank(promptEn)) {
+			promptEn = prompt;
+		}
 		if (BannedPromptUtils.isBanned(promptEn)) {
 			return SubmitResultVO.fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词");
 		}
