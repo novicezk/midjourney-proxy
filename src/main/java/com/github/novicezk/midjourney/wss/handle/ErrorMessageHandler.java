@@ -3,6 +3,7 @@ package com.github.novicezk.midjourney.wss.handle;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -35,6 +36,18 @@ public class ErrorMessageHandler extends MessageHandler {
 			footerText = footer.get().getString("text", "");
 		}
 		log.warn("检测到可能异常的信息: {}\n{}\nfooter: {}", title, description, footerText);
+		if (CharSequenceUtil.contains(description, "this job will start")) {
+			// mj队列中, 不认为是异常
+			return;
+		}
+		if (CharSequenceUtil.contains(description, "verify you're human")) {
+			String reason = "需要人工验证，请联系管理员";
+			this.taskQueueHelper.findRunningTask(new TaskCondition()).forEach(task -> {
+				task.fail(reason);
+				task.awake();
+			});
+			return;
+		}
 		Task targetTask = null;
 		if (CharSequenceUtil.startWith(footerText, "/imagine ")) {
 			String finalPrompt = CharSequenceUtil.subAfter(footerText, "/imagine ", false);
@@ -52,8 +65,6 @@ public class ErrorMessageHandler extends MessageHandler {
 		String reason;
 		if (CharSequenceUtil.contains(description, "against our community standards")) {
 			reason = "可能包含违规信息";
-		} else if (CharSequenceUtil.contains(description, "verify you're human")) {
-			reason = "需要人工验证，请联系管理员";
 		} else {
 			reason = description;
 		}

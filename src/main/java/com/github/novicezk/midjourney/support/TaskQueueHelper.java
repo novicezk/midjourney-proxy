@@ -112,9 +112,6 @@ public class TaskQueueHelper {
 			} while (task.getStatus() == TaskStatus.IN_PROGRESS);
 			log.debug("task finished, id: {}, status: {}", task.getId(), task.getStatus());
 		} catch (InterruptedException e) {
-			log.debug("task timeout, id: {}", task.getId());
-			task.fail("任务超时");
-			changeStatusAndNotify(task, TaskStatus.FAILURE);
 			Thread.currentThread().interrupt();
 		} catch (Exception e) {
 			log.error("task execute error", e);
@@ -137,7 +134,13 @@ public class TaskQueueHelper {
 			try {
 				future.get(this.timeoutMinutes, TimeUnit.MINUTES);
 			} catch (TimeoutException e) {
+				if (Set.of(TaskStatus.FAILURE, TaskStatus.SUCCESS).contains(task.getStatus())) {
+					return;
+				}
 				future.cancel(true);
+				log.debug("task timeout, id: {}", task.getId());
+				task.fail("任务超时");
+				changeStatusAndNotify(task, TaskStatus.FAILURE);
 			} catch (Exception e) {
 				Thread.currentThread().interrupt();
 			}
