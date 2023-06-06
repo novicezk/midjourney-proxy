@@ -39,6 +39,7 @@ public class TaskServiceImpl implements TaskService {
 				task.setPrompt(sendImageResult.getResult() + " " + task.getPrompt());
 				task.setPromptEn(sendImageResult.getResult() + " " + task.getPromptEn());
 				task.setFinalPrompt("[" + task.getId() + "] " + task.getPromptEn());
+				task.setDescription("/imagine " + task.getPrompt());
 				this.taskStoreService.save(task);
 			}
 			return this.discordService.imagine(task.getFinalPrompt());
