@@ -70,6 +70,7 @@ public class ImagineMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
 			updateTaskImageUrl(task, message);
 			task.awake();
@@ -119,6 +120,7 @@ public class ImagineMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
 			updateTaskImageUrl(task, message);
 			task.awake();
