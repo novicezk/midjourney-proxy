@@ -97,13 +97,13 @@ public class TaskQueueHelper {
 	private void executeTask(Task task, Callable<Message<Void>> discordSubmit) {
 		this.runningTasks.add(task);
 		try {
+			task.start();
 			Message<Void> result = discordSubmit.call();
 			if (result.getCode() != ReturnCode.SUCCESS) {
 				task.fail(result.getDescription());
 				changeStatusAndNotify(task, TaskStatus.FAILURE);
 				return;
 			}
-			task.start();
 			changeStatusAndNotify(task, TaskStatus.SUBMITTED);
 			waitTaskFuture(task);
 			do {
