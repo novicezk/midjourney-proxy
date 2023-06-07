@@ -59,7 +59,7 @@ public class VariationMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setRelatedTaskId(end.getTaskId())
 					.setActionSet(Set.of(TaskAction.VARIATION))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.max(Comparator.comparing(Task::getProgress))
 					.orElse(null);
@@ -76,12 +76,13 @@ public class VariationMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.VARIATION))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
+			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
 			updateTaskImageUrl(task, message);
 			task.awake();
