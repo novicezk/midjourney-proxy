@@ -1,9 +1,9 @@
 mj:
   discord:
-    guild-id: xxx
-    channel-id: xxx
-    user-token: xxx
-    user-wss: false
+    guild-id: 1112940597846749225
+    channel-id: 1112940597846749228
+    user-token: MTEwNDY1NDYyNTI1NDE0NjE0OA.GkgdPs.RnDZoQH8nstU5lbq8iOkS9fT9Snzz2xKWgX4Iw
+    user-wss: true
     user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
     bot-token: xxx
   task-store:
