@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.wss.handle;
 
 
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -29,7 +30,7 @@ public class ImagineMessageHandler extends MessageHandler {
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		ContentParseData parseData = parse(content);
 		if (parseData == null) {
 			return;
@@ -45,6 +46,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 			} else {
@@ -70,9 +72,10 @@ public class ImagineMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}
@@ -95,6 +98,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getId());
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 			} else {
@@ -120,9 +124,10 @@ public class ImagineMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getId());
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}

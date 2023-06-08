@@ -36,7 +36,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 		if (MessageType.CREATE != messageType) {
 			return;
 		}
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		UVContentParseData start = parseStart(content);
 		if (start != null) {
 			TaskCondition condition = new TaskCondition()
@@ -59,7 +59,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setRelatedTaskId(end.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + end.getIndex()))
 					.min(Comparator.comparing(Task::getSubmitTime))
@@ -76,7 +76,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setRelatedTaskId(end2.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);

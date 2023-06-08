@@ -63,9 +63,9 @@ public class ProxyProperties {
 		 */
 		private String userToken;
 		/**
-		 * 是否使用user_token连接wss，默认false(使用bot_token).
+		 * 是否使用user_token连接wss，默认启用.
 		 */
-		private boolean userWss = false;
+		private boolean userWss = true;
 		/**
 		 * 调用discord接口、连接wss时的user-agent.
 		 */
@@ -74,10 +74,6 @@ public class ProxyProperties {
 		 * 你的机器人token.
 		 */
 		private String botToken;
-		/**
-		 * Midjourney机器人的名称.
-		 */
-		private String mjBotName = "Midjourney Bot";
 	}
 
 	@Data

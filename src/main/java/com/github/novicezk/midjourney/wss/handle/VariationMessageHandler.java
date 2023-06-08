@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.wss.handle;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -31,7 +32,7 @@ public class VariationMessageHandler extends MessageHandler {
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		if (MessageType.CREATE.equals(messageType)) {
 			UVContentParseData start = parseStart(content);
 			if (start != null) {
@@ -47,7 +48,7 @@ public class VariationMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
-				task.setMessageId(message.getString("id"));
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 				return;
@@ -74,7 +75,7 @@ public class VariationMessageHandler extends MessageHandler {
 				return;
 			}
 			TaskCondition condition = new TaskCondition()
-					.setMessageId(message.getString("id"))
+					.setProgressMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
@@ -82,9 +83,10 @@ public class VariationMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}
