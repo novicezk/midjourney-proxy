@@ -12,7 +12,6 @@ import org.springframework.context.ApplicationListener;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class UserMessageListener implements ApplicationListener<ApplicationStartedEvent> {
@@ -27,7 +26,7 @@ public class UserMessageListener implements ApplicationListener<ApplicationStart
 
 	public void onMessage(DataObject raw) {
 		MessageType messageType = MessageType.of(raw.getString("t"));
-		if (messageType == null) {
+		if (messageType == null || MessageType.DELETE == messageType) {
 			return;
 		}
 		DataObject data = raw.getObject("d");
@@ -44,12 +43,8 @@ public class UserMessageListener implements ApplicationListener<ApplicationStart
 		if (!this.properties.getDiscord().getChannelId().equals(channelId)) {
 			return true;
 		}
-		Optional<DataObject> author = data.optObject("author");
-		if (author.isEmpty()) {
-			return true;
-		}
-		String authorName = author.get().getString("username");
-		log.debug("{} - {}: {}", messageType.name(), authorName, data.getString("content"));
-		return !this.properties.getDiscord().getMjBotName().equals(authorName);
+		String authorName = data.optObject("author").map(a -> a.getString("username")).orElse("System");
+		log.debug("{} - {}: {}", messageType.name(), authorName, data.opt("content").orElse(""));
+		return false;
 	}
 }

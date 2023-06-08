@@ -17,6 +17,6 @@ config/application.yml
 
 .git
 .gitignore
-build-*.sh
+docker
 docs
 README.md

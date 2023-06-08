@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.service;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.support.Task;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class NotifyServiceImpl implements NotifyService {
 
 	@Override
 	public void notifyTaskChange(Task task) {
-		String notifyHook = task.getNotifyHook();
+		String notifyHook = task.getPropertyGeneric(Constants.TASK_PROPERTY_NOTIFY_HOOK);
 		if (CharSequenceUtil.isBlank(notifyHook)) {
 			return;
 		}

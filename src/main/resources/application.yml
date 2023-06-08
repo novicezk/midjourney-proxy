@@ -3,7 +3,7 @@ mj:
     guild-id: xxx
     channel-id: xxx
     user-token: xxx
-    user-wss: false
+    user-wss: true
     user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
     bot-token: xxx
   task-store:

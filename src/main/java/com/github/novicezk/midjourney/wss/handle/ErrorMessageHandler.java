@@ -19,11 +19,11 @@ public class ErrorMessageHandler extends MessageHandler {
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
-		DataArray embeds = message.getArray("embeds");
-		if (embeds.isEmpty()) {
+		Optional<DataArray> embedsOptional = message.optArray("embeds");
+		if (embedsOptional.isEmpty() || embedsOptional.get().isEmpty()) {
 			return;
 		}
-		DataObject embed = embeds.getObject(0);
+		DataObject embed = embedsOptional.get().getObject(0);
 		String title = embed.getString("title", null);
 		if (CharSequenceUtil.isBlank(title) || CharSequenceUtil.startWith(title, "Your info - ")) {
 			// 排除正常信息.
