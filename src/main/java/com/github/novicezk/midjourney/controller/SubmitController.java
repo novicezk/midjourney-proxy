@@ -17,6 +17,7 @@ import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
+import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.BannedPromptUtils;
@@ -48,6 +49,7 @@ public class SubmitController {
 	private final TaskStoreService taskStoreService;
 	private final ProxyProperties properties;
 	private final TaskService taskService;
+	private final DiscordHelper discordHelper;
 
 	@ApiOperation(value = "提交Imagine任务")
 	@PostMapping("/imagine")
@@ -82,7 +84,8 @@ public class SubmitController {
 			}
 		}
 		task.setPromptEn(promptEn);
-		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, "[" + task.getId() + "] " + promptEn);
+		String finalPrompt = this.discordHelper.generateFinalPrompt(task.getId(), promptEn);
+		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setDescription("/imagine " + imagineDTO.getPrompt());
 		return this.taskService.submitImagine(task, dataUrl);
 	}
@@ -140,7 +143,7 @@ public class SubmitController {
 		task.setPrompt(targetTask.getPrompt());
 		task.setPromptEn(targetTask.getPromptEn());
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, targetTask.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT));
-		String relatedTaskId = ConvertUtils.findTaskIdByFinalPrompt(targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FINAL_PROMPT));
+		String relatedTaskId = this.discordHelper.findTaskIdByFinalPrompt(targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FINAL_PROMPT));
 		task.setProperty(Constants.TASK_PROPERTY_RELATED_TASK_ID, relatedTaskId);
 		task.setDescription(description);
 		int messageFlags = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FLAGS);

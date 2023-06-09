@@ -20,15 +20,15 @@ import java.util.regex.Pattern;
 
 /**
  * variation消息处理. todo: 待兼容blend
- * 开始(create): Making variations for image #1 with prompt **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
- * 进度(update): **[0152010266005012] cat** - Variations by <@1012983546824114217> (0%) (relaxed)
- * 完成(create): **[0152010266005012] cat** - Variations by <@1012983546824114217> (relaxed)
+ * 开始(create): Making variations for image #1 with prompt **<0152010266005012> cat** - <@1012983546824114217> (Waiting to start)
+ * 进度(update): **<0152010266005012> cat** - Variations by <@1012983546824114217> (0%) (relaxed)
+ * 完成(create): **<0152010266005012> cat** - Variations by <@1012983546824114217> (relaxed)
  */
 @Slf4j
 @Component
 public class VariationMessageHandler extends MessageHandler {
-	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*\\[(\\d+)\\] (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
+	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*<(\\d+)> (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
@@ -121,7 +121,8 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseStart(String content) {
-		Matcher matcher = Pattern.compile(START_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(START_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
@@ -134,7 +135,8 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parse(String content) {
-		Matcher matcher = Pattern.compile(CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}

@@ -74,6 +74,14 @@ public class ProxyProperties {
 		 * 你的机器人token.
 		 */
 		private String botToken;
+		/**
+		 * prompt拼接ID的前缀，可使用多个字符.
+		 */
+		private String idPrefix = "<";
+		/**
+		 * prompt拼接ID的后缀，可使用多个字符.
+		 */
+		private String idSuffix = ">";
 	}
 
 	@Data
