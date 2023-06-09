@@ -4,6 +4,7 @@ import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
+import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskQueueHelper;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
@@ -22,6 +23,7 @@ public class TaskServiceImpl implements TaskService {
 	private final TaskStoreService taskStoreService;
 	private final DiscordService discordService;
 	private final TaskQueueHelper taskQueueHelper;
+	private final DiscordHelper discordHelper;
 
 	@Override
 	public SubmitResultVO submitImagine(Task task, DataUrl dataUrl) {
@@ -39,7 +41,8 @@ public class TaskServiceImpl implements TaskService {
 				}
 				task.setPrompt(sendImageResult.getResult() + " " + task.getPrompt());
 				task.setPromptEn(sendImageResult.getResult() + " " + task.getPromptEn());
-				task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, "[" + task.getId() + "] " + task.getPromptEn());
+				String finalPrompt = this.discordHelper.generateFinalPrompt(task.getId(), task.getPromptEn());
+				task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 				task.setDescription("/imagine " + task.getPrompt());
 				this.taskStoreService.save(task);
 			}

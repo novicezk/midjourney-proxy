@@ -19,17 +19,17 @@ import java.util.regex.Pattern;
 
 /**
  * upscale消息处理. todo: 待兼容blend
- * 开始(create): Upscaling image #1 with **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
+ * 开始(create): Upscaling image #1 with **<0152010266005012> cat** - <@1012983546824114217> (Waiting to start)
  * 进度: 无
- * 完成(create): **[0152010266005012] cat** - Image #1 <@1012983546824114217>
- * 完成-其他情况(create): **[5561516443317992] cat** - Upscaled by <@1083152202048217169> (fast)
+ * 完成(create): **<0152010266005012> cat** - Image #1 <@1012983546824114217>
+ * 完成-其他情况(create): **<5561516443317992> cat** - Upscaled by <@1083152202048217169> (fast)
  */
 @Slf4j
 @Component
 public class UpscaleMessageHandler extends MessageHandler {
-	private static final String START_CONTENT_REGEX = "Upscaling image #(\\d) with \\*\\*\\[(\\d+)\\] (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String END_CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Image #(\\d) <@\\d+>";
-	private static final String END2_CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Upscaled by <@\\d+> \\((.*?)\\)";
+	private static final String START_CONTENT_REGEX = "Upscaling image #(\\d) with \\*\\*<(\\d+)> (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String END_CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Image #(\\d) <@\\d+>";
+	private static final String END2_CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Upscaled by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
@@ -129,7 +129,8 @@ public class UpscaleMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseStart(String content) {
-		Matcher matcher = Pattern.compile(START_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(START_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
@@ -142,7 +143,8 @@ public class UpscaleMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseEnd(String content) {
-		Matcher matcher = Pattern.compile(END_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(END_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
@@ -155,7 +157,8 @@ public class UpscaleMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseEnd2(String content) {
-		Matcher matcher = Pattern.compile(END2_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(END2_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
