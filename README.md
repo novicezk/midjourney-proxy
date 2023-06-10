@@ -20,7 +20,6 @@
 ## 后续计划
 - [ ] 支持 Blend 指令后续的U、V操作
 - [ ] 支持 Reroll 操作
-- [ ] 支持接口和页面启用鉴权
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] 修复相关Bug，[Wiki / 已知问题](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98)
 

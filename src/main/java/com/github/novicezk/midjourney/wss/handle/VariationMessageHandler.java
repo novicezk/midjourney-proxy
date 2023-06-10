@@ -20,9 +20,9 @@ import java.util.regex.Pattern;
 
 /**
  * variation消息处理. todo: 待兼容blend
- * 开始(create): Making variations for image #1 with prompt **<0152010266005012> cat** - <@1012983546824114217> (Waiting to start)
- * 进度(update): **<0152010266005012> cat** - Variations by <@1012983546824114217> (0%) (relaxed)
- * 完成(create): **<0152010266005012> cat** - Variations by <@1012983546824114217> (relaxed)
+ * 开始(create): Making variations for image #1 with prompt **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
+ * 进度(update): **[0152010266005012] cat** - Variations by <@1012983546824114217> (0%) (relaxed)
+ * 完成(create): **[0152010266005012] cat** - Variations by <@1012983546824114217> (relaxed)
  */
 @Slf4j
 @Component

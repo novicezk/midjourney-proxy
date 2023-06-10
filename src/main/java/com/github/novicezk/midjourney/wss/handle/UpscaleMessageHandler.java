@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
 
 /**
  * upscale消息处理. todo: 待兼容blend
- * 开始(create): Upscaling image #1 with **<0152010266005012> cat** - <@1012983546824114217> (Waiting to start)
+ * 开始(create): Upscaling image #1 with **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
  * 进度: 无
- * 完成(create): **<0152010266005012> cat** - Image #1 <@1012983546824114217>
- * 完成-其他情况(create): **<5561516443317992> cat** - Upscaled by <@1083152202048217169> (fast)
+ * 完成(create): **[0152010266005012] cat** - Image #1 <@1012983546824114217>
+ * 完成-其他情况(create): **[5561516443317992] cat** - Upscaled by <@1083152202048217169> (fast)
  */
 @Slf4j
 @Component
