@@ -4,7 +4,6 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
-import com.github.novicezk.midjourney.util.ConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.utils.data.DataArray;
@@ -19,11 +18,11 @@ public class ErrorMessageHandler extends MessageHandler {
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
-		DataArray embeds = message.getArray("embeds");
-		if (embeds.isEmpty()) {
+		Optional<DataArray> embedsOptional = message.optArray("embeds");
+		if (embedsOptional.isEmpty() || embedsOptional.get().isEmpty()) {
 			return;
 		}
-		DataObject embed = embeds.getObject(0);
+		DataObject embed = embedsOptional.get().getObject(0);
 		String title = embed.getString("title", null);
 		if (CharSequenceUtil.isBlank(title) || CharSequenceUtil.startWith(title, "Your info - ")) {
 			// 排除正常信息.
@@ -51,7 +50,7 @@ public class ErrorMessageHandler extends MessageHandler {
 		Task targetTask = null;
 		if (CharSequenceUtil.startWith(footerText, "/imagine ")) {
 			String finalPrompt = CharSequenceUtil.subAfter(footerText, "/imagine ", false);
-			String taskId = ConvertUtils.findTaskIdByFinalPrompt(finalPrompt);
+			String taskId = this.discordHelper.findTaskIdByFinalPrompt(finalPrompt);
 			targetTask = this.taskQueueHelper.getRunningTask(taskId);
 		} else if (CharSequenceUtil.startWith(footerText, "/describe ")) {
 			String imageUrl = CharSequenceUtil.subAfter(footerText, "/describe ", false);

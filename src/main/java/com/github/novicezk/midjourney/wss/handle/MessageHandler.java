@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.wss.handle;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
@@ -21,46 +22,57 @@ public abstract class MessageHandler {
 
 	public abstract void handle(MessageType messageType, Message message);
 
-	protected void updateTaskImageUrl(Task task, DataObject message) {
-		DataArray attachments = message.getArray("attachments");
-		if (!attachments.isEmpty()) {
-			String imageUrl = attachments.getObject(0).getString("url");
-			task.setImageUrl(replaceCdnUrl(imageUrl));
-		}
+	protected String getMessageContent(DataObject message) {
+		return message.hasKey("content") ? message.getString("content") : "";
 	}
 
 	protected void finishTask(Task task, DataObject message) {
-		task.setMessageId(message.getString("id"));
+		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_ID, message.getString("id"));
+		task.setProperty(Constants.TASK_PROPERTY_FLAGS, message.getInt("flags", 0));
 		DataArray attachments = message.getArray("attachments");
 		if (!attachments.isEmpty()) {
 			String imageUrl = attachments.getObject(0).getString("url");
 			task.setImageUrl(replaceCdnUrl(imageUrl));
-			int hashStartIndex = imageUrl.lastIndexOf("_");
-			task.setMessageHash(CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true));
+			task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, getMessageHash(imageUrl));
 			task.success();
 		} else {
 			task.fail("关联图片不存在");
-		}
-	}
-
-	protected void updateTaskImageUrl(Task task, Message message) {
-		if (!message.getAttachments().isEmpty()) {
-			String imageUrl = message.getAttachments().get(0).getUrl();
-			task.setImageUrl(replaceCdnUrl(imageUrl));
 		}
 	}
 
 	protected void finishTask(Task task, Message message) {
-		task.setMessageId(message.getId());
+		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_ID, message.getId());
+		task.setProperty(Constants.TASK_PROPERTY_FLAGS, message.getFlagsRaw());
 		if (!message.getAttachments().isEmpty()) {
 			String imageUrl = message.getAttachments().get(0).getUrl();
 			task.setImageUrl(replaceCdnUrl(imageUrl));
-			int hashStartIndex = imageUrl.lastIndexOf("_");
-			task.setMessageHash(CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true));
+			task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, getMessageHash(imageUrl));
 			task.success();
 		} else {
 			task.fail("关联图片不存在");
 		}
+	}
+
+	protected String getMessageHash(String imageUrl) {
+		int hashStartIndex = imageUrl.lastIndexOf("_");
+		return CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
+	}
+
+	protected String getImageUrl(DataObject message) {
+		DataArray attachments = message.getArray("attachments");
+		if (!attachments.isEmpty()) {
+			String imageUrl = attachments.getObject(0).getString("url");
+			return replaceCdnUrl(imageUrl);
+		}
+		return null;
+	}
+
+	protected String getImageUrl(Message message) {
+		if (!message.getAttachments().isEmpty()) {
+			String imageUrl = message.getAttachments().get(0).getUrl();
+			return replaceCdnUrl(imageUrl);
+		}
+		return null;
 	}
 
 	protected String replaceCdnUrl(String imageUrl) {

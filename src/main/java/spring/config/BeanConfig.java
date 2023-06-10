@@ -8,6 +8,7 @@ import com.github.novicezk.midjourney.service.store.RedisTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskMixin;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import com.github.novicezk.midjourney.wss.bot.BotMessageListener;
 import com.github.novicezk.midjourney.wss.bot.BotWebSocketStarter;
@@ -15,10 +16,12 @@ import com.github.novicezk.midjourney.wss.user.UserMessageListener;
 import com.github.novicezk.midjourney.wss.user.UserWebSocketStarter;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -51,6 +54,7 @@ public class BeanConfig {
 		redisTemplate.setConnectionFactory(redisConnectionFactory);
 		redisTemplate.setKeySerializer(new StringRedisSerializer());
 		redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Task.class));
 		return redisTemplate;
 	}
 
@@ -74,6 +78,11 @@ public class BeanConfig {
 	@Bean
 	ApplicationRunner enableMetaChangeReceiverInitializer(WebSocketStarter webSocketStarter) {
 		return args -> webSocketStarter.start();
+	}
+
+	@Bean
+	Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+		return builder -> builder.mixIn(Task.class, TaskMixin.class);
 	}
 
 }
