@@ -88,7 +88,8 @@ public class DiscordHelper {
 		for (int i = 0; i < charList.size(); i++) {
 			if (PrimitiveArrayUtil.contains(REGEX_SPECIAL_CHARS, charList.get(i))) {
 				charList.add(i, '\\');
-				i++;
+				charList.add(i, '\\');
+				i += 2;
 			}
 		}
 		StringBuilder sb = new StringBuilder();

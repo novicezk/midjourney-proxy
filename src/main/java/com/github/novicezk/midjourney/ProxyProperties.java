@@ -44,6 +44,10 @@ public class ProxyProperties {
 	 */
 	private TranslateWay translateWay = TranslateWay.NULL;
 	/**
+	 * 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret.
+	 */
+	private String apiSecret;
+	/**
 	 * 任务状态变更回调地址.
 	 */
 	private String notifyHook;
@@ -77,11 +81,11 @@ public class ProxyProperties {
 		/**
 		 * prompt拼接ID的前缀，可使用多个字符.
 		 */
-		private String idPrefix = "<";
+		private String idPrefix = "[";
 		/**
 		 * prompt拼接ID的后缀，可使用多个字符.
 		 */
-		private String idSuffix = ">";
+		private String idSuffix = "]";
 	}
 
 	@Data
