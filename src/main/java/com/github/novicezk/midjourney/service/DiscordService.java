@@ -10,11 +10,11 @@ public interface DiscordService {
 
 	Message<Void> imagine(String prompt);
 
-	Message<Void> upscale(String messageId, int index, String messageHash);
+	Message<Void> upscale(String messageId, int index, String messageHash, int messageFlags);
 
-	Message<Void> variation(String messageId, int index, String messageHash);
+	Message<Void> variation(String messageId, int index, String messageHash, int messageFlags);
 
-	Message<Void> reroll(String messageId, String messageHash);
+	Message<Void> reroll(String messageId, String messageHash, int messageFlags);
 
 	Message<Void> describe(String finalFileName);
 

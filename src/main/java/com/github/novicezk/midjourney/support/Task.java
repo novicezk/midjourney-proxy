@@ -9,6 +9,8 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @ApiModel("任务")
@@ -43,43 +45,30 @@ public class Task implements Serializable {
 	@ApiModelProperty("失败原因")
 	private String failReason;
 
-	// Hidden -- start
-	@JsonIgnore
-	private String finalPrompt;
-	@JsonIgnore
-	private String notifyHook;
-	@JsonIgnore
-	private String relatedTaskId;
-	@JsonIgnore
-	private String messageId;
-	@JsonIgnore
-	private String messageHash;
-	@JsonIgnore
-	private final transient Object lock = new Object();
-	// Hidden -- end
+	// 任务扩展属性，仅支持基本类型
+	private Map<String, Object> properties;
 
 	@JsonIgnore
+	private final transient Object lock = new Object();
+
 	public void sleep() throws InterruptedException {
 		synchronized (this.lock) {
 			this.lock.wait();
 		}
 	}
 
-	@JsonIgnore
 	public void awake() {
 		synchronized (this.lock) {
 			this.lock.notifyAll();
 		}
 	}
 
-	@JsonIgnore
 	public void start() {
 		this.startTime = System.currentTimeMillis();
 		this.status = TaskStatus.SUBMITTED;
 		this.progress = "0%";
 	}
 
-	@JsonIgnore
 	public void success() {
 		this.finishTime = System.currentTimeMillis();
 		this.status = TaskStatus.SUCCESS;
@@ -93,4 +82,33 @@ public class Task implements Serializable {
 		this.progress = "";
 	}
 
+	public Task setProperty(String name, Object value) {
+		getProperties().put(name, value);
+		return this;
+	}
+
+	public Task removeProperty(String name) {
+		getProperties().remove(name);
+		return this;
+	}
+
+	public Object getProperty(String name) {
+		return getProperties().get(name);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getPropertyGeneric(String name) {
+		return (T) getProperty(name);
+	}
+
+	public <T> T getProperty(String name, Class<T> clz) {
+		return clz.cast(getProperty(name));
+	}
+
+	public Map<String, Object> getProperties() {
+		if (this.properties == null) {
+			this.properties = new HashMap<>();
+		}
+		return this.properties;
+	}
 }

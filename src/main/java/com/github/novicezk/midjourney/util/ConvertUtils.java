@@ -9,10 +9,6 @@ import java.util.List;
 @UtilityClass
 public class ConvertUtils {
 
-	public static String findTaskIdByFinalPrompt(String finalPrompt) {
-		return CharSequenceUtil.subBetween(finalPrompt, "[", "]");
-	}
-
 	public static TaskChangeParams convertChangeParams(String content) {
 		List<String> split = CharSequenceUtil.split(content, " ");
 		if (split.size() != 2) {
