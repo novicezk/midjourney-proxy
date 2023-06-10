@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.wss.handle;
 
 
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -25,11 +26,11 @@ import java.util.regex.Pattern;
 @Slf4j
 @Component
 public class ImagineMessageHandler extends MessageHandler {
-	private static final String CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		ContentParseData parseData = parse(content);
 		if (parseData == null) {
 			return;
@@ -45,6 +46,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 			} else {
@@ -70,9 +72,10 @@ public class ImagineMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}
@@ -95,6 +98,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getId());
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 			} else {
@@ -120,15 +124,17 @@ public class ImagineMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getId());
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}
 
 	private ContentParseData parse(String content) {
-		Matcher matcher = Pattern.compile(CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}

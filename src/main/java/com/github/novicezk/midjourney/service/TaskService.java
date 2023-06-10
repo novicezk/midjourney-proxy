@@ -10,9 +10,9 @@ public interface TaskService {
 
 	SubmitResultVO submitImagine(Task task, DataUrl dataUrl);
 
-	SubmitResultVO submitUpscale(Task task, String targetMessageId, String targetMessageHash, int index);
+	SubmitResultVO submitUpscale(Task task, String targetMessageId, String targetMessageHash, int index,  int messageFlags);
 
-	SubmitResultVO submitVariation(Task task, String targetMessageId, String targetMessageHash, int index);
+	SubmitResultVO submitVariation(Task task, String targetMessageId, String targetMessageHash, int index, int messageFlags);
 
 	SubmitResultVO submitDescribe(Task task, DataUrl dataUrl);
 

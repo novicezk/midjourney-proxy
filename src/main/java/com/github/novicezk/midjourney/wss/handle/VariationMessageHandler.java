@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.wss.handle;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -26,12 +27,12 @@ import java.util.regex.Pattern;
 @Slf4j
 @Component
 public class VariationMessageHandler extends MessageHandler {
-	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*\\[(\\d+)\\] (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
+	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*<(\\d+)> (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		if (MessageType.CREATE.equals(messageType)) {
 			UVContentParseData start = parseStart(content);
 			if (start != null) {
@@ -47,7 +48,7 @@ public class VariationMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
-				task.setMessageId(message.getString("id"));
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 				task.setStatus(TaskStatus.IN_PROGRESS);
 				task.awake();
 				return;
@@ -74,7 +75,7 @@ public class VariationMessageHandler extends MessageHandler {
 				return;
 			}
 			TaskCondition condition = new TaskCondition()
-					.setMessageId(message.getString("id"))
+					.setProgressMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
@@ -82,9 +83,10 @@ public class VariationMessageHandler extends MessageHandler {
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}
@@ -119,7 +121,8 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseStart(String content) {
-		Matcher matcher = Pattern.compile(START_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(START_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
@@ -132,7 +135,8 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parse(String content) {
-		Matcher matcher = Pattern.compile(CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
