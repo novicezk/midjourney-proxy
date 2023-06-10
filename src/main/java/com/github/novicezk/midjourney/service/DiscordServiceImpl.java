@@ -82,31 +82,34 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> upscale(String messageId, int index, String messageHash) {
+	public Message<Void> upscale(String messageId, int index, String messageHash, int messageFlags) {
 		String paramsStr = this.upscaleParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$message_id", messageId)
 				.replace("$index", String.valueOf(index))
 				.replace("$message_hash", messageHash);
+		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
 	@Override
-	public Message<Void> variation(String messageId, int index, String messageHash) {
+	public Message<Void> variation(String messageId, int index, String messageHash, int messageFlags) {
 		String paramsStr = this.variationParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$message_id", messageId)
 				.replace("$index", String.valueOf(index))
 				.replace("$message_hash", messageHash);
+		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
 	@Override
-	public Message<Void> reroll(String messageId, String messageHash) {
+	public Message<Void> reroll(String messageId, String messageHash, int messageFlags) {
 		String paramsStr = this.rerollParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$message_id", messageId)
 				.replace("$message_hash", messageHash);
+		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
 		return postJsonAndCheckStatus(paramsStr);
 	}
 

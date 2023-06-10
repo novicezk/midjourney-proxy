@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney.wss.bot;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.wss.handle.MessageHandler;
@@ -54,8 +55,11 @@ public class BotMessageListener extends ListenerAdapter implements ApplicationLi
 			return true;
 		}
 		String authorName = message.getAuthor().getName();
+		if (CharSequenceUtil.isBlank(authorName)) {
+			authorName = "System";
+		}
 		log.debug("{} - {}: {}", messageType.name(), authorName, message.getContentRaw());
-		return !this.properties.getDiscord().getMjBotName().equals(authorName);
+		return false;
 	}
 
 }

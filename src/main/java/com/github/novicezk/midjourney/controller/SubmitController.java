@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.controller;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.dto.BaseSubmitDTO;
@@ -16,6 +17,7 @@ import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
+import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.BannedPromptUtils;
@@ -47,6 +49,7 @@ public class SubmitController {
 	private final TaskStoreService taskStoreService;
 	private final ProxyProperties properties;
 	private final TaskService taskService;
+	private final DiscordHelper discordHelper;
 
 	@ApiOperation(value = "提交Imagine任务")
 	@PostMapping("/imagine")
@@ -81,7 +84,8 @@ public class SubmitController {
 			}
 		}
 		task.setPromptEn(promptEn);
-		task.setFinalPrompt("[" + task.getId() + "] " + promptEn);
+		String finalPrompt = this.discordHelper.generateFinalPrompt(task.getId(), promptEn);
+		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setDescription("/imagine " + imagineDTO.getPrompt());
 		return this.taskService.submitImagine(task, dataUrl);
 	}
@@ -138,13 +142,17 @@ public class SubmitController {
 		task.setAction(changeDTO.getAction());
 		task.setPrompt(targetTask.getPrompt());
 		task.setPromptEn(targetTask.getPromptEn());
-		task.setFinalPrompt(targetTask.getFinalPrompt());
-		task.setRelatedTaskId(ConvertUtils.findTaskIdByFinalPrompt(targetTask.getFinalPrompt()));
+		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, targetTask.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT));
+		String relatedTaskId = this.discordHelper.findTaskIdByFinalPrompt(targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FINAL_PROMPT));
+		task.setProperty(Constants.TASK_PROPERTY_RELATED_TASK_ID, relatedTaskId);
 		task.setDescription(description);
+		int messageFlags = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FLAGS);
+		String messageId = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_MESSAGE_ID);
+		String messageHash = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_MESSAGE_HASH);
 		if (TaskAction.UPSCALE.equals(changeDTO.getAction())) {
-			return this.taskService.submitUpscale(task, targetTask.getMessageId(), targetTask.getMessageHash(), changeDTO.getIndex());
+			return this.taskService.submitUpscale(task, messageId, messageHash, changeDTO.getIndex(), messageFlags);
 		} else if (TaskAction.VARIATION.equals(changeDTO.getAction())) {
-			return this.taskService.submitVariation(task, targetTask.getMessageId(), targetTask.getMessageHash(), changeDTO.getIndex());
+			return this.taskService.submitVariation(task, messageId, messageHash, changeDTO.getIndex(), messageFlags);
 		} else {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "不支持的操作: " + changeDTO.getAction());
 		}
@@ -198,7 +206,8 @@ public class SubmitController {
 		task.setId(RandomUtil.randomNumbers(16));
 		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(base.getState());
-		task.setNotifyHook(CharSequenceUtil.isBlank(base.getNotifyHook()) ? this.properties.getNotifyHook() : base.getNotifyHook());
+		String notifyHook = CharSequenceUtil.isBlank(base.getNotifyHook()) ? this.properties.getNotifyHook() : base.getNotifyHook();
+		task.setProperty(Constants.TASK_PROPERTY_NOTIFY_HOOK, notifyHook);
 		return task;
 	}
 }
