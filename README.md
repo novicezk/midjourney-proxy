@@ -24,17 +24,18 @@
 - [ ] 修复相关Bug，[Wiki / 已知问题](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98)
 
 ## 使用前提
-1. 科学上网
-2. docker环境
-3. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
-4. 获取用户Token、服务器ID、频道ID：[获取方式](./docs/discord-params.md)
+1. 注册 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
+2. 获取用户Token、服务器ID、频道ID：[获取方式](./docs/discord-params.md)
 
 ## 风险须知
 1. 作图频繁等行为，触发midjourney验证码后，需尽快人工验证
 2. 默认使用user-wss方式，可以获取midjourney的错误信息、图片变换进度等，但可能会增加账号风险
 3. 支持设置mj.discord.user-wss为false，使用bot-token连接wss，需添加自定义机器人：[流程说明](./docs/discord-bot.md)
 
-## 快速启动
+## Railway 部署
+基于Railway平台免费部署，不需要自己的服务器: [部署方式](./docs/railway-start.md)
+
+## Docker 部署
 1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
 2. 启动容器，映射config目录
 ```shell
@@ -81,7 +82,7 @@ docker run -d --name midjourney-proxy \
 - 依赖java17和maven
 - 更改配置项: 修改src/main/application.yml
 - 项目运行: 启动ProxyApplication的main函数
-- 更改代码后，构建镜像: `docker build . -t midjourney-proxy`
+- 更改代码后，构建镜像: Dockerfile取消VOLUME的注释，执行 `docker build . -t midjourney-proxy`
 
 ## 应用项目
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
