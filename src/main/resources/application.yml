@@ -16,6 +16,6 @@ mj:
     queue-size: 10
 spring:
   redis:
-    port: 15764
-    host: redis-15764.c82.us-east-1-2.ec2.cloud.redislabs.com
-    password: 9qqxOYENX5ngPqqx1BaPbnS7tLoBdKwd
+    port: 18099
+    host: redis-18099.c57.us-east-1-4.ec2.cloud.redislabs.com
+    password: y3vqtzrmKMr760JDtO3kJHW16oBgsL4l
