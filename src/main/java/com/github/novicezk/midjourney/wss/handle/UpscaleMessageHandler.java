@@ -27,16 +27,16 @@ import java.util.regex.Pattern;
 @Slf4j
 @Component
 public class UpscaleMessageHandler extends MessageHandler {
-	private static final String START_CONTENT_REGEX = "Upscaling image #(\\d) with \\*\\*\\[(\\d+)\\] (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String END_CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Image #(\\d) <@\\d+>";
-	private static final String END2_CONTENT_REGEX = "\\*\\*\\[(\\d+)\\] (.*?)\\*\\* - Upscaled by <@\\d+> \\((.*?)\\)";
+	private static final String START_CONTENT_REGEX = "Upscaling image #(\\d) with \\*\\*<(\\d+)> (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String END_CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Image #(\\d) <@\\d+>";
+	private static final String END2_CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Upscaled by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
 		if (MessageType.CREATE != messageType) {
 			return;
 		}
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		UVContentParseData start = parseStart(content);
 		if (start != null) {
 			TaskCondition condition = new TaskCondition()
@@ -59,7 +59,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setRelatedTaskId(end.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "U" + end.getIndex()))
 					.min(Comparator.comparing(Task::getSubmitTime))
@@ -76,7 +76,7 @@ public class UpscaleMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setRelatedTaskId(end2.getTaskId())
 					.setActionSet(Set.of(TaskAction.UPSCALE))
-					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
 					.min(Comparator.comparing(Task::getSubmitTime))
 					.orElse(null);
@@ -129,7 +129,8 @@ public class UpscaleMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseStart(String content) {
-		Matcher matcher = Pattern.compile(START_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(START_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
@@ -142,7 +143,8 @@ public class UpscaleMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseEnd(String content) {
-		Matcher matcher = Pattern.compile(END_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(END_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
@@ -155,7 +157,8 @@ public class UpscaleMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseEnd2(String content) {
-		Matcher matcher = Pattern.compile(END2_CONTENT_REGEX).matcher(content);
+		String contentRegex = this.discordHelper.convertContentRegex(END2_CONTENT_REGEX);
+		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
