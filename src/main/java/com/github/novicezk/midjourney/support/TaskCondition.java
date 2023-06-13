@@ -29,6 +29,9 @@ public class TaskCondition implements Predicate<Task> {
 
 	@Override
 	public boolean test(Task task) {
+		if (task == null) {
+			return false;
+		}
 		if (CharSequenceUtil.isNotBlank(this.id) && !this.id.equals(task.getId())) {
 			return false;
 		}

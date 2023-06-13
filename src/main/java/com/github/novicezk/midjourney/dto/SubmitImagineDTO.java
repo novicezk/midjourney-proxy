@@ -14,7 +14,7 @@ public class SubmitImagineDTO extends BaseSubmitDTO {
 	@ApiModelProperty(value = "提示词", required = true, example = "Cat")
 	private String prompt;
 
-	@ApiModelProperty(value = "垫图base64", example = "data:image/png;base64,xxx")
+	@ApiModelProperty(value = "垫图base64")
 	private String base64;
 
 }
