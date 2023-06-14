@@ -42,7 +42,7 @@ public abstract class MessageHandler {
 
 	protected void finishTask(Task task, Message message) {
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_ID, message.getId());
-		task.setProperty(Constants.TASK_PROPERTY_FLAGS, message.getFlagsRaw());
+		task.setProperty(Constants.TASK_PROPERTY_FLAGS, (int) message.getFlagsRaw());
 		if (!message.getAttachments().isEmpty()) {
 			String imageUrl = message.getAttachments().get(0).getUrl();
 			task.setImageUrl(replaceCdnUrl(imageUrl));

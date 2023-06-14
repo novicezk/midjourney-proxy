@@ -68,7 +68,7 @@ public class DescribeMessageHandler extends MessageHandler {
 			return;
 		}
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_ID, message.getId());
-		task.setProperty(Constants.TASK_PROPERTY_FLAGS, message.getFlagsRaw());
+		task.setProperty(Constants.TASK_PROPERTY_FLAGS, (int) message.getFlagsRaw());
 		task.setPrompt(prompt);
 		task.setPromptEn(prompt);
 		task.setImageUrl(replaceCdnUrl(imageUrl));
