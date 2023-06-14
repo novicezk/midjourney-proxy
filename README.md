@@ -29,8 +29,9 @@
 
 ## 风险须知
 1. 作图频繁等行为，可能会触发midjourney账号警告，请谨慎使用
-2. 默认使用user-wss方式，可以获取midjourney的错误信息、图片变换进度等，但可能会增加账号风险
-3. 支持设置mj.discord.user-wss为false，使用bot-token连接wss，需添加自定义机器人：[流程说明](./docs/discord-bot.md)
+2. 为减少风险，请设置`mj.discord.user-agent`，也可以自定义prompt中任务ID的前后字符，参考 [配置项](https://github.com/novicezk/midjourney-proxy/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9)
+3. 默认使用user-wss方式，可以获取midjourney的错误信息、图片变换进度等，但可能会增加账号风险
+4. 支持设置mj.discord.user-wss为false，使用bot-token连接wss，需添加自定义机器人：[流程说明](./docs/discord-bot.md)
 
 ## Railway 部署
 基于Railway平台部署，不需要自己的服务器: [部署方式](./docs/railway-start.md)
