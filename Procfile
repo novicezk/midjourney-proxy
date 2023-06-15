@@ -1,1 +1,1 @@
-web: java -jar target/midjourney-proxy-2.1.5.jar
+web: java -jar target/midjourney-proxy-2.2.2.jar
