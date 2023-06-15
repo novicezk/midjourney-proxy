@@ -34,7 +34,10 @@
 4. 支持设置mj.discord.user-wss为false，使用bot-token连接wss，需添加自定义机器人：[流程说明](./docs/discord-bot.md)
 
 ## Railway 部署
-基于Railway平台部署，不需要自己的服务器: [部署方式](./docs/railway-start.md)
+基于Railway平台部署，不需要自己的服务器: [部署方式](./docs/railway-start.md)；若Railway不能使用，可用下方的Zeabur部署
+
+## Zeabur 部署
+基于Zeabur平台部署，不需要自己的服务器: [部署方式](./docs/zeabur-start.md)
 
 ## Docker 部署
 1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
