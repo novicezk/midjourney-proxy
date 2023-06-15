@@ -22,21 +22,20 @@ public class TaskTimeoutSchedule {
 	public void checkTasks() {
 		long currentTime = System.currentTimeMillis();
 		long timeout = TimeUnit.MINUTES.toMillis(this.properties.getQueue().getTimeoutMinutes());
-		TaskCondition condition = new TaskCondition()
-				.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-		this.taskQueueHelper.findRunningTask(condition)
+		this.taskQueueHelper.findRunningTask(new TaskCondition())
 				.filter(t -> currentTime - t.getStartTime() > timeout)
 				.forEach(task -> {
 					if (Set.of(TaskStatus.FAILURE, TaskStatus.SUCCESS).contains(task.getStatus())) {
-						return;
+						log.warn("task status is failure/success but is in the queue, end it. id: {}", task.getId());
+					} else {
+						log.debug("task timeout, id: {}", task.getId());
+						task.fail("任务超时");
 					}
 					Future<?> future = this.taskQueueHelper.getRunningFuture(task.getId());
 					if (future != null) {
 						future.cancel(true);
 					}
-					log.debug("task timeout, id: {}", task.getId());
-					task.fail("任务超时");
-					this.taskQueueHelper.changeStatusAndNotify(task, TaskStatus.FAILURE);
+					this.taskQueueHelper.changeStatusAndNotify(task, task.getStatus());
 				});
 	}
 }
