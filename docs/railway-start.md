@@ -1,6 +1,6 @@
 ## Railway 部署教程
 
-Railway是一个提供弹性部署方案的平台，服务在海外，方便MidJourney的调用。
+Railway是一个提供弹性部署方案的平台，服务器在海外，方便MidJourney的调用。
 
 **Railway 提供 5 美元，500 个小时/月的免费额度**
 
