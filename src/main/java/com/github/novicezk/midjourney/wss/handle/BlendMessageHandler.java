@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.wss.handle;
 
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -32,7 +33,7 @@ public class BlendMessageHandler extends MessageHandler {
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
 		Optional<DataObject> interaction = message.optObject("interaction");
-		String content = message.getString("content");
+		String content = getMessageContent(message);
 		boolean match = CharSequenceUtil.startWith(content, "**<https://s.mj.run/") || (interaction.isPresent() && "blend".equals(interaction.get().getString("name")));
 		if (!match) {
 			return;
@@ -58,7 +59,7 @@ public class BlendMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
-				task.setMessageId(message.getString("id"));
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 				task.setPrompt(parseData.getPrompt());
 				task.setPromptEn(parseData.getPrompt());
 				task.setStatus(TaskStatus.IN_PROGRESS);
@@ -67,29 +68,30 @@ public class BlendMessageHandler extends MessageHandler {
 				// 完成
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.BLEND))
-						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+						.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 				Task task = this.taskQueueHelper.findRunningTask(condition)
 						.max(Comparator.comparing(Task::getProgress))
 						.orElse(null);
 				if (task == null) {
 					return;
 				}
-				task.setFinalPrompt(parseData.getPrompt());
+				task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, parseData.getPrompt());
 				finishTask(task, message);
 				task.awake();
 			}
 		} else if (MessageType.UPDATE == messageType) {
 			// 进度
 			TaskCondition condition = new TaskCondition()
-					.setMessageId(message.getString("id"))
+					.setProgressMessageId(message.getString("id"))
 					.setActionSet(Set.of(TaskAction.BLEND))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}
@@ -122,7 +124,7 @@ public class BlendMessageHandler extends MessageHandler {
 				if (task == null) {
 					return;
 				}
-				task.setMessageId(message.getId());
+				task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getId());
 				task.setPrompt(parseData.getPrompt());
 				task.setPromptEn(parseData.getPrompt());
 				task.setStatus(TaskStatus.IN_PROGRESS);
@@ -131,29 +133,30 @@ public class BlendMessageHandler extends MessageHandler {
 				// 完成
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.BLEND))
-						.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
+						.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 				Task task = this.taskQueueHelper.findRunningTask(condition)
 						.max(Comparator.comparing(Task::getProgress))
 						.orElse(null);
 				if (task == null) {
 					return;
 				}
-				task.setFinalPrompt(parseData.getPrompt());
+				task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, parseData.getPrompt());
 				finishTask(task, message);
 				task.awake();
 			}
 		} else if (MessageType.UPDATE == messageType) {
 			// 进度
 			TaskCondition condition = new TaskCondition()
-					.setMessageId(message.getId())
+					.setProgressMessageId(message.getId())
 					.setActionSet(Set.of(TaskAction.BLEND))
 					.setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
+			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getId());
 			task.setProgress(parseData.getStatus());
-			updateTaskImageUrl(task, message);
+			task.setImageUrl(getImageUrl(message));
 			task.awake();
 		}
 	}

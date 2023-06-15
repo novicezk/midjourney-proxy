@@ -44,6 +44,10 @@ public class ProxyProperties {
 	 */
 	private TranslateWay translateWay = TranslateWay.NULL;
 	/**
+	 * 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret.
+	 */
+	private String apiSecret;
+	/**
 	 * 任务状态变更回调地址.
 	 */
 	private String notifyHook;
@@ -63,9 +67,9 @@ public class ProxyProperties {
 		 */
 		private String userToken;
 		/**
-		 * 是否使用user_token连接wss，默认false(使用bot_token).
+		 * 是否使用user_token连接wss，默认启用.
 		 */
-		private boolean userWss = false;
+		private boolean userWss = true;
 		/**
 		 * 调用discord接口、连接wss时的user-agent.
 		 */
@@ -75,9 +79,13 @@ public class ProxyProperties {
 		 */
 		private String botToken;
 		/**
-		 * Midjourney机器人的名称.
+		 * prompt拼接ID的前缀，可使用多个字符，不要使用 '\' 字符.
 		 */
-		private String mjBotName = "Midjourney Bot";
+		private String idPrefix = "[";
+		/**
+		 * prompt拼接ID的后缀，可使用多个字符，不要使用 '\' 字符.
+		 */
+		private String idSuffix = "]";
 	}
 
 	@Data

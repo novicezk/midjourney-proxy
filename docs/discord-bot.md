@@ -28,18 +28,8 @@ https://discord.com/developers/applications
 
 勾上这两个选项，点击 `Save Changes`
 
-### 4. 获取用户Token
-进入频道，打开network随便发个消息，这里的 authorization 即用户Token，后续设置到 `mj.discord.user-token`
-
-![User Token](img_8.png)
-
-### 5. 获取服务器ID、频道ID
-
-频道的url里取出 服务器ID、频道ID，后续设置到配置项
-![Guild Channel ID](img_9.png)
-
-### 6. 检查机器人
-在频道中确认是否存在mj机器人和新创建的机器人，注意mj机器人名称为"Midjourney Bot"，不一致时需要改启动参数 `mj.discord.mj-bot-name`
+### 4. 检查机器人
+在频道中确认是否存在mj机器人和新创建的机器人
 
 ![Check Bot](img_10.png)
 
