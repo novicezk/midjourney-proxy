@@ -34,7 +34,56 @@
 4. 支持设置mj.discord.user-wss为false，使用bot-token连接wss，需添加自定义机器人：[流程说明](./docs/discord-bot.md)
 
 ## Railway 部署
-基于Railway平台部署，不需要自己的服务器: [部署方式](./docs/railway-start.md)
+基于Railway平台部署，不需要自己的服务器: [部署方式](./docs/railway-start.md) (如 `Railway` 不能使用,可用下方的 `Zeabur` 部署)
+
+## Zeabur 部署
+### Zeabur优势
+1. `Railway` 更新机制后,只允许注册使用超过半年的 `Github` 账户部署服务,对于新注册的 `Github` 账号来说，使用不了 `Railway`，但是能用 `Zeabur`
+2. 通过 `Railway` 部署的项目会自动生成一个域名,然而因为某些原因，形如 `*.up.railway.app` 的域名在国内无法访问
+3. `Zeabur` 服务器运行在国外,但是其生成的域名 `*.zeabur.app` 没有被污染,国内可直接访问
+### 开始部署
+1.打开网址 [Zeabur：https://zeabur.com](https://zeabur.com/zh-CN)
+
+2.点击现在开始
+
+3.点击 `Sign in with GitHub`
+
+4.登陆你的 `Github` 账号
+
+5.点击 `Authorize zeabur` 授权
+
+6.点击 `创建项目` 并输入一个项目名称，点击 `创建`
+
+7.点击 `+` 添加服务，选择 `Git-Deploy service from source code in GitHub repository.`
+
+8.点击 `Configure GitHub` 根据需要选择 `All repositories` 或者 `Only select repositories`
+
+9.点击 `install`,之后自动跳转，最好再刷新一下页面
+
+10.点击 你 fork 的 `midjourney-proxy` 项目
+
+11.点击环境变量，点击编辑原始环境变量，添加你需要的环境变量
+
+12.关于环境变量，与 `Railway` 稍有不同，需要把 `.` 和 `-` 全部换成 `_`，例如如下格式
+
+```
+PORT=8080
+mj_discord_guild_id=xxx
+mj_discord_channel_id=xxx
+mj_discord_user_token=xxx
+```
+
+13.然后取消 `Building`，点击 `Redeploy` (此做法是为了让环境变量生效)
+
+14.部署 `midjourney-proxy` 大概需要 `2` 分钟，此时你可以做的是：配置域名
+
+15.点击下方的域名，点击生成域名，输入前缀，例如我的是 `midjourney-proxy.zeabur.app`，点击保存
+
+16.注意此时的域名就是你的 `MIDJOURNEY_PROXY_URL` ,不要再加端口，例如应该是 `https://midjourney-proxy.zeabur.app`,而不是 `https://midjourney-proxy.zeabur.app:port`
+
+17.或者也可添加自定义域名，之后加上 `CNAME` 解析即可
+
+18.等待部署成功即可
 
 ## Docker 部署
 1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
