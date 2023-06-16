@@ -2,7 +2,7 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.2.2&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.2.3&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 现有功能
@@ -40,6 +40,9 @@
 基于Zeabur平台部署，不需要自己的服务器: [部署方式](./docs/zeabur-start.md)
 
 ## Docker 部署
+- amd镜像暂时使用 chazzcheung/midjourney-proxy:latest
+- arm镜像暂时使用 novicezk/midjourney-proxy-arm64v8:2.2.3
+
 1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
 2. 启动容器，映射config目录
 ```shell
@@ -47,7 +50,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:2.2.2
+ chazzcheung/midjourney-proxy:latest
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
@@ -59,7 +62,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.channel-id=xxx \
  -e mj.discord.user-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:2.2.2
+ chazzcheung/midjourney-proxy:latest
 ```
 ## 配置项
 - mj.discord.guild-id：discord服务器ID
