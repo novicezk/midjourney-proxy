@@ -40,9 +40,6 @@
 基于Zeabur平台部署，不需要自己的服务器: [部署方式](./docs/zeabur-start.md)
 
 ## Docker 部署
-- amd镜像暂时使用 chazzcheung/midjourney-proxy:latest
-- arm镜像暂时使用 novicezk/midjourney-proxy-arm64v8:2.2.3
-
 1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
 2. 启动容器，映射config目录
 ```shell
@@ -50,7 +47,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- chazzcheung/midjourney-proxy:latest
+ novicezk/midjourney-proxy:2.2.3
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
@@ -62,7 +59,7 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.channel-id=xxx \
  -e mj.discord.user-token=xxx \
  --restart=always \
- chazzcheung/midjourney-proxy:latest
+ novicezk/midjourney-proxy:2.2.3
 ```
 ## 配置项
 - mj.discord.guild-id：discord服务器ID
