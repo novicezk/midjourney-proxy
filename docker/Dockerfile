@@ -29,7 +29,7 @@ EXPOSE 8080 9876
 
 ENTRYPOINT ["bash","-c","java $JAVA_OPTS -cp ./app org.springframework.boot.loader.JarLauncher"]
 
-COPY --chown=${user}:${group} ${LAYERS_DIR}/dependencies $APP_HOME/
-COPY --chown=${user}:${group} ${LAYERS_DIR}/spring-boot-loader $APP_HOME/
-COPY --chown=${user}:${group} ${LAYERS_DIR}/snapshot-dependencies $APP_HOME/
-COPY --chown=${user}:${group} ${LAYERS_DIR}/application $APP_HOME/
+COPY --chown=${user}:${group} dependencies $APP_HOME/
+COPY --chown=${user}:${group} spring-boot-loader $APP_HOME/
+COPY --chown=${user}:${group} snapshot-dependencies $APP_HOME/
+COPY --chown=${user}:${group} application $APP_HOME/
