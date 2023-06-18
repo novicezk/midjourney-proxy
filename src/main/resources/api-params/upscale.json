@@ -4,7 +4,7 @@
   "channel_id": "$channel_id",
   "message_id": "$message_id",
   "application_id": "936929561302675456",
-  "session_id": "9c4055428e13bcbf2248a6b36084c5f3",
+  "session_id": "$session_id",
   "message_flags": 0,
   "data": {
     "component_type": 2,

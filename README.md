@@ -2,11 +2,11 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.2.3&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.3&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 现有功能
-- [x] 支持 Imagine 指令和相关U、V操作
+- [x] 支持 Imagine、Blend 指令和相关U、V操作
 - [x] Imagine 时支持添加图片base64，作为垫图
 - [x] 支持 Describe 指令，根据图片生成 prompt
 - [x] 支持 Blend 指令，多个图片混合
@@ -18,7 +18,6 @@
 - [x] 支持 discord域名(server、cdn、wss)反代，配置 mj.ng-discord
 
 ## 后续计划
-- [ ] 支持 Blend 指令后续的U、V操作
 - [ ] 支持 Reroll 操作
 - [ ] 支持配置账号池，分发绘图任务
 - [ ] 修复相关Bug，[Wiki / 已知问题](https://github.com/novicezk/midjourney-proxy/wiki/%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98)
@@ -29,7 +28,7 @@
 
 ## 风险须知
 1. 作图频繁等行为，可能会触发midjourney账号警告，请谨慎使用
-2. 为减少风险，请设置`mj.discord.user-agent`，也可以自定义prompt中任务ID的前后字符，参考 [配置项](https://github.com/novicezk/midjourney-proxy/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9)
+2. 为减少风险，请设置`mj.discord.user-agent` 和 `mj.discord.session-id`
 3. 默认使用user-wss方式，可以获取midjourney的错误信息、图片变换进度等，但可能会增加账号风险
 4. 支持设置mj.discord.user-wss为false，使用bot-token连接wss，需添加自定义机器人：[流程说明](./docs/discord-bot.md)
 
@@ -47,7 +46,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:2.2.3
+ novicezk/midjourney-proxy:2.3
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
@@ -59,14 +58,15 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.channel-id=xxx \
  -e mj.discord.user-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:2.2.3
+ novicezk/midjourney-proxy:2.3
 ```
 ## 配置项
 - mj.discord.guild-id：discord服务器ID
 - mj.discord.channel-id：discord频道ID
 - mj.discord.user-token：discord用户Token
-- mj.discord.user-wss：是否使用user-token连接wss，默认true
+- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactions复制替换掉
 - mj.discord.user-agent：调用discord接口、连接wss时的user-agent，默认使用作者的，建议从浏览器network复制替换掉
+- mj.discord.user-wss：是否使用user-token连接wss，默认true
 - mj.discord.bot-token：自定义机器人Token，user-wss=false时必填
 - 更多配置查看 [Wiki / 配置项](https://github.com/novicezk/midjourney-proxy/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9)
 

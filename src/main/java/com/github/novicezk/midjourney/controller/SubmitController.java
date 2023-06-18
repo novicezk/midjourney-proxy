@@ -84,8 +84,6 @@ public class SubmitController {
 			}
 		}
 		task.setPromptEn(promptEn);
-		String finalPrompt = this.discordHelper.generateFinalPrompt(task.getId(), promptEn);
-		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setDescription("/imagine " + imagineDTO.getPrompt());
 		return this.taskService.submitImagine(task, dataUrl);
 	}
@@ -135,7 +133,7 @@ public class SubmitController {
 		if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "关联任务状态错误");
 		}
-		if (!Set.of(TaskAction.IMAGINE, TaskAction.VARIATION).contains(targetTask.getAction())) {
+		if (!Set.of(TaskAction.IMAGINE, TaskAction.VARIATION, TaskAction.BLEND).contains(targetTask.getAction())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "关联任务不允许执行变化");
 		}
 		Task task = newTask(changeDTO);
@@ -143,8 +141,6 @@ public class SubmitController {
 		task.setPrompt(targetTask.getPrompt());
 		task.setPromptEn(targetTask.getPromptEn());
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, targetTask.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT));
-		String relatedTaskId = this.discordHelper.findTaskIdByFinalPrompt(targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FINAL_PROMPT));
-		task.setProperty(Constants.TASK_PROPERTY_RELATED_TASK_ID, relatedTaskId);
 		task.setDescription(description);
 		int messageFlags = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FLAGS);
 		String messageId = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_MESSAGE_ID);
