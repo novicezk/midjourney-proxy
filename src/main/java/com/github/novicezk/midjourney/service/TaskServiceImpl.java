@@ -39,14 +39,13 @@ public class TaskServiceImpl implements TaskService {
 				if (sendImageResult.getCode() != ReturnCode.SUCCESS) {
 					return Message.of(sendImageResult.getCode(), sendImageResult.getDescription());
 				}
+				task.setProperty(Constants.TASK_PROPERTY_PROMPT_EN_WITHOUT_IMAGE, task.getPromptEn());
 				task.setPrompt(sendImageResult.getResult() + " " + task.getPrompt());
 				task.setPromptEn(sendImageResult.getResult() + " " + task.getPromptEn());
-				String finalPrompt = this.discordHelper.generateFinalPrompt(task.getId(), task.getPromptEn());
-				task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 				task.setDescription("/imagine " + task.getPrompt());
 				this.taskStoreService.save(task);
 			}
-			return this.discordService.imagine(task.getPropertyGeneric(Constants.TASK_PROPERTY_FINAL_PROMPT));
+			return this.discordService.imagine(task.getPromptEn());
 		});
 	}
 

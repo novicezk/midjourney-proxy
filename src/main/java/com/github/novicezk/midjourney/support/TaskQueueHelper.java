@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -58,7 +59,7 @@ public class TaskQueueHelper {
 		return this.runningTasks.stream().filter(t -> id.equals(t.getId())).findFirst().orElse(null);
 	}
 
-	public Stream<Task> findRunningTask(TaskCondition condition) {
+	public Stream<Task> findRunningTask(Predicate<Task> condition) {
 		return this.runningTasks.stream().filter(condition);
 	}
 

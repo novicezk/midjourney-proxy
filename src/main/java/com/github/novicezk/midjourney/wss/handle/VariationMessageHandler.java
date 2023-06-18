@@ -20,15 +20,15 @@ import java.util.regex.Pattern;
 
 /**
  * variation消息处理. todo: 待兼容blend
- * 开始(create): Making variations for image #1 with prompt **[0152010266005012] cat** - <@1012983546824114217> (Waiting to start)
- * 进度(update): **[0152010266005012] cat** - Variations by <@1012983546824114217> (0%) (relaxed)
- * 完成(create): **[0152010266005012] cat** - Variations by <@1012983546824114217> (relaxed)
+ * 开始(create): Making variations for image #1 with prompt **cat** - <@1012983546824114217> (Waiting to start)
+ * 进度(update): **cat** - Variations by <@1012983546824114217> (0%) (relaxed)
+ * 完成(create): **cat** - Variations by <@1012983546824114217> (relaxed)
  */
 @Slf4j
 @Component
 public class VariationMessageHandler extends MessageHandler {
-	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*<(\\d+)> (.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX = "\\*\\*<(\\d+)> (.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
+	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*(.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
@@ -38,7 +38,7 @@ public class VariationMessageHandler extends MessageHandler {
 			if (start != null) {
 				// 开始
 				TaskCondition condition = new TaskCondition()
-						.setRelatedTaskId(start.getTaskId())
+						.setFinalPromptEn(start.getPrompt())
 						.setActionSet(Set.of(TaskAction.VARIATION))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
 				Task task = this.taskQueueHelper.findRunningTask(condition)
@@ -58,7 +58,7 @@ public class VariationMessageHandler extends MessageHandler {
 				return;
 			}
 			TaskCondition condition = new TaskCondition()
-					.setRelatedTaskId(end.getTaskId())
+					.setFinalPromptEn(end.getPrompt())
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
@@ -106,7 +106,7 @@ public class VariationMessageHandler extends MessageHandler {
 				return;
 			}
 			TaskCondition condition = new TaskCondition()
-					.setRelatedTaskId(parseData.getTaskId())
+					.setFinalPromptEn(parseData.getPrompt())
 					.setActionSet(Set.of(TaskAction.VARIATION))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
 			Task task = this.taskQueueHelper.findRunningTask(condition)
@@ -121,29 +121,25 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parseStart(String content) {
-		String contentRegex = this.discordHelper.convertContentRegex(START_CONTENT_REGEX);
-		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
+		Matcher matcher = Pattern.compile(START_CONTENT_REGEX).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
 		UVContentParseData parseData = new UVContentParseData();
 		parseData.setIndex(Integer.parseInt(matcher.group(1)));
-		parseData.setTaskId(matcher.group(2));
-		parseData.setPrompt(matcher.group(3));
-		parseData.setStatus(matcher.group(4));
+		parseData.setPrompt(matcher.group(2));
+		parseData.setStatus(matcher.group(3));
 		return parseData;
 	}
 
 	private UVContentParseData parse(String content) {
-		String contentRegex = this.discordHelper.convertContentRegex(CONTENT_REGEX);
-		Matcher matcher = Pattern.compile(contentRegex).matcher(content);
+		Matcher matcher = Pattern.compile(CONTENT_REGEX).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
 		UVContentParseData parseData = new UVContentParseData();
-		parseData.setTaskId(matcher.group(1));
-		parseData.setPrompt(matcher.group(2));
-		parseData.setStatus(matcher.group(3));
+		parseData.setPrompt(matcher.group(1));
+		parseData.setStatus(matcher.group(2));
 		return parseData;
 	}
 }
