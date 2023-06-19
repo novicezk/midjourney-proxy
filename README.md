@@ -6,10 +6,10 @@
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 现有功能
-- [x] 支持 Imagine、Blend 指令和相关U、V操作
+- [x] 支持 Imagine 指令和相关U、V操作
 - [x] Imagine 时支持添加图片base64，作为垫图
+- [x] 支持 Blend(图片混合) 指令和相关U、V操作
 - [x] 支持 Describe 指令，根据图片生成 prompt
-- [x] 支持 Blend 指令，多个图片混合
 - [x] 支持 Imagine、V、Blend 图片生成进度
 - [x] 支持中文 prompt 翻译，需配置百度翻译或 gpt
 - [x] prompt 敏感词判断，支持覆盖调整
@@ -64,7 +64,7 @@ docker run -d --name midjourney-proxy \
 - mj.discord.guild-id：discord服务器ID
 - mj.discord.channel-id：discord频道ID
 - mj.discord.user-token：discord用户Token
-- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactions复制替换掉
+- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactio请求中复制替换掉
 - mj.discord.user-agent：调用discord接口、连接wss时的user-agent，默认使用作者的，建议从浏览器network复制替换掉
 - mj.discord.user-wss：是否使用user-token连接wss，默认true
 - mj.discord.bot-token：自定义机器人Token，user-wss=false时必填

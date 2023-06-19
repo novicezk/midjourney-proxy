@@ -181,6 +181,9 @@ public class SubmitController {
 		if (base64Array == null || base64Array.size() < 2 || base64Array.size() > 5) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "base64List参数错误");
 		}
+		if (blendDTO.getDimensions() == null) {
+			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "dimensions参数错误");
+		}
 		IDataUrlSerializer serializer = new DataUrlSerializer();
 		List<DataUrl> dataUrlList = new ArrayList<>();
 		try {
@@ -194,7 +197,7 @@ public class SubmitController {
 		Task task = newTask(blendDTO);
 		task.setAction(TaskAction.BLEND);
 		task.setDescription("/blend " + task.getId() + " " + dataUrlList.size());
-		return this.taskService.submitBlend(task, dataUrlList);
+		return this.taskService.submitBlend(task, dataUrlList, blendDTO.getDimensions());
 	}
 
 	private Task newTask(BaseSubmitDTO base) {
