@@ -5,6 +5,7 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.ReturnCode;
+import com.github.novicezk.midjourney.enums.BlendDimensions;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import eu.maxschuster.dataurl.DataUrl;
@@ -131,7 +132,7 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> blend(List<String> finalFileNames) {
+	public Message<Void> blend(List<String> finalFileNames, BlendDimensions dimensions) {
 		String paramsStr = this.blendParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
 				.replace("$session_id", this.discordSessionId);
@@ -150,6 +151,9 @@ public class DiscordServiceImpl implements DiscordService {
 					.put("value", i);
 			options.put(option);
 		}
+		options.put(new JSONObject().put("type", 3)
+				.put("name", "dimensions")
+				.put("value", "--ar " + dimensions.getValue()));
 		return postJsonAndCheckStatus(params.toString());
 	}
 
