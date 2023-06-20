@@ -50,8 +50,8 @@ public class ErrorMessageHandler extends MessageHandler {
 		Task targetTask = null;
 		if (CharSequenceUtil.startWith(footerText, "/imagine ")) {
 			String finalPrompt = CharSequenceUtil.subAfter(footerText, "/imagine ", false);
-			String taskId = this.discordHelper.findTaskIdByFinalPrompt(finalPrompt);
-			targetTask = this.taskQueueHelper.getRunningTask(taskId);
+			targetTask = this.taskQueueHelper.findRunningTask(new TaskCondition().setFinalPromptEn(finalPrompt))
+					.findFirst().orElse(null);
 		} else if (CharSequenceUtil.startWith(footerText, "/describe ")) {
 			String imageUrl = CharSequenceUtil.subAfter(footerText, "/describe ", false);
 			int hashStartIndex = imageUrl.lastIndexOf("/");
