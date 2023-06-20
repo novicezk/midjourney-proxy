@@ -24,7 +24,7 @@ public class ApiAuthorizeInterceptor implements HandlerInterceptor {
 		String apiSecret = request.getHeader(Constants.API_SECRET_HEADER_NAME);
 		boolean authorized = CharSequenceUtil.equals(apiSecret, this.properties.getApiSecret());
 		if (!authorized) {
-			response.setStatus(403);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}
 		return authorized;
 	}

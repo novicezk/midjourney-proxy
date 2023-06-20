@@ -17,7 +17,6 @@ import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
-import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.BannedPromptUtils;
@@ -49,7 +48,6 @@ public class SubmitController {
 	private final TaskStoreService taskStoreService;
 	private final ProxyProperties properties;
 	private final TaskService taskService;
-	private final DiscordHelper discordHelper;
 
 	@ApiOperation(value = "提交Imagine任务")
 	@PostMapping("/imagine")
@@ -84,8 +82,6 @@ public class SubmitController {
 			}
 		}
 		task.setPromptEn(promptEn);
-		String finalPrompt = this.discordHelper.generateFinalPrompt(task.getId(), promptEn);
-		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setDescription("/imagine " + imagineDTO.getPrompt());
 		return this.taskService.submitImagine(task, dataUrl);
 	}
@@ -135,7 +131,7 @@ public class SubmitController {
 		if (!TaskStatus.SUCCESS.equals(targetTask.getStatus())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "关联任务状态错误");
 		}
-		if (!Set.of(TaskAction.IMAGINE, TaskAction.VARIATION).contains(targetTask.getAction())) {
+		if (!Set.of(TaskAction.IMAGINE, TaskAction.VARIATION, TaskAction.BLEND).contains(targetTask.getAction())) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "关联任务不允许执行变化");
 		}
 		Task task = newTask(changeDTO);
@@ -143,8 +139,6 @@ public class SubmitController {
 		task.setPrompt(targetTask.getPrompt());
 		task.setPromptEn(targetTask.getPromptEn());
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, targetTask.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT));
-		String relatedTaskId = this.discordHelper.findTaskIdByFinalPrompt(targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FINAL_PROMPT));
-		task.setProperty(Constants.TASK_PROPERTY_RELATED_TASK_ID, relatedTaskId);
 		task.setDescription(description);
 		int messageFlags = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FLAGS);
 		String messageId = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_MESSAGE_ID);
@@ -185,6 +179,9 @@ public class SubmitController {
 		if (base64Array == null || base64Array.size() < 2 || base64Array.size() > 5) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "base64List参数错误");
 		}
+		if (blendDTO.getDimensions() == null) {
+			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "dimensions参数错误");
+		}
 		IDataUrlSerializer serializer = new DataUrlSerializer();
 		List<DataUrl> dataUrlList = new ArrayList<>();
 		try {
@@ -198,7 +195,7 @@ public class SubmitController {
 		Task task = newTask(blendDTO);
 		task.setAction(TaskAction.BLEND);
 		task.setDescription("/blend " + task.getId() + " " + dataUrlList.size());
-		return this.taskService.submitBlend(task, dataUrlList);
+		return this.taskService.submitBlend(task, dataUrlList, blendDTO.getDimensions());
 	}
 
 	private Task newTask(BaseSubmitDTO base) {

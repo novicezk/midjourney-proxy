@@ -12,6 +12,7 @@ public final class Constants {
 	public static final String TASK_PROPERTY_PROGRESS_MESSAGE_ID = "progressMessageId";
 	public static final String TASK_PROPERTY_FLAGS = "flags";
 	public static final String TASK_PROPERTY_MESSAGE_HASH = "messageHash";
+	public static final String TASK_PROPERTY_PROMPT_EN_WITHOUT_IMAGE = "promptEnWithoutImage";
 	// 任务扩展属性 end
 
 	public static final String API_SECRET_HEADER_NAME = "mj-api-secret";
