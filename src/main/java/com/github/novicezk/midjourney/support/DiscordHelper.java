@@ -3,13 +3,22 @@ package com.github.novicezk.midjourney.support;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
 public class DiscordHelper {
 	private final ProxyProperties properties;
-	private static final char[] REGEX_SPECIAL_CHARS = new char[]{'.', '*', '+', '?', '^', '$', '[', ']', '|', '(', ')'};
+	/**
+	 * SIMPLE_URL_PREFIX.
+	 */
+	public static final String SIMPLE_URL_PREFIX = "https://s.mj.run/";
 	/**
 	 * DISCORD_SERVER_URL.
 	 */
@@ -54,6 +63,25 @@ public class DiscordHelper {
 			wssUrl = wssUrl.substring(0, wssUrl.length() - 1);
 		}
 		return wssUrl;
+	}
+
+	public String getRealUrl(String url) {
+		if (!CharSequenceUtil.startWith(url, SIMPLE_URL_PREFIX)) {
+			return url;
+		}
+		ResponseEntity<Void> res = getDisableRedirectRestTemplate().getForEntity(url, Void.class);
+		if (res.getStatusCode() == HttpStatus.FOUND) {
+			return res.getHeaders().getFirst("Location");
+		}
+		return url;
+	}
+
+	private RestTemplate getDisableRedirectRestTemplate() {
+		CloseableHttpClient httpClient = HttpClientBuilder.create()
+				.disableRedirectHandling()
+				.build();
+		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		return new RestTemplate(factory);
 	}
 
 }

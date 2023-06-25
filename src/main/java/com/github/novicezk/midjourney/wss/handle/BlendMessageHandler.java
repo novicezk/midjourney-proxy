@@ -6,6 +6,7 @@ import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
+import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.ContentParseData;
@@ -34,7 +35,7 @@ public class BlendMessageHandler extends MessageHandler {
 	public void handle(MessageType messageType, DataObject message) {
 		Optional<DataObject> interaction = message.optObject("interaction");
 		String content = getMessageContent(message);
-		boolean match = CharSequenceUtil.startWith(content, "**<https://s.mj.run/") || (interaction.isPresent() && "blend".equals(interaction.get().getString("name")));
+		boolean match = CharSequenceUtil.startWith(content, "**<" + DiscordHelper.SIMPLE_URL_PREFIX) || (interaction.isPresent() && "blend".equals(interaction.get().getString("name")));
 		if (!match) {
 			return;
 		}
@@ -49,8 +50,9 @@ public class BlendMessageHandler extends MessageHandler {
 				if (urls.isEmpty()) {
 					return;
 				}
-				int hashStartIndex = urls.get(0).lastIndexOf("/");
-				String taskId = CharSequenceUtil.subBefore(urls.get(0).substring(hashStartIndex + 1), ".", true);
+				String url = getRealUrl(urls.get(0));
+				int hashStartIndex = url.lastIndexOf("/");
+				String taskId = CharSequenceUtil.subBefore(url.substring(hashStartIndex + 1), ".", true);
 				TaskCondition condition = new TaskCondition()
 						.setId(taskId)
 						.setActionSet(Set.of(TaskAction.BLEND))
@@ -114,8 +116,9 @@ public class BlendMessageHandler extends MessageHandler {
 				if (urls.isEmpty()) {
 					return;
 				}
-				int hashStartIndex = urls.get(0).lastIndexOf("/");
-				String taskId = CharSequenceUtil.subBefore(urls.get(0).substring(hashStartIndex + 1), ".", true);
+				String url = getRealUrl(urls.get(0));
+				int hashStartIndex = url.lastIndexOf("/");
+				String taskId = CharSequenceUtil.subBefore(url.substring(hashStartIndex + 1), ".", true);
 				TaskCondition condition = new TaskCondition()
 						.setId(taskId)
 						.setActionSet(Set.of(TaskAction.BLEND))
@@ -171,4 +174,12 @@ public class BlendMessageHandler extends MessageHandler {
 		parseData.setStatus(matcher.group(2));
 		return parseData;
 	}
+
+	private String getRealUrl(String url) {
+		if (CharSequenceUtil.startWith(url, "<" + DiscordHelper.SIMPLE_URL_PREFIX)) {
+			return this.discordHelper.getRealUrl(url.substring(1, url.length() - 1));
+		}
+		return url;
+	}
+
 }
