@@ -64,7 +64,7 @@ docker run -d --name midjourney-proxy \
 - mj.discord.guild-id：discord服务器ID
 - mj.discord.channel-id：discord频道ID
 - mj.discord.user-token：discord用户Token
-- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactio请求中复制替换掉
+- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactions请求中复制替换掉
 - mj.discord.user-agent：调用discord接口、连接wss时的user-agent，默认使用作者的，建议从浏览器network复制替换掉
 - mj.discord.user-wss：是否使用user-token连接wss，默认true
 - mj.discord.bot-token：自定义机器人Token，user-wss=false时必填

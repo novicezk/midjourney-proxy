@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * variation消息处理. todo: 待兼容blend
+ * variation消息处理.
  * 开始(create): Making variations for image #1 with prompt **cat** - <@1012983546824114217> (Waiting to start)
  * 进度(update): **cat** - Variations by <@1012983546824114217> (0%) (relaxed)
  * 完成(create): **cat** - Variations by <@1012983546824114217> (relaxed)
