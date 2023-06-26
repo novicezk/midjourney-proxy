@@ -76,6 +76,18 @@ public class DiscordHelper {
 		return url;
 	}
 
+	public String findTaskWithCdnUrl(String url) {
+		if (!CharSequenceUtil.startWith(url, DISCORD_CDN_URL)) {
+			return null;
+		}
+		int hashStartIndex = url.lastIndexOf("/");
+		String taskId = CharSequenceUtil.subBefore(url.substring(hashStartIndex + 1), ".", true);
+		if (CharSequenceUtil.length(taskId) == 16) {
+			return taskId;
+		}
+		return null;
+	}
+
 	private RestTemplate getDisableRedirectRestTemplate() {
 		CloseableHttpClient httpClient = HttpClientBuilder.create()
 				.disableRedirectHandling()
