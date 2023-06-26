@@ -2,7 +2,7 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.3&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.3.1&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 现有功能
@@ -46,7 +46,7 @@ docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
  --restart=always \
- novicezk/midjourney-proxy:2.3
+ novicezk/midjourney-proxy:2.3.1
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
@@ -58,13 +58,13 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.channel-id=xxx \
  -e mj.discord.user-token=xxx \
  --restart=always \
- novicezk/midjourney-proxy:2.3
+ novicezk/midjourney-proxy:2.3.1
 ```
 ## 配置项
 - mj.discord.guild-id：discord服务器ID
 - mj.discord.channel-id：discord频道ID
 - mj.discord.user-token：discord用户Token
-- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactio请求中复制替换掉
+- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactions请求中复制替换掉
 - mj.discord.user-agent：调用discord接口、连接wss时的user-agent，默认使用作者的，建议从浏览器network复制替换掉
 - mj.discord.user-wss：是否使用user-token连接wss，默认true
 - mj.discord.bot-token：自定义机器人Token，user-wss=false时必填
@@ -92,6 +92,7 @@ docker run -d --name midjourney-proxy \
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
 - [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI，基于本接口和SD，可一键打包生成H5和小程序
 - [ChatGPT-Midjourney](https://github.com/Licoy/ChatGPT-Midjourney) : 一键拥有你自己的 ChatGPT+Midjourney 网页服务
+- [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
 - 依赖此项目且开源的，欢迎联系作者，加到此处展示
 
 ## 其它
