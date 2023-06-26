@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 /**
  * blend消息处理.
- * 开始(create): **https://xxx/xxx1/1780749341481612.png https://xxx/xxx2/1780749341481612.png --v 5.1** - <@1012983546824114217> (Waiting to start)
+ * 开始(create): **<https://s.mj.run/JWu6jaL1D-8> <https://s.mj.run/QhfnQY-l68o> --v 5.1** - <@1012983546824114217> (Waiting to start)
  * 进度(update): **<https://s.mj.run/JWu6jaL1D-8> <https://s.mj.run/QhfnQY-l68o> --v 5.1** - <@1012983546824114217> (0%) (relaxed)
  * 完成(create): **<https://s.mj.run/JWu6jaL1D-8> <https://s.mj.run/QhfnQY-l68o> --v 5.1** - <@1012983546824114217> (relaxed)
  */
