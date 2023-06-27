@@ -5,6 +5,7 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.ReturnCode;
+import com.github.novicezk.midjourney.enums.BlendDimensions;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import eu.maxschuster.dataurl.DataUrl;
@@ -48,6 +49,7 @@ public class DiscordServiceImpl implements DiscordService {
 	private String discordUserToken;
 	private String discordGuildId;
 	private String discordChannelId;
+	private String discordSessionId;
 
 	@PostConstruct
 	void init() {
@@ -55,6 +57,7 @@ public class DiscordServiceImpl implements DiscordService {
 		this.discordUserToken = discord.getUserToken();
 		this.discordGuildId = discord.getGuildId();
 		this.discordChannelId = discord.getChannelId();
+		this.discordSessionId = discord.getSessionId();
 		this.userAgent = discord.getUserAgent();
 
 		String serverUrl = this.discordHelper.getServer();
@@ -74,7 +77,8 @@ public class DiscordServiceImpl implements DiscordService {
 	@Override
 	public Message<Void> imagine(String prompt) {
 		String paramsStr = this.imagineParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId);
+				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId);
 		JSONObject params = new JSONObject(paramsStr);
 		params.getJSONObject("data").getJSONArray("options").getJSONObject(0)
 				.put("value", prompt);
@@ -85,6 +89,7 @@ public class DiscordServiceImpl implements DiscordService {
 	public Message<Void> upscale(String messageId, int index, String messageHash, int messageFlags) {
 		String paramsStr = this.upscaleParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId)
 				.replace("$message_id", messageId)
 				.replace("$index", String.valueOf(index))
 				.replace("$message_hash", messageHash);
@@ -96,6 +101,7 @@ public class DiscordServiceImpl implements DiscordService {
 	public Message<Void> variation(String messageId, int index, String messageHash, int messageFlags) {
 		String paramsStr = this.variationParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId)
 				.replace("$message_id", messageId)
 				.replace("$index", String.valueOf(index))
 				.replace("$message_hash", messageHash);
@@ -107,6 +113,7 @@ public class DiscordServiceImpl implements DiscordService {
 	public Message<Void> reroll(String messageId, String messageHash, int messageFlags) {
 		String paramsStr = this.rerollParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId)
 				.replace("$message_id", messageId)
 				.replace("$message_hash", messageHash);
 		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
@@ -118,15 +125,17 @@ public class DiscordServiceImpl implements DiscordService {
 		String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
 		String paramsStr = this.describeParamsJson.replace("$guild_id", this.discordGuildId)
 				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId)
 				.replace("$file_name", fileName)
 				.replace("$final_file_name", finalFileName);
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
 	@Override
-	public Message<Void> blend(List<String> finalFileNames) {
+	public Message<Void> blend(List<String> finalFileNames, BlendDimensions dimensions) {
 		String paramsStr = this.blendParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId);
+				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId);
 		JSONObject params = new JSONObject(paramsStr);
 		JSONArray options = params.getJSONObject("data").getJSONArray("options");
 		JSONArray attachments = params.getJSONObject("data").getJSONArray("attachments");
@@ -142,6 +151,9 @@ public class DiscordServiceImpl implements DiscordService {
 					.put("value", i);
 			options.put(option);
 		}
+		options.put(new JSONObject().put("type", 3)
+				.put("name", "dimensions")
+				.put("value", "--ar " + dimensions.getValue()));
 		return postJsonAndCheckStatus(params.toString());
 	}
 

@@ -13,15 +13,16 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -38,7 +39,7 @@ public class TaskQueueHelper {
 
 	public TaskQueueHelper(ProxyProperties properties) {
 		ProxyProperties.TaskQueueConfig queueConfig = properties.getQueue();
-		this.runningTasks = Collections.synchronizedList(new ArrayList<>(queueConfig.getCoreSize() * 2));
+		this.runningTasks = new CopyOnWriteArrayList<>();
 		this.taskExecutor = new ThreadPoolTaskExecutor();
 		this.taskExecutor.setCorePoolSize(queueConfig.getCoreSize());
 		this.taskExecutor.setMaxPoolSize(queueConfig.getCoreSize());
@@ -58,7 +59,7 @@ public class TaskQueueHelper {
 		return this.runningTasks.stream().filter(t -> id.equals(t.getId())).findFirst().orElse(null);
 	}
 
-	public Stream<Task> findRunningTask(TaskCondition condition) {
+	public Stream<Task> findRunningTask(Predicate<Task> condition) {
 		return this.runningTasks.stream().filter(condition);
 	}
 

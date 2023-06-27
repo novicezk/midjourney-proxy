@@ -3,10 +3,8 @@ mj:
     guild-id: 1117467920759521341
     channel-id: 1117467921216708640
     user-token: MTAxODU5NDIwODM5MjY4NzY0Nw.Gx3xuk.ZOIwkdpKxFGnD8HLRLKbMJggwxppLK3IxG7XAw
-    user-wss: true
     user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
-    id-prefix: "["
-    id-suffix: "]"
+    user-wss: true
   task-store:
     type: redis
     timeout: 30d
