@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.service;
 
 
+import com.github.novicezk.midjourney.enums.BlendDimensions;
 import com.github.novicezk.midjourney.result.Message;
 import eu.maxschuster.dataurl.DataUrl;
 
@@ -18,7 +19,7 @@ public interface DiscordService {
 
 	Message<Void> describe(String finalFileName);
 
-	Message<Void> blend(List<String> finalFileNames);
+	Message<Void> blend(List<String> finalFileNames, BlendDimensions dimensions);
 
 	Message<String> upload(String fileName, DataUrl dataUrl);
 

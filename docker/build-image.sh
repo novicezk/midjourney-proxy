@@ -19,11 +19,16 @@ if [ $JAR_FILE_COUNT == 0  ]; then
     exit 1
 fi
 
-cp ../target/*.jar ./app.jar
-ls -l ./app.jar
+JAR_FILE_NAME=$(ls ../target/*.jar|grep -v source)
+echo ${JAR_FILE_NAME}
+
+cp ${JAR_FILE_NAME} ./app.jar
+
+java -Djarmode=layertools -jar app.jar extract
 
 docker build . -t midjourney-proxy:${VERSION}
-rm -rf ./app.jar
+
+rm -rf application dependencies snapshot-dependencies spring-boot-loader app.jar
 
 docker tag midjourney-proxy:${VERSION} novicezk/midjourney-proxy-${ARCH}:${VERSION}
 docker push novicezk/midjourney-proxy-${ARCH}:${VERSION}

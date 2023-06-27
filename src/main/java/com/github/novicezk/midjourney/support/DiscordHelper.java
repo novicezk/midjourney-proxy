@@ -1,19 +1,24 @@
 package com.github.novicezk.midjourney.support;
 
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import cn.hutool.core.util.PrimitiveArrayUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
 public class DiscordHelper {
 	private final ProxyProperties properties;
-	private static final char[] REGEX_SPECIAL_CHARS = new char[]{'.', '*', '+', '?', '^', '$', '[', ']', '|', '(', ')'};
+	/**
+	 * SIMPLE_URL_PREFIX.
+	 */
+	public static final String SIMPLE_URL_PREFIX = "https://s.mj.run/";
 	/**
 	 * DISCORD_SERVER_URL.
 	 */
@@ -60,41 +65,35 @@ public class DiscordHelper {
 		return wssUrl;
 	}
 
-	public String generateFinalPrompt(String id, String prompt) {
-		String idPrefix = this.properties.getDiscord().getIdPrefix();
-		String idSuffix = this.properties.getDiscord().getIdSuffix();
-		return idPrefix + id + idSuffix + " " + prompt;
-	}
-
-	public String findTaskIdByFinalPrompt(String finalPrompt) {
-		String idPrefix = this.properties.getDiscord().getIdPrefix();
-		String idSuffix = this.properties.getDiscord().getIdSuffix();
-		return CharSequenceUtil.subBetween(finalPrompt, idPrefix, idSuffix);
-	}
-
-	public String convertContentRegex(String contentRegex) {
-		String prefix = convertRegex(this.properties.getDiscord().getIdPrefix());
-		String suffix = convertRegex(this.properties.getDiscord().getIdSuffix());
-		return contentRegex.replaceFirst("<", prefix).replaceFirst(">", suffix);
-	}
-
-	private static String convertRegex(String regex) {
-		char[] chars = regex.toCharArray();
-		Character[] characters = new Character[chars.length];
-		for (int i = 0; i < chars.length; i++) {
-			characters[i] = chars[i];
+	public String getRealUrl(String url) {
+		if (!CharSequenceUtil.startWith(url, SIMPLE_URL_PREFIX)) {
+			return url;
 		}
-		List<Character> charList = ListUtil.toList(characters);
-		for (int i = 0; i < charList.size(); i++) {
-			if (PrimitiveArrayUtil.contains(REGEX_SPECIAL_CHARS, charList.get(i))) {
-				charList.add(i, '\\');
-				charList.add(i, '\\');
-				i += 2;
-			}
+		ResponseEntity<Void> res = getDisableRedirectRestTemplate().getForEntity(url, Void.class);
+		if (res.getStatusCode() == HttpStatus.FOUND) {
+			return res.getHeaders().getFirst("Location");
 		}
-		StringBuilder sb = new StringBuilder();
-		charList.forEach(sb::append);
-		return sb.toString();
+		return url;
+	}
+
+	public String findTaskWithCdnUrl(String url) {
+		if (!CharSequenceUtil.startWith(url, DISCORD_CDN_URL)) {
+			return null;
+		}
+		int hashStartIndex = url.lastIndexOf("/");
+		String taskId = CharSequenceUtil.subBefore(url.substring(hashStartIndex + 1), ".", true);
+		if (CharSequenceUtil.length(taskId) == 16) {
+			return taskId;
+		}
+		return null;
+	}
+
+	private RestTemplate getDisableRedirectRestTemplate() {
+		CloseableHttpClient httpClient = HttpClientBuilder.create()
+				.disableRedirectHandling()
+				.build();
+		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		return new RestTemplate(factory);
 	}
 
 }
