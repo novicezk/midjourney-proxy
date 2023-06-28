@@ -39,7 +39,8 @@ public class TaskQueueHelper {
 
     public TaskQueueHelper(ProxyProperties properties) {
         ProxyProperties.TaskQueueConfig queueConfig = properties.getQueue();
-        int size = properties.getDiscord().getDiscordAccountConfigList().size();
+        ProxyProperties.DiscordConfig discord = properties.getDiscord();
+        int size = discord.isUserWss() ? discord.getDiscordAccountConfigList().size() : discord.getBotTokenConfigList().size();
         int coreSize = queueConfig.getCoreSize() * size;
         this.runningTasks = new CopyOnWriteArrayList<>();
         this.taskExecutor = new ThreadPoolTaskExecutor();
