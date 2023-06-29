@@ -56,8 +56,6 @@ public class SubmitController {
 		if (CharSequenceUtil.isBlank(prompt)) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "prompt不能为空");
 		}
-		prompt = prompt.replace("\"", "");
-		System.out.println(prompt);
 		prompt = prompt.trim();
 		Task task = newTask(imagineDTO);
 		task.setAction(TaskAction.IMAGINE);
@@ -85,7 +83,7 @@ public class SubmitController {
 			}
 		}
 		task.setPromptEn(promptEn);
-		task.setDescription("/imagine " + prompt);
+		task.setDescription("/imagine " + prompt.replace("\"", ""));
 		return this.taskService.submitImagine(task, dataUrl);
 	}
 
