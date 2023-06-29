@@ -56,6 +56,7 @@ public class SubmitController {
 		if (CharSequenceUtil.isBlank(prompt)) {
 			return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "prompt不能为空");
 		}
+		prompt = prompt.replace(",", "");
 		prompt = prompt.trim();
 		Task task = newTask(imagineDTO);
 		task.setAction(TaskAction.IMAGINE);
