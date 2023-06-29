@@ -82,8 +82,8 @@ public class SubmitController {
 				return SubmitResultVO.fail(ReturnCode.VALIDATION_ERROR, "basisImageBase64格式错误");
 			}
 		}
-		task.setPromptEn(promptEn);
-		task.setDescription("/imagine " + prompt.replace("\"", ""));
+		task.setPromptEn(promptEn.replace("\"", ""));
+		task.setDescription("/imagine " + prompt);
 		return this.taskService.submitImagine(task, dataUrl);
 	}
 
