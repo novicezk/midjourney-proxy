@@ -1,7 +1,6 @@
 package com.github.novicezk.midjourney.wss.handle;
 
 
-import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
@@ -37,13 +36,14 @@ public class ImagineMessageHandler extends MessageHandler {
 		if (parseData == null) {
 			return;
 		}
+		String realPrompt = this.discordHelper.getRealPrompt(parseData.getPrompt());
 		if (MessageType.CREATE == messageType) {
 			if ("Waiting to start".equals(parseData.getStatus())) {
 				// 开始
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, parseData.getPrompt()))
+				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, realPrompt))
 						.findFirst().orElse(null);
 				if (task == null) {
 					return;
@@ -57,7 +57,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, parseData.getPrompt()))
+				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, realPrompt))
 						.findFirst().orElse(null);
 				if (task == null) {
 					return;
@@ -71,7 +71,7 @@ public class ImagineMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setActionSet(Set.of(TaskAction.IMAGINE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, parseData.getPrompt()))
+			Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, realPrompt))
 					.findFirst().orElse(null);
 			if (task == null) {
 				return;
@@ -92,13 +92,14 @@ public class ImagineMessageHandler extends MessageHandler {
 		if (parseData == null) {
 			return;
 		}
+		String realPrompt = this.discordHelper.getRealPrompt(parseData.getPrompt());
 		if (MessageType.CREATE == messageType) {
 			if ("Waiting to start".equals(parseData.getStatus())) {
 				// 开始
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
-				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, parseData.getPrompt()))
+				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, realPrompt))
 						.findFirst().orElse(null);
 				if (task == null) {
 					return;
@@ -112,7 +113,7 @@ public class ImagineMessageHandler extends MessageHandler {
 				TaskCondition condition = new TaskCondition()
 						.setActionSet(Set.of(TaskAction.IMAGINE))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, parseData.getPrompt()))
+				Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, realPrompt))
 						.findFirst().orElse(null);
 				if (task == null) {
 					return;
@@ -126,7 +127,7 @@ public class ImagineMessageHandler extends MessageHandler {
 			TaskCondition condition = new TaskCondition()
 					.setActionSet(Set.of(TaskAction.IMAGINE))
 					.setStatusSet(Set.of(TaskStatus.SUBMITTED, TaskStatus.IN_PROGRESS));
-			Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, parseData.getPrompt()))
+			Task task = this.taskQueueHelper.findRunningTask(taskPredicate(condition, realPrompt))
 					.findFirst().orElse(null);
 			if (task == null) {
 				return;
@@ -141,8 +142,7 @@ public class ImagineMessageHandler extends MessageHandler {
 	}
 
 	private Predicate<Task> taskPredicate(TaskCondition condition, String prompt) {
-		return condition.and(t -> prompt.startsWith(t.getPromptEn())
-				|| CharSequenceUtil.contains(prompt, t.getPropertyGeneric(Constants.TASK_PROPERTY_PROMPT_EN_WITHOUT_IMAGE)));
+		return condition.and(t -> prompt.startsWith(t.getPromptEn()));
 	}
 
 	private ContentParseData parse(String content) {
