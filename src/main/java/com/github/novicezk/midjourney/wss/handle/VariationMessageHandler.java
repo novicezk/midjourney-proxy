@@ -21,14 +21,17 @@ import java.util.regex.Pattern;
 /**
  * variation消息处理.
  * 开始(create): Making variations for image #1 with prompt **cat** - <@1012983546824114217> (Waiting to start)
- * 进度(update): **cat** - Variations by <@1012983546824114217> (0%) (relaxed)
- * 完成(create): **cat** - Variations by <@1012983546824114217> (relaxed)
+ * 进度(update): **cat** - Variations (Strong) by <@1012983546824114217> (0%) (relaxed)
+ * 5.2前-进度(update): **cat** - Variations by <@1012983546824114217> (0%) (relaxed)
+ * 完成(create): **cat** - Variations (Strong) by <@1012983546824114217> (relaxed)
+ * 5.2前-完成(create): **cat** - Variations by <@1012983546824114217> (relaxed)
  */
 @Slf4j
 @Component
 public class VariationMessageHandler extends MessageHandler {
 	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*(.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
+	private static final String OLD_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations \\(Strong\\) by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
@@ -133,7 +136,15 @@ public class VariationMessageHandler extends MessageHandler {
 	}
 
 	private UVContentParseData parse(String content) {
-		Matcher matcher = Pattern.compile(CONTENT_REGEX).matcher(content);
+		UVContentParseData data = parse(content, CONTENT_REGEX);
+		if (data == null) {
+			return parse(content, OLD_CONTENT_REGEX);
+		}
+		return data;
+	}
+
+	private UVContentParseData parse(String content, String regex) {
+		Matcher matcher = Pattern.compile(regex).matcher(content);
 		if (!matcher.find()) {
 			return null;
 		}
