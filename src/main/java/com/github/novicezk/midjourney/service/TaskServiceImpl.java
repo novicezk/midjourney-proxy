@@ -1,11 +1,9 @@
 package com.github.novicezk.midjourney.service;
 
-import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.enums.BlendDimensions;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
-import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskQueueHelper;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
@@ -24,7 +22,6 @@ public class TaskServiceImpl implements TaskService {
 	private final TaskStoreService taskStoreService;
 	private final DiscordService discordService;
 	private final TaskQueueHelper taskQueueHelper;
-	private final DiscordHelper discordHelper;
 
 	@Override
 	public SubmitResultVO submitImagine(Task task, DataUrl dataUrl) {
@@ -40,7 +37,6 @@ public class TaskServiceImpl implements TaskService {
 				if (sendImageResult.getCode() != ReturnCode.SUCCESS) {
 					return Message.of(sendImageResult.getCode(), sendImageResult.getDescription());
 				}
-				task.setProperty(Constants.TASK_PROPERTY_PROMPT_EN_WITHOUT_IMAGE, task.getPromptEn());
 				task.setPrompt(sendImageResult.getResult() + " " + task.getPrompt());
 				task.setPromptEn(sendImageResult.getResult() + " " + task.getPromptEn());
 				task.setDescription("/imagine " + task.getPrompt());

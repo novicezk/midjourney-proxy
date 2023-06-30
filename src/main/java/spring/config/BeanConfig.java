@@ -81,7 +81,11 @@ public class BeanConfig {
 	}
 
 	@Bean
-	Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+	Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer(ProxyProperties properties) {
+		if (properties.isIncludeTaskExtended()) {
+			return builder -> {
+			};
+		}
 		return builder -> builder.mixIn(Task.class, TaskMixin.class);
 	}
 

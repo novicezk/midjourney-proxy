@@ -51,6 +51,10 @@ public class ProxyProperties {
 	 * 任务状态变更回调地址.
 	 */
 	private String notifyHook;
+	/**
+	 * 接口是否返回任务扩展属性.
+	 */
+	private boolean includeTaskExtended = false;
 
 	@Data
 	public static class DiscordConfig {
