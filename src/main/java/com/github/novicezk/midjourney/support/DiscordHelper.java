@@ -11,6 +11,9 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Component
 @RequiredArgsConstructor
 public class DiscordHelper {
@@ -65,6 +68,19 @@ public class DiscordHelper {
 		return wssUrl;
 	}
 
+
+	public String getRealPrompt(String prompt) {
+		String regex = "<https?://\\S+>";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(prompt);
+		while (matcher.find()) {
+			String url = matcher.group();
+			String realUrl = getRealUrl(url.substring(1, url.length() - 1));
+			prompt = prompt.replace(url, realUrl);
+		}
+		return prompt;
+	}
+
 	public String getRealUrl(String url) {
 		if (!CharSequenceUtil.startWith(url, SIMPLE_URL_PREFIX)) {
 			return url;
@@ -76,7 +92,7 @@ public class DiscordHelper {
 		return url;
 	}
 
-	public String findTaskWithCdnUrl(String url) {
+	public String findTaskIdWithCdnUrl(String url) {
 		if (!CharSequenceUtil.startWith(url, DISCORD_CDN_URL)) {
 			return null;
 		}
