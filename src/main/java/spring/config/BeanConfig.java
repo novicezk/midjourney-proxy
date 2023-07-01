@@ -84,9 +84,14 @@ public class BeanConfig {
         return redisTemplate;
     }
 
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-        return builder -> builder.mixIn(Task.class, TaskMixin.class);
-    }
+
+	@Bean
+	Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer(ProxyProperties properties) {
+		if (properties.isIncludeTaskExtended()) {
+			return builder -> {
+			};
+		}
+		return builder -> builder.mixIn(Task.class, TaskMixin.class);
+	}
 
 }

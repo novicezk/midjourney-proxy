@@ -1,6 +1,5 @@
 package com.github.novicezk.midjourney.service;
 
-import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.enums.BlendDimensions;
 import com.github.novicezk.midjourney.result.Message;
@@ -21,6 +20,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
+
     private final TaskStoreService taskStoreService;
     private final Map<String, DiscordService> discordServiceMap;
     private final TaskQueueHelper taskQueueHelper;
@@ -48,6 +48,8 @@ public class TaskServiceImpl implements TaskService {
             return this.discordServiceMap.get(task.getAssociationKey()).imagine(task.getPromptEn());
         });
     }
+
+
 
     @Override
     public SubmitResultVO submitUpscale(Task task, String targetMessageId, String targetMessageHash, int index, int messageFlags) {

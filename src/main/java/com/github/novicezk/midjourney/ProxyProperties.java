@@ -10,46 +10,52 @@ import java.util.List;
 @Data
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
-    /**
-     * task存储配置.
-     */
-    private final TaskStore taskStore = new TaskStore();
-    /**
-     * discord配置.
-     */
-    private final DiscordConfig discord = new DiscordConfig();
-    /**
-     * 代理配置.
-     */
-    private final ProxyConfig proxy = new ProxyConfig();
-    /**
-     * 反代配置.
-     */
-    private final NgDiscordConfig ngDiscord = new NgDiscordConfig();
-    /**
-     * 任务队列配置.
-     */
-    private final TaskQueueConfig queue = new TaskQueueConfig();
-    /**
-     * 百度翻译配置.
-     */
-    private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
-    /**
-     * openai配置.
-     */
-    private final OpenaiConfig openai = new OpenaiConfig();
-    /**
-     * 中文prompt翻译方式.
-     */
-    private TranslateWay translateWay = TranslateWay.NULL;
-    /**
-     * 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret.
-     */
-    private String apiSecret;
-    /**
-     * 任务状态变更回调地址.
-     */
-    private String notifyHook;
+  
+	/**
+	 * task存储配置.
+	 */
+	private final TaskStore taskStore = new TaskStore();
+	/**
+	 * discord配置.
+	 */
+	private final DiscordConfig discord = new DiscordConfig();
+	/**
+	 * 代理配置.
+	 */
+	private final ProxyConfig proxy = new ProxyConfig();
+	/**
+	 * 反代配置.
+	 */
+	private final NgDiscordConfig ngDiscord = new NgDiscordConfig();
+	/**
+	 * 任务队列配置.
+	 */
+	private final TaskQueueConfig queue = new TaskQueueConfig();
+	/**
+	 * 百度翻译配置.
+	 */
+	private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
+	/**
+	 * openai配置.
+	 */
+	private final OpenaiConfig openai = new OpenaiConfig();
+	/**
+	 * 中文prompt翻译方式.
+	 */
+	private TranslateWay translateWay = TranslateWay.NULL;
+	/**
+	 * 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret.
+	 */
+	private String apiSecret;
+	/**
+	 * 任务状态变更回调地址.
+	 */
+	private String notifyHook;
+	/**
+	 * 接口是否返回任务扩展属性.
+	 */
+	private boolean includeTaskExtended = false;
+
 
     @Data
     public static class DiscordConfig {
