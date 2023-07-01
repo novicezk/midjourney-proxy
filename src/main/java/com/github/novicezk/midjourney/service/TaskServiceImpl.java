@@ -39,7 +39,6 @@ public class TaskServiceImpl implements TaskService {
                 if (sendImageResult.getCode() != ReturnCode.SUCCESS) {
                     return Message.of(sendImageResult.getCode(), sendImageResult.getDescription());
                 }
-                task.setProperty(Constants.TASK_PROPERTY_PROMPT_EN_WITHOUT_IMAGE, task.getPromptEn());
                 task.setPrompt(sendImageResult.getResult() + " " + task.getPrompt());
                 task.setPromptEn(sendImageResult.getResult() + " " + task.getPromptEn());
                 task.setDescription("/imagine " + task.getPrompt());
@@ -48,7 +47,6 @@ public class TaskServiceImpl implements TaskService {
             return this.discordServiceMap.get(task.getAssociationKey()).imagine(task.getPromptEn());
         });
     }
-
 
 
     @Override
