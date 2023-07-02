@@ -5,6 +5,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.novicezk.midjourney.Constants;
+import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.support.Task;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +29,9 @@ public class NotifyServiceImpl implements NotifyService {
 	private final ThreadPoolTaskExecutor executor;
 	private final Map<String, Object> taskLocks = new ConcurrentHashMap<>();
 
-	public NotifyServiceImpl() {
+	public NotifyServiceImpl(ProxyProperties properties) {
 		this.executor = new ThreadPoolTaskExecutor();
-		this.executor.setCorePoolSize(10);
+		this.executor.setCorePoolSize(properties.getQueue().getPoolSize());
 		this.executor.setThreadNamePrefix("TaskNotify-");
 		this.executor.initialize();
 	}
