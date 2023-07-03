@@ -7,11 +7,22 @@ import com.github.novicezk.midjourney.service.TranslateService;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.OpenAiApi;
 import com.theokanning.openai.service.OpenAiService;
+import static com.theokanning.openai.service.OpenAiService.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.support.BeanDefinitionValidationException;
+import okhttp3.*;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static java.time.Duration.ofSeconds;
 
 @Slf4j
 public class GPTTranslateServiceImpl implements TranslateService {
@@ -23,7 +34,26 @@ public class GPTTranslateServiceImpl implements TranslateService {
 			throw new BeanDefinitionValidationException("mj-proxy.openai.gpt-api-key未配置");
 		}
 		this.openaiConfig = openaiConfig;
-		this.openAiService = new OpenAiService(openaiConfig.getGptApiKey(), openaiConfig.getTimeout());
+
+		ObjectMapper mapper = defaultObjectMapper();
+		OkHttpClient client = defaultClient(openaiConfig.getGptApiKey(), openaiConfig.getTimeout())
+			.newBuilder()
+			.build();
+
+		String BASE_URL = openaiConfig.getGptApiUrl();
+		if (CharSequenceUtil.isBlank(BASE_URL)) {
+			BASE_URL = "https://api.openai.com/";
+		}
+
+		Retrofit retrofit = new Retrofit.Builder()
+			.baseUrl(BASE_URL)
+			.client(client)
+			.addConverterFactory(JacksonConverterFactory.create(mapper))
+			.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+			.build();
+
+		OpenAiApi api = retrofit.create(OpenAiApi.class);
+		this.openAiService = new OpenAiService(api, client.dispatcher().executorService());
 	}
 
 	@Override
