@@ -103,6 +103,10 @@ public class ProxyProperties {
 	@Data
 	public static class OpenaiConfig {
 		/**
+		 * gpt的api-url.
+		 */
+		private String gptApiUrl;
+		/**
 		 * gpt的api-key.
 		 */
 		private String gptApiKey;
