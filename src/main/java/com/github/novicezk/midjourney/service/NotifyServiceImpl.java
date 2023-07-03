@@ -31,7 +31,7 @@ public class NotifyServiceImpl implements NotifyService {
 
 	public NotifyServiceImpl(ProxyProperties properties) {
 		this.executor = new ThreadPoolTaskExecutor();
-		this.executor.setCorePoolSize(properties.getQueue().getPoolSize());
+		this.executor.setCorePoolSize(properties.getQueue().getNotifyPoolSize());
 		this.executor.setThreadNamePrefix("TaskNotify-");
 		this.executor.initialize();
 	}
