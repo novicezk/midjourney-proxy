@@ -192,6 +192,6 @@ public class ProxyProperties {
 		/**
 		 * 线程池CorePoolSize.
 		 */
-		private int poolSize = 10;
+		private int notifyPoolSize = 10;
 	}
 }
