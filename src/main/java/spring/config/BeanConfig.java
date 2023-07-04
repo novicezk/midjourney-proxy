@@ -32,10 +32,12 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties(ProxyProperties.class)
 public class BeanConfig {
 
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
 
     @Bean
     public Map<String, DiscordService> discordService(ProxyProperties properties, DiscordHelper discordHelper, RestTemplate restTemplate) {
@@ -55,14 +57,14 @@ public class BeanConfig {
         ).collect(Collectors.toMap(x -> x.getDiscordGuildId() + ":" + x.getDiscordChannelId(), Function.identity()));
     }
 
-    @Bean
-    public TranslateService translateService(ProxyProperties properties) {
-        return switch (properties.getTranslateWay()) {
-            case BAIDU -> new BaiduTranslateServiceImpl(properties.getBaiduTranslate());
-            case GPT -> new GPTTranslateServiceImpl(properties.getOpenai());
-            default -> prompt -> prompt;
-        };
-    }
+	@Bean
+	TranslateService translateService(ProxyProperties properties) {
+		return switch (properties.getTranslateWay()) {
+			case BAIDU -> new BaiduTranslateServiceImpl(properties.getBaiduTranslate());
+			case GPT -> new GPTTranslateServiceImpl(properties);
+			default -> prompt -> prompt;
+		};
+	}
 
     @Bean
     public TaskStoreService taskStoreService(ProxyProperties proxyProperties, RedisConnectionFactory redisConnectionFactory) {

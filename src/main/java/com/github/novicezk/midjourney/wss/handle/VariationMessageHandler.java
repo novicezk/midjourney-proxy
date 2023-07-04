@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * variation消息处理.
+ * variation消息处理. todo 5.2之后V1-4操作返回的index始终为1, 暂时不判断index
  * 开始(create): Making variations for image #1 with prompt **cat** - <@1012983546824114217> (Waiting to start)
  * 进度(update): **cat** - Variations (Strong) by <@1012983546824114217> (0%) (relaxed)
  * 5.2前-进度(update): **cat** - Variations by <@1012983546824114217> (0%) (relaxed)
@@ -45,7 +45,6 @@ public class VariationMessageHandler extends MessageHandler {
 						.setActionSet(Set.of(TaskAction.VARIATION))
 						.setStatusSet(Set.of(TaskStatus.SUBMITTED));
 				Task task = this.taskQueueHelper.findRunningTask(condition)
-						.filter(t -> CharSequenceUtil.endWith(t.getDescription(), "V" + start.getIndex()))
 						.min(Comparator.comparing(Task::getSubmitTime))
 						.orElse(null);
 				if (task == null) {

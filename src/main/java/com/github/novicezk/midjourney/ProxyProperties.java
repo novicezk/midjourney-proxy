@@ -52,6 +52,10 @@ public class ProxyProperties {
 	 */
 	private String notifyHook;
 	/**
+	 * 通知回调线程池大小.
+	 */
+	private int notifyPoolSize = 10;
+	/**
 	 * 接口是否返回任务扩展属性.
 	 */
 	private boolean includeTaskExtended = false;
@@ -76,6 +80,7 @@ public class ProxyProperties {
          * 你的机器人token.
          */
         private List<BotTokenConfig> botTokenConfigList;
+
 
         @Data
         public static class DiscordAccountConfig {
@@ -122,29 +127,35 @@ public class ProxyProperties {
         private String appSecret;
     }
 
-    @Data
-    public static class OpenaiConfig {
-        /**
-         * gpt的api-key.
-         */
-        private String gptApiKey;
-        /**
-         * 超时时间.
-         */
-        private Duration timeout = Duration.ofSeconds(30);
-        /**
-         * 使用的模型.
-         */
-        private String model = "gpt-3.5-turbo";
-        /**
-         * 返回结果的最大分词数.
-         */
-        private int maxTokens = 2048;
-        /**
-         * 相似度，取值 0-2.
-         */
-        private double temperature = 0;
-    }
+
+  	@Data
+	public static class OpenaiConfig {
+		/**
+		 * 自定义gpt的api-url.
+		 */
+		private String gptApiUrl;
+		/**
+		 * gpt的api-key.
+		 */
+		private String gptApiKey;
+		/**
+		 * 超时时间.
+		 */
+		private Duration timeout = Duration.ofSeconds(30);
+		/**
+		 * 使用的模型.
+		 */
+		private String model = "gpt-3.5-turbo";
+		/**
+		 * 返回结果的最大分词数.
+		 */
+		private int maxTokens = 2048;
+		/**
+		 * 相似度，取值 0-2.
+		 */
+		private double temperature = 0;
+	}
+
 
     @Data
     public static class TaskStore {
@@ -217,5 +228,4 @@ public class ProxyProperties {
 		     */
 		    private int notifyPoolSize = 10;
     }
- 
 }
