@@ -13,12 +13,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
@@ -35,7 +34,7 @@ public class TaskQueueHelper {
 
     private final ThreadPoolTaskExecutor taskExecutor;
     private final List<Task> runningTasks;
-    private final Map<String, Future<?>> taskFutureMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, Future<?>> taskFutureMap;
 
     public TaskQueueHelper(ProxyProperties properties) {
         ProxyProperties.TaskQueueConfig queueConfig = properties.getQueue();
@@ -43,6 +42,7 @@ public class TaskQueueHelper {
         int size = discord.isUserWss() ? discord.getDiscordAccountConfigList().size() : discord.getBotTokenConfigList().size();
         int coreSize = queueConfig.getCoreSize() * size;
         this.runningTasks = new CopyOnWriteArrayList<>();
+        this.taskFutureMap = new ConcurrentHashMap<>();
         this.taskExecutor = new ThreadPoolTaskExecutor();
         this.taskExecutor.setCorePoolSize(coreSize);
         this.taskExecutor.setMaxPoolSize(coreSize);
