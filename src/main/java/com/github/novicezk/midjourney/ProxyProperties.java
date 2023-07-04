@@ -56,7 +56,6 @@ public class ProxyProperties {
 	 */
 	private boolean includeTaskExtended = false;
 
-
     @Data
     public static class DiscordConfig {
         /**
@@ -212,5 +211,11 @@ public class ProxyProperties {
          * 任务超时时间(分钟).
          */
         private int timeoutMinutes = 5;
+      
+      	/**
+		     * 线程池CorePoolSize.
+		     */
+		    private int notifyPoolSize = 10;
     }
+ 
 }
