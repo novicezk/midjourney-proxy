@@ -33,7 +33,7 @@ public class BeanConfig {
 	TranslateService translateService(ProxyProperties properties) {
 		return switch (properties.getTranslateWay()) {
 			case BAIDU -> new BaiduTranslateServiceImpl(properties.getBaiduTranslate());
-			case GPT -> new GPTTranslateServiceImpl(properties.getOpenai());
+			case GPT -> new GPTTranslateServiceImpl(properties);
 			default -> prompt -> prompt;
 		};
 	}

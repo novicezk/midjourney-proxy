@@ -4,56 +4,56 @@ package com.github.novicezk.midjourney.service.translate;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.service.TranslateService;
-import com.theokanning.openai.completion.chat.ChatCompletionChoice;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.OpenAiApi;
-import com.theokanning.openai.service.OpenAiService;
-import static com.theokanning.openai.service.OpenAiService.*;
+import com.unfbx.chatgpt.OpenAiClient;
+import com.unfbx.chatgpt.entity.chat.ChatChoice;
+import com.unfbx.chatgpt.entity.chat.ChatCompletion;
+import com.unfbx.chatgpt.entity.chat.ChatCompletionResponse;
+import com.unfbx.chatgpt.entity.chat.Message;
+import com.unfbx.chatgpt.function.KeyRandomStrategy;
+import com.unfbx.chatgpt.interceptor.OpenAILogger;
+import com.unfbx.chatgpt.interceptor.OpenAiResponseInterceptor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.springframework.beans.factory.support.BeanDefinitionValidationException;
-import okhttp3.*;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.jackson.JacksonConverterFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.Duration;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.Duration.ofSeconds;
-
 @Slf4j
 public class GPTTranslateServiceImpl implements TranslateService {
-	private final OpenAiService openAiService;
+	private final OpenAiClient openAiClient;
 	private final ProxyProperties.OpenaiConfig openaiConfig;
 
-	public GPTTranslateServiceImpl(ProxyProperties.OpenaiConfig openaiConfig) {
-		if (CharSequenceUtil.isBlank(openaiConfig.getGptApiKey())) {
+	public GPTTranslateServiceImpl(ProxyProperties properties) {
+		this.openaiConfig = properties.getOpenai();
+		if (CharSequenceUtil.isBlank(this.openaiConfig.getGptApiKey())) {
 			throw new BeanDefinitionValidationException("mj-proxy.openai.gpt-api-key未配置");
 		}
-		this.openaiConfig = openaiConfig;
-
-		ObjectMapper mapper = defaultObjectMapper();
-		OkHttpClient client = defaultClient(openaiConfig.getGptApiKey(), openaiConfig.getTimeout())
-			.newBuilder()
-			.build();
-
-		String BASE_URL = openaiConfig.getGptApiUrl();
-		if (CharSequenceUtil.isBlank(BASE_URL)) {
-			BASE_URL = "https://api.openai.com/";
+		HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new OpenAILogger());
+		httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+		OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder()
+				.addInterceptor(httpLoggingInterceptor)
+				.addInterceptor(new OpenAiResponseInterceptor())
+				.connectTimeout(10, TimeUnit.SECONDS)
+				.writeTimeout(30, TimeUnit.SECONDS)
+				.readTimeout(30, TimeUnit.SECONDS);
+		if (CharSequenceUtil.isNotBlank(properties.getProxy().getHost())) {
+			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(properties.getProxy().getHost(), properties.getProxy().getPort()));
+			okHttpBuilder.proxy(proxy);
 		}
-
-		Retrofit retrofit = new Retrofit.Builder()
-			.baseUrl(BASE_URL)
-			.client(client)
-			.addConverterFactory(JacksonConverterFactory.create(mapper))
-			.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-			.build();
-
-		OpenAiApi api = retrofit.create(OpenAiApi.class);
-		this.openAiService = new OpenAiService(api, client.dispatcher().executorService());
+		OpenAiClient.Builder apiBuilder = OpenAiClient.builder()
+				.apiKey(Collections.singletonList(this.openaiConfig.getGptApiKey()))
+				.keyStrategy(new KeyRandomStrategy())
+				.okHttpClient(okHttpBuilder.build());
+		if (CharSequenceUtil.isNotBlank(this.openaiConfig.getGptApiUrl())) {
+			apiBuilder.apiHost(this.openaiConfig.getGptApiUrl());
+		}
+		this.openAiClient = apiBuilder.build();
 	}
 
 	@Override
@@ -61,16 +61,17 @@ public class GPTTranslateServiceImpl implements TranslateService {
 		if (!containsChinese(prompt)) {
 			return prompt;
 		}
-		ChatMessage m1 = new ChatMessage("system", "把中文翻译成英文");
-		ChatMessage m2 = new ChatMessage("user", prompt);
-		ChatCompletionRequest request = ChatCompletionRequest.builder()
+		Message m1 = Message.builder().role(Message.Role.SYSTEM).content("把中文翻译成英文").build();
+		Message m2 = Message.builder().role(Message.Role.USER).content(prompt).build();
+		ChatCompletion chatCompletion = ChatCompletion.builder()
+				.messages(Arrays.asList(m1, m2))
 				.model(this.openaiConfig.getModel())
 				.temperature(this.openaiConfig.getTemperature())
 				.maxTokens(this.openaiConfig.getMaxTokens())
-				.messages(List.of(m1, m2))
 				.build();
+		ChatCompletionResponse chatCompletionResponse = this.openAiClient.chatCompletion(chatCompletion);
 		try {
-			List<ChatCompletionChoice> choices = this.openAiService.createChatCompletion(request).getChoices();
+			List<ChatChoice> choices = chatCompletionResponse.getChoices();
 			if (!choices.isEmpty()) {
 				return choices.get(0).getMessage().getContent();
 			}
