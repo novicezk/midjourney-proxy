@@ -51,6 +51,14 @@ public class ProxyProperties {
 	 * 任务状态变更回调地址.
 	 */
 	private String notifyHook;
+	/**
+	 * 通知回调线程池大小.
+	 */
+	private int notifyPoolSize = 10;
+	/**
+	 * 接口是否返回任务扩展属性.
+	 */
+	private boolean includeTaskExtended = false;
 
 	@Data
 	public static class DiscordConfig {
@@ -98,6 +106,10 @@ public class ProxyProperties {
 
 	@Data
 	public static class OpenaiConfig {
+		/**
+		 * 自定义gpt的api-url.
+		 */
+		private String gptApiUrl;
 		/**
 		 * gpt的api-key.
 		 */
