@@ -1,8 +1,8 @@
 mj:
   discord:
-    guild-id: 1117467920759521341
-    channel-id: 1117467921216708640
-    user-token: MTAxODU5NDIwODM5MjY4NzY0Nw.Gx3xuk.ZOIwkdpKxFGnD8HLRLKbMJggwxppLK3IxG7XAw
+    guild-id: 1128166322640007178
+    channel-id: 1128166323181064324
+    user-token: MTAxMjAxMzUyNDg1MzIxMTI0OA.G0mKzI.z_jZSTWBxxIx9jXF3wWEo7WE_w7w73a21yp7uI
     user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
     user-wss: true
   task-store:
