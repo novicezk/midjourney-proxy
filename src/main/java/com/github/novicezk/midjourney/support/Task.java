@@ -1,6 +1,8 @@
 package com.github.novicezk.midjourney.support;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import io.swagger.annotations.ApiModel;
@@ -11,7 +13,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.persistence.*;
 
+
+@Entity
+@Table(name = "tasks", indexes = {
+    @Index(name = "index_tasks_id", columnList = "id")
+})
 @Data
 @ApiModel("任务")
 public class Task implements Serializable {
@@ -19,6 +27,10 @@ public class Task implements Serializable {
 	private static final long serialVersionUID = -674915748204390789L;
 
 	private TaskAction action;
+
+
+	@Id
+    @Column(name = "id")
 	@ApiModelProperty("任务ID")
 	private String id;
 	@ApiModelProperty("提示词")
@@ -46,7 +58,9 @@ public class Task implements Serializable {
 	private String failReason;
 
 	// 任务扩展属性，仅支持基本类型
+	@Transient
 	private Map<String, Object> properties;
+
 
 	@JsonIgnore
 	private final transient Object lock = new Object();

@@ -139,7 +139,7 @@ public class ProxyProperties {
 		 */
 		private Duration timeout = Duration.ofDays(30);
 		/**
-		 * 任务存储方式: redis(默认)、in_memory.
+		 * 任务存储方式: redis(默认)、in_memory, redis.
 		 */
 		private Type type = Type.IN_MEMORY;
 
@@ -151,7 +151,11 @@ public class ProxyProperties {
 			/**
 			 * in_memory.
 			 */
-			IN_MEMORY
+			IN_MEMORY,
+			/**
+			 * in_memory.
+			 */
+			MYSQL
 		}
 	}
 
