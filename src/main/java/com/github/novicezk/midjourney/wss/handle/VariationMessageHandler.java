@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * 开始(create): Making variations for image #1 with prompt **cat** - <@1012983546824114217> (Waiting to start)
  * 进度(update): **cat** - Variations (Strong) by <@1012983546824114217> (0%) (relaxed)
  * 5.2前-进度(update): **cat** - Variations by <@1012983546824114217> (0%) (relaxed)
- * 完成(create): **cat** - Variations (Strong或Subtle) by <@1012983546824114217> (relaxed)
+ * 完成(create): **cat** - Variations (Strong) by <@1012983546824114217> (relaxed)
  * 5.2前-完成(create): **cat** - Variations by <@1012983546824114217> (relaxed)
  */
 @Slf4j
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 public class VariationMessageHandler extends MessageHandler {
 	private static final String START_CONTENT_REGEX = "Making variations for image #(\\d) with prompt \\*\\*(.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
 	private static final String OLD_CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations \\(.*?\\) by <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX = "\\*\\*(.*?)\\*\\* - Variations \\(Strong\\) by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
