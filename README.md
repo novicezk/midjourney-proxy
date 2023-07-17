@@ -1,5 +1,7 @@
 # midjourney-proxy
 
+> 更多功能：[midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)
+
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
 [![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.3.5&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
