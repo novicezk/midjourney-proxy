@@ -5,9 +5,11 @@ import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.service.store.InMemoryTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.store.RedisTaskStoreServiceImpl;
+import com.github.novicezk.midjourney.service.store.MySQLTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.support.TaskRepository;
 import com.github.novicezk.midjourney.support.TaskMixin;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import com.github.novicezk.midjourney.wss.bot.BotMessageListener;
@@ -23,11 +25,16 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 
 @Configuration
 public class BeanConfig {
+
+
+	@Autowired
+    private TaskRepository taskRepository;
+
 
 	@Bean
 	TranslateService translateService(ProxyProperties properties) {
@@ -45,6 +52,7 @@ public class BeanConfig {
 		return switch (type) {
 			case IN_MEMORY -> new InMemoryTaskStoreServiceImpl(timeout);
 			case REDIS -> new RedisTaskStoreServiceImpl(timeout, taskRedisTemplate(redisConnectionFactory));
+			case MYSQL -> new MySQLTaskStoreServiceImpl(taskRepository);
 		};
 	}
 
