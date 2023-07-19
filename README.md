@@ -40,6 +40,8 @@
 ## Zeabur 部署
 基于Zeabur平台部署，不需要自己的服务器: [部署方式](./docs/zeabur-start.md)
 
+[![Deploy on Zeabur](https://zeabur.com/button.svg)](https://dash.zeabur.com/templates/B04F4M)
+
 ## Docker 部署
 1. /xxx/xxx/config目录下创建 application.yml(mj配置项)、banned-words.txt(可选，覆盖默认的敏感词文件)；参考src/main/resources下的文件
 2. 启动容器，映射config目录
