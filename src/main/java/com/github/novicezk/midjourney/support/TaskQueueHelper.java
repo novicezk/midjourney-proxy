@@ -71,8 +71,8 @@ public class TaskQueueHelper {
 		this.taskStoreService.save(task);
 		int size;
 		try {
-			size = this.taskExecutor.getThreadPoolExecutor().getQueue().size();
 			Future<?> future = this.taskExecutor.submit(() -> executeTask(task, discordSubmit));
+			size = this.taskExecutor.getThreadPoolExecutor().getQueue().size();
 			this.taskFutureMap.put(task.getId(), future);
 		} catch (RejectedExecutionException e) {
 			this.taskStoreService.delete(task.getId());
