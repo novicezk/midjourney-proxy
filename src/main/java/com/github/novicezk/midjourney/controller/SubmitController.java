@@ -70,6 +70,9 @@ public class SubmitController {
 		if (CharSequenceUtil.isBlank(promptEn)) {
 			promptEn = prompt;
 		}
+		promptEn = promptEn.replaceAll("\\s+", " ") // MJ会自动缩减连续的空格
+        .replaceAll(" —", " --")    // MJ兼容" —"作为参数提示符，但是返回时会自动修正为" --"
+        .trim();
 		if (BannedPromptUtils.isBanned(promptEn)) {
 			return SubmitResultVO.fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词");
 		}
