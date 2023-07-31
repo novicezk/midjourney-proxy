@@ -75,10 +75,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> imagine(String prompt) {
-		String paramsStr = this.imagineParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId);
+	public Message<Void> imagine(String prompt, String nonce) {
+		String paramsStr = replaceInteractionParams(this.imagineParamsJson, nonce);
 		JSONObject params = new JSONObject(paramsStr);
 		params.getJSONObject("data").getJSONArray("options").getJSONObject(0)
 				.put("value", prompt);
@@ -86,10 +84,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> upscale(String messageId, int index, String messageHash, int messageFlags) {
-		String paramsStr = this.upscaleParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId)
+	public Message<Void> upscale(String messageId, int index, String messageHash, int messageFlags, String nonce) {
+		String paramsStr = replaceInteractionParams(this.upscaleParamsJson, nonce)
 				.replace("$message_id", messageId)
 				.replace("$index", String.valueOf(index))
 				.replace("$message_hash", messageHash);
@@ -98,10 +94,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> variation(String messageId, int index, String messageHash, int messageFlags) {
-		String paramsStr = this.variationParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId)
+	public Message<Void> variation(String messageId, int index, String messageHash, int messageFlags, String nonce) {
+		String paramsStr = replaceInteractionParams(this.variationParamsJson, nonce)
 				.replace("$message_id", messageId)
 				.replace("$index", String.valueOf(index))
 				.replace("$message_hash", messageHash);
@@ -110,10 +104,8 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> reroll(String messageId, String messageHash, int messageFlags) {
-		String paramsStr = this.rerollParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId)
+	public Message<Void> reroll(String messageId, String messageHash, int messageFlags, String nonce) {
+		String paramsStr = replaceInteractionParams(this.rerollParamsJson, nonce)
 				.replace("$message_id", messageId)
 				.replace("$message_hash", messageHash);
 		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
@@ -121,21 +113,17 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	@Override
-	public Message<Void> describe(String finalFileName) {
+	public Message<Void> describe(String finalFileName, String nonce) {
 		String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
-		String paramsStr = this.describeParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId)
+		String paramsStr = replaceInteractionParams(this.describeParamsJson, nonce)
 				.replace("$file_name", fileName)
 				.replace("$final_file_name", finalFileName);
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
 	@Override
-	public Message<Void> blend(List<String> finalFileNames, BlendDimensions dimensions) {
-		String paramsStr = this.blendParamsJson.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId);
+	public Message<Void> blend(List<String> finalFileNames, BlendDimensions dimensions, String nonce) {
+		String paramsStr = replaceInteractionParams(this.blendParamsJson, nonce);
 		JSONObject params = new JSONObject(paramsStr);
 		JSONArray options = params.getJSONObject("data").getJSONArray("options");
 		JSONArray attachments = params.getJSONObject("data").getJSONArray("attachments");
@@ -155,6 +143,13 @@ public class DiscordServiceImpl implements DiscordService {
 				.put("name", "dimensions")
 				.put("value", "--ar " + dimensions.getValue()));
 		return postJsonAndCheckStatus(params.toString());
+	}
+
+	private String replaceInteractionParams(String paramsStr, String nonce) {
+		return paramsStr.replace("$guild_id", this.discordGuildId)
+				.replace("$channel_id", this.discordChannelId)
+				.replace("$session_id", this.discordSessionId)
+				.replace("$nonce", nonce);
 	}
 
 	@Override
