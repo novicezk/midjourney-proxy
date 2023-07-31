@@ -37,7 +37,7 @@ public class TaskTimeoutSchedule {
 			if (future != null) {
 				future.cancel(true);
 			}
-			this.taskQueueHelper.changeStatusAndNotify(task, task.getStatus());
+			this.taskQueueHelper.saveAndNotify(task);
 		}
 	}
 }

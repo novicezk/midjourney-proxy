@@ -8,12 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Component
 public class UserMessageListener implements ApplicationListener<ApplicationStartedEvent> {
 	@Resource
 	private ProxyProperties properties;
