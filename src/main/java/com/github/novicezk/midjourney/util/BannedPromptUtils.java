@@ -2,12 +2,14 @@ package com.github.novicezk.midjourney.util;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.CharSequenceUtil;
+import com.github.novicezk.midjourney.exception.BannedPromptException;
 import lombok.experimental.UtilityClass;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @UtilityClass
@@ -27,9 +29,15 @@ public class BannedPromptUtils {
 		BANNED_WORDS = lines.stream().filter(CharSequenceUtil::isNotBlank).toList();
 	}
 
-	public static boolean isBanned(String promptEn) {
+	public static void checkBanned(String promptEn) throws BannedPromptException {
 		String finalPromptEn = promptEn.toLowerCase(Locale.ENGLISH);
-		return BANNED_WORDS.stream().anyMatch(bannedWord -> Pattern.compile("\\b" + bannedWord + "\\b").matcher(finalPromptEn).find());
+		for (String word : BANNED_WORDS) {
+			Matcher matcher = Pattern.compile("\\b" + word + "\\b").matcher(finalPromptEn);
+			if (matcher.find()) {
+				int index = CharSequenceUtil.indexOfIgnoreCase(promptEn, word);
+				throw new BannedPromptException(promptEn.substring(index, index + word.length()));
+			}
+		}
 	}
 
 }

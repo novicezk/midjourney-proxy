@@ -24,9 +24,9 @@ public class TaskCondition implements Predicate<Task> {
 	private String description;
 
 	private String finalPromptEn;
-	private String relatedTaskId;
 	private String messageId;
 	private String progressMessageId;
+	private String nonce;
 
 	@Override
 	public boolean test(Task task) {
@@ -55,13 +55,13 @@ public class TaskCondition implements Predicate<Task> {
 		if (CharSequenceUtil.isNotBlank(this.finalPromptEn) && !this.finalPromptEn.equals(task.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT))) {
 			return false;
 		}
-		if (CharSequenceUtil.isNotBlank(this.relatedTaskId) && !this.relatedTaskId.equals(task.getProperty(Constants.TASK_PROPERTY_RELATED_TASK_ID))) {
-			return false;
-		}
 		if (CharSequenceUtil.isNotBlank(this.messageId) && !this.messageId.equals(task.getProperty(Constants.TASK_PROPERTY_MESSAGE_ID))) {
 			return false;
 		}
 		if (CharSequenceUtil.isNotBlank(this.progressMessageId) && !this.progressMessageId.equals(task.getProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID))) {
+			return false;
+		}
+		if (CharSequenceUtil.isNotBlank(this.nonce) && !this.nonce.equals(task.getProperty(Constants.TASK_PROPERTY_NONCE))) {
 			return false;
 		}
 		return true;

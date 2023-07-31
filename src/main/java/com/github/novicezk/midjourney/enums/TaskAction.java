@@ -15,7 +15,7 @@ public enum TaskAction {
 	 */
 	VARIATION,
 	/**
-	 * 重新生成.
+	 * 重新执行.
 	 */
 	REROLL,
 	/**
@@ -26,6 +26,5 @@ public enum TaskAction {
 	 * 多图混合.
 	 */
 	BLEND
-
 
 }
