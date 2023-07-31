@@ -7,16 +7,11 @@ import com.github.novicezk.midjourney.service.store.InMemoryTaskStoreServiceImpl
 import com.github.novicezk.midjourney.service.store.RedisTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
+import com.github.novicezk.midjourney.service.translate.NoTranslateServiceImpl;
 import com.github.novicezk.midjourney.support.Task;
-import com.github.novicezk.midjourney.support.TaskMixin;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
-import com.github.novicezk.midjourney.wss.bot.BotMessageListener;
-import com.github.novicezk.midjourney.wss.bot.BotWebSocketStarter;
-import com.github.novicezk.midjourney.wss.user.UserMessageListener;
 import com.github.novicezk.midjourney.wss.user.UserWebSocketStarter;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -34,7 +29,7 @@ public class BeanConfig {
 		return switch (properties.getTranslateWay()) {
 			case BAIDU -> new BaiduTranslateServiceImpl(properties.getBaiduTranslate());
 			case GPT -> new GPTTranslateServiceImpl(properties);
-			default -> prompt -> prompt;
+			default -> new NoTranslateServiceImpl();
 		};
 	}
 
@@ -60,33 +55,12 @@ public class BeanConfig {
 
 	@Bean
 	WebSocketStarter webSocketStarter(ProxyProperties properties) {
-		return properties.getDiscord().isUserWss() ? new UserWebSocketStarter(properties) : new BotWebSocketStarter(properties);
-	}
-
-	@Bean
-	@ConditionalOnProperty(prefix = "mj.discord", name = "user-wss", havingValue = "true")
-	UserMessageListener userMessageListener() {
-		return new UserMessageListener();
-	}
-
-	@Bean
-	@ConditionalOnProperty(prefix = "mj.discord", name = "user-wss", havingValue = "false")
-	BotMessageListener botMessageListener() {
-		return new BotMessageListener();
+		return new UserWebSocketStarter(properties);
 	}
 
 	@Bean
 	ApplicationRunner enableMetaChangeReceiverInitializer(WebSocketStarter webSocketStarter) {
 		return args -> webSocketStarter.start();
-	}
-
-	@Bean
-	Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer(ProxyProperties properties) {
-		if (properties.isIncludeTaskExtended()) {
-			return builder -> {
-			};
-		}
-		return builder -> builder.mixIn(Task.class, TaskMixin.class);
 	}
 
 }
