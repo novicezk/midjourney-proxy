@@ -4,7 +4,6 @@ mj:
     channel-id: 1128166323181064324
     user-token: MTAxMjAxMzUyNDg1MzIxMTI0OA.G0mKzI.z_jZSTWBxxIx9jXF3wWEo7WE_w7w73a21yp7uI
     user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
-    user-wss: true
   task-store:
     type: redis
     timeout: 30d
