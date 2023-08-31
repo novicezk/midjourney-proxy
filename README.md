@@ -14,7 +14,7 @@
 - [x] prompt 敏感词判断，支持覆盖调整
 - [x] user-token 连接 wss，可以获取错误信息和完整功能
 - [x] 支持 discord域名(server、cdn、wss)反代，配置 mj.ng-discord
-- [x] 支持账号池，每个账号可设置对应的任务队列（参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整）
+- [x] 支持多账号配置，每个账号可设置对应的任务队列
 
 **🚀 更多功能请查看 [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)**
 > - [x] 支持开源版的所有功能
