@@ -80,10 +80,6 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 				.addHeader("Accept-Language", "zh-CN,zh;q=0.9")
 				.addHeader("Cache-Control", "no-cache")
 				.addHeader("Pragma", "no-cache")
-				.addHeader("Connection", "Upgrade")
-				.addHeader("Upgrade", "websocket")
-				.addHeader("Host", "gateway.discord.gg")
-				.addHeader("Origin", "https://discord.com")
 				.addHeader("Sec-Websocket-Extensions", "permessage-deflate; client_max_window_bits")
 				.addHeader("User-Agent", this.account.getUserAgent());
 		this.socket.connect();
