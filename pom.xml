@@ -12,7 +12,7 @@
 
     <groupId>com.github.novicezk</groupId>
     <artifactId>midjourney-proxy</artifactId>
-    <version>2.4</version>
+    <version>2.5</version>
 
     <properties>
         <hutool.version>5.8.18</hutool.version>
@@ -94,11 +94,6 @@
             <groupId>eu.bitwalker</groupId>
             <artifactId>UserAgentUtils</artifactId>
             <version>${user-agent-utils.verison}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.verison}</version>
         </dependency>
 
         <dependency>

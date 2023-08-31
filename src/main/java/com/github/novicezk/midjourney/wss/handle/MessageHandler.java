@@ -3,10 +3,10 @@ package com.github.novicezk.midjourney.wss.handle;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
-import com.github.novicezk.midjourney.support.TaskQueueHelper;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
 
@@ -15,7 +15,7 @@ import java.util.Comparator;
 
 public abstract class MessageHandler {
 	@Resource
-	protected TaskQueueHelper taskQueueHelper;
+	protected DiscordLoadBalancer discordLoadBalancer;
 	@Resource
 	protected DiscordHelper discordHelper;
 
@@ -30,22 +30,30 @@ public abstract class MessageHandler {
 	}
 
 	protected void findAndFinishImageTask(TaskCondition condition, String finalPrompt, DataObject message) {
-		Task task = this.taskQueueHelper.findRunningTask(condition)
-				.max(Comparator.comparing(Task::getProgress))
-				.orElse(null);
+		String imageUrl = getImageUrl(message);
+		String messageHash = this.discordHelper.getMessageHash(imageUrl);
+		condition.setMessageHash(messageHash);
+		Task task = this.discordLoadBalancer.findRunningTask(condition)
+				.findFirst().orElseGet(() -> {
+					condition.setMessageHash(null);
+					return this.discordLoadBalancer.findRunningTask(condition)
+							.min(Comparator.comparing(Task::getStartTime))
+							.orElse(null);
+				});
 		if (task == null) {
 			return;
 		}
-		task.setImageUrl(getImageUrl(message));
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
+		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, messageHash);
+		task.setImageUrl(imageUrl);
 		finishTask(task, message);
 		task.awake();
 	}
 
 	protected void finishTask(Task task, DataObject message) {
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_ID, message.getString("id"));
-		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, getMessageHash(task.getImageUrl()));
 		task.setProperty(Constants.TASK_PROPERTY_FLAGS, message.getInt("flags", 0));
+		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, this.discordHelper.getMessageHash(task.getImageUrl()));
 		task.success();
 	}
 
@@ -72,11 +80,6 @@ public abstract class MessageHandler {
 			return imageUrl;
 		}
 		return CharSequenceUtil.replaceFirst(imageUrl, DiscordHelper.DISCORD_CDN_URL, cdn);
-	}
-
-	protected String getMessageHash(String imageUrl) {
-		int hashStartIndex = imageUrl.lastIndexOf("_");
-		return CharSequenceUtil.subBefore(imageUrl.substring(hashStartIndex + 1), ".", true);
 	}
 
 }

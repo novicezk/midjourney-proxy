@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Component
@@ -16,9 +18,17 @@ public class ProxyProperties {
 	 */
 	private final TaskStore taskStore = new TaskStore();
 	/**
-	 * discord配置.
+	 * discord账号选择规则.
 	 */
-	private final DiscordConfig discord = new DiscordConfig();
+	private String accountChooseRule = "BestWaitIdleRule";
+	/**
+	 * discord单账号配置.
+	 */
+	private final DiscordAccountConfig discord = new DiscordAccountConfig();
+	/**
+	 * discord账号池配置.
+	 */
+	private final List<DiscordAccountConfig> accounts = new ArrayList<>();
 	/**
 	 * 代理配置.
 	 */
@@ -27,10 +37,6 @@ public class ProxyProperties {
 	 * 反代配置.
 	 */
 	private final NgDiscordConfig ngDiscord = new NgDiscordConfig();
-	/**
-	 * 任务队列配置.
-	 */
-	private final TaskQueueConfig queue = new TaskQueueConfig();
 	/**
 	 * 百度翻译配置.
 	 */
@@ -55,41 +61,41 @@ public class ProxyProperties {
 	 * 通知回调线程池大小.
 	 */
 	private int notifyPoolSize = 10;
-	/**
-	 * 接口是否返回任务扩展属性.
-	 */
-	private boolean includeTaskExtended = false;
 
 	@Data
-	public static class DiscordConfig {
+	public static class DiscordAccountConfig {
 		/**
-		 * 你的服务器id.
+		 * 服务器ID.
 		 */
 		private String guildId;
 		/**
-		 * 你的频道id.
+		 * 频道ID.
 		 */
 		private String channelId;
 		/**
-		 * 你的登录token.
+		 * 用户Token.
 		 */
 		private String userToken;
 		/**
-		 * 你的频道id.
+		 * 用户UserAgent.
 		 */
-		private String sessionId = "9c4055428e13bcbf2248a6b36084c5f3";
+		private String userAgent = Constants.DEFAULT_DISCORD_USER_AGENT;
 		/**
-		 * 调用discord接口、连接wss时的user-agent.
+		 * 是否可用.
 		 */
-		private String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
+		private boolean enable = true;
 		/**
-		 * 是否使用user_token连接wss，默认启用.
+		 * 并发数.
 		 */
-		private boolean userWss = true;
+		private int coreSize = 3;
 		/**
-		 * 你的机器人token.
+		 * 等待队列长度.
 		 */
-		private String botToken;
+		private int queueSize = 10;
+		/**
+		 * 任务超时时间(分钟).
+		 */
+		private int timeoutMinutes = 5;
 	}
 
 	@Data
