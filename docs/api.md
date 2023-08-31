@@ -28,7 +28,10 @@
     {
       "code": 1,
       "description": "成功",
-      "result": "8498455807619990"
+      "result": "8498455807619990",
+      "properties": {
+          "discordInstanceId": "1118138338562560102"
+      }
     }
     ```
 - code=21: 任务已存在，U时可能发生
@@ -50,7 +53,19 @@
         "description": "排队中，前面还有1个任务",
         "result": "0741798445574458",
         "properties": {
-            "numberOfQueues": 1
+            "numberOfQueues": 1,
+            "discordInstanceId": "1118138338562560102"
+         }
+    }
+    ```
+- code=23: 队列已满，请稍后尝试
+    ```json
+    {
+        "code": 23,
+        "description": "队列已满，请稍后尝试",
+        "result": "14001929738841620",
+        "properties": {
+            "discordInstanceId": "1118138338562560102"
          }
     }
     ```
