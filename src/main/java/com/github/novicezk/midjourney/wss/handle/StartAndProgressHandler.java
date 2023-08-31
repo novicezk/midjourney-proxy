@@ -31,7 +31,7 @@ public class StartAndProgressHandler extends MessageHandler {
 				return;
 			}
 			// 任务开始
-			Task task = this.taskQueueHelper.getRunningTaskByNonce(nonce);
+			Task task = this.discordLoadBalancer.getRunningTaskByNonce(nonce);
 			if (task == null) {
 				return;
 			}
@@ -46,14 +46,16 @@ public class StartAndProgressHandler extends MessageHandler {
 			// 任务进度
 			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS))
 					.setProgressMessageId(message.getString("id"));
-			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.discordLoadBalancer.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {
 				return;
 			}
 			task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, parseData.getPrompt());
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.setProgress(parseData.getStatus());
-			task.setImageUrl(getImageUrl(message));
+			String imageUrl = getImageUrl(message);
+			task.setImageUrl(imageUrl);
+			task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, this.discordHelper.getMessageHash(imageUrl));
 			task.awake();
 		}
 	}
