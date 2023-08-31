@@ -2,7 +2,7 @@
 
 | 变量名                           | 非空 | 描述                                            |
 |:------------------------------|:--:|:----------------------------------------------|
-| mj.accounts                   | 是  | 多账号配置，账号字段同mj.discord                         |
+| mj.accounts                   | 是  | [账号池配置](./config.md#%E8%B4%A6%E5%8F%B7%E6%B1%A0%E9%85%8D%E7%BD%AE%E5%8F%82%E8%80%83)，配置后不需要额外设置mj.discord |
 | mj.discord.guild-id           | 是  | discord服务器ID                                  |
 | mj.discord.channel-id         | 是  | discord频道ID                                   |
 | mj.discord.user-token         | 是  | discord用户Token                                |
@@ -30,6 +30,33 @@
 | mj.openai.max-tokens          | 否  | 返回结果的最大分词数，默认2048                             |
 | mj.openai.temperature         | 否  | 相似度(0-2.0)，默认0                                |
 | spring.redis                  | 否  | 任务存储方式设置为redis，需配置redis相关属性                   |
+
+### 账号池配置参考
+```yaml
+mj:
+  accounts:
+    - guild-id: xxx
+      channel-id: xxx
+      user-token: xxxx
+      user-agent: xxxx
+    - guild-id: xxx
+      channel-id: xxx
+      user-token: xxxx
+      user-agent: xxxx
+```
+
+账号字段说明
+
+| 名称                | 非空 | 描述                                                                  |
+|:------------------| :----: |:--------------------------------------------------------------------|
+| guild-id          | 是 | discord服务器ID                                                        |
+| channel-id        | 是 | discord频道ID                                                         |
+| user-token        | 是 | discord用户Token                                                      |
+| user-agent        | 否 | 调用discord接口、连接wss时的user-agent，建议从浏览器network复制                       |
+| enable            | 否 | 是否可用，默认true                                                         |
+| core-size         | 否 | 并发数，默认3                                                             |
+| queue-size        | 否 | 等待队列长度，默认10                                                         |
+| timeout-minutes   | 否 | 任务超时时间(分钟)，默认5                                                      |
 
 ### spring.redis配置参考
 ```yaml

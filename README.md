@@ -1,7 +1,5 @@
 # midjourney-proxy
 
-> 更多功能：[midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)
-
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
 [![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.5&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
@@ -18,7 +16,7 @@
 - [x] 支持 discord域名(server、cdn、wss)反代，配置 mj.ng-discord
 - [x] 支持账号池，每个账号可设置对应的任务队列（参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整）
 
-## [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)
+> 🚀 更多功能请查看 [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)
 - [x] 支持开源版的所有功能
 - [x] 支持 Shorten(prompt分析) 指令
 - [x] 支持焦点移动: Pan ⬅️ ➡️ ⬆️ ⬇️
@@ -47,7 +45,7 @@
 - 更改代码后，构建镜像: Dockerfile取消VOLUME的注释，执行 `docker build . -t midjourney-proxy`
 
 ## 配置项
-- mj.accounts: 多账号配置
+- mj.accounts: 参考 [账号池配置](./docs/config.md#%E8%B4%A6%E5%8F%B7%E6%B1%A0%E9%85%8D%E7%BD%AE%E5%8F%82%E8%80%83)
 - mj.task-store.type: 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis
 - mj.task-store.timeout: 任务存储过期时间，过期后删除，默认30天
 - mj.api-secret: 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret
