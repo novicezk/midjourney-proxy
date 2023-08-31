@@ -1,9 +1,13 @@
 package com.github.novicezk.midjourney.wss.user;
 
+import cn.hutool.core.exceptions.ValidateException;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
-import com.github.novicezk.midjourney.support.DiscordHelper;
+import com.github.novicezk.midjourney.ReturnCode;
+import com.github.novicezk.midjourney.domain.DiscordAccount;
+import com.github.novicezk.midjourney.util.AsyncLockUtils;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
@@ -18,70 +22,143 @@ import net.dv8tion.jda.internal.requests.WebSocketCode;
 import net.dv8tion.jda.internal.utils.compress.Decompressor;
 import net.dv8tion.jda.internal.utils.compress.ZlibDecompressor;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketStarter {
 	private static final int CONNECT_RETRY_LIMIT = 3;
 
-	private final String userToken;
-	private final String userAgent;
-	private final DataObject auth;
+	private final ProxyProperties.ProxyConfig proxyConfig;
+	private final DiscordAccount account;
+	private final UserMessageListener userMessageListener;
+	private final ScheduledExecutorService heartExecutor;
+	private final String wssServer;
+	private final DataObject authData;
 
-	private ScheduledExecutorService heartExecutor;
-	private WebSocket socket = null;
-	private String sessionId;
-	private Future<?> heartbeatTask;
 	private Decompressor decompressor;
+	private WebSocket socket = null;
+	private String resumeGatewayUrl;
+	private String sessionId;
 
-	private boolean connected = false;
-	private final AtomicInteger sequence = new AtomicInteger(0);
+	private Future<?> heartbeatInterval;
+	private Future<?> heartbeatTimeout;
+	private boolean heartbeatAck = false;
+	private Object sequence = null;
+	private long interval = 41250;
+	private boolean trying = false;
 
-	@Resource
-	private UserMessageListener userMessageListener;
-	@Resource
-	private DiscordHelper discordHelper;
+	public UserWebSocketStarter(String wssServer, DiscordAccount account, UserMessageListener userMessageListener, ProxyProperties.ProxyConfig proxyConfig) {
+		this.wssServer = wssServer;
+		this.account = account;
+		this.userMessageListener = userMessageListener;
+		this.proxyConfig = proxyConfig;
+		this.heartExecutor = Executors.newSingleThreadScheduledExecutor();
+		this.authData = createAuthData();
+	}
 
-	private final ProxyProperties properties;
-
-	public UserWebSocketStarter(ProxyProperties properties) {
-		initProxy(properties);
-		this.properties = properties;
-		this.userToken = properties.getDiscord().getUserToken();
-		this.userAgent = properties.getDiscord().getUserAgent();
-		this.auth = createAuthData();
+	@Override
+	public void setTrying(boolean trying) {
+		this.trying = trying;
 	}
 
 	@Override
 	public synchronized void start() throws Exception {
 		this.decompressor = new ZlibDecompressor(2048);
-		this.heartExecutor = Executors.newSingleThreadScheduledExecutor();
-		WebSocketFactory webSocketFactory = createWebSocketFactory(this.properties);
-		this.socket = webSocketFactory.createSocket(this.discordHelper.getWss() + "/?encoding=json&v=9&compress=zlib-stream");
+		WebSocketFactory webSocketFactory = createWebSocketFactory(this.proxyConfig);
+		String gatewayUrl = CharSequenceUtil.isNotBlank(this.resumeGatewayUrl) ? this.resumeGatewayUrl : this.wssServer;
+		this.socket = webSocketFactory.createSocket(gatewayUrl + "/?encoding=json&v=9&compress=zlib-stream");
 		this.socket.addListener(this);
-		this.socket.addHeader("Accept-Encoding", "gzip, deflate, br").addHeader("Accept-Language", "en-US,en;q=0.9")
-				.addHeader("Cache-Control", "no-cache").addHeader("Pragma", "no-cache")
-				.addHeader("Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits")
-				.addHeader("User-Agent", this.userAgent);
+		this.socket.addHeader("Accept-Encoding", "gzip, deflate, br")
+				.addHeader("Accept-Language", "zh-CN,zh;q=0.9")
+				.addHeader("Cache-Control", "no-cache")
+				.addHeader("Pragma", "no-cache")
+				.addHeader("Sec-Websocket-Extensions", "permessage-deflate; client_max_window_bits")
+				.addHeader("User-Agent", this.account.getUserAgent());
 		this.socket.connect();
 	}
 
 	@Override
 	public void onConnected(WebSocket websocket, Map<String, List<String>> headers) {
-		log.debug("[gateway] Connected to websocket.");
-		this.connected = true;
+		log.debug("[wss-{}] Connected to websocket.", this.account.getDisplay());
+	}
+
+	@Override
+	public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
+		log.error("[wss-{}] There was some websocket error.", this.account.getDisplay(), cause);
+	}
+
+	@Override
+	public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
+		int code;
+		String closeReason;
+		if (closedByServer) {
+			code = serverCloseFrame.getCloseCode();
+			closeReason = serverCloseFrame.getCloseReason();
+		} else {
+			code = clientCloseFrame.getCloseCode();
+			closeReason = clientCloseFrame.getCloseReason();
+		}
+		connectFinish(code, closeReason);
+		if (this.trying) {
+			return;
+		}
+		if (code == 5240) {
+			// 隐式关闭wss
+			clearAllStates();
+		} else if (code >= 4000) {
+			log.warn("[wss-{}] Can't reconnect! Account disabled. Closed by {}({}).", this.account.getDisplay(), code, closeReason);
+			clearAllStates();
+			this.account.setEnable(false);
+		} else if (code == 2001) {
+			// reconnect
+			log.warn("[wss-{}] Waiting reconnect...", this.account.getDisplay());
+			clearSocketStates();
+			start();
+		} else {
+			log.warn("[wss-{}] Closed by {}({}). Waiting try new connection...", this.account.getDisplay(), code, closeReason);
+			clearAllStates();
+			tryNewConnect();
+		}
+	}
+
+	private void tryNewConnect() {
+		this.trying = true;
+		for (int i = 1; i <= CONNECT_RETRY_LIMIT; i++) {
+			try {
+				clearAllStates();
+				start();
+				AsyncLockUtils.LockObject lock = AsyncLockUtils.waitForLock("wss:" + this.account.getChannelId(), Duration.ofSeconds(20));
+				int code = lock.getProperty("code", Integer.class, 0);
+				if (code == ReturnCode.SUCCESS) {
+					log.debug("[wss-{}] New connection success.", this.account.getDisplay());
+					return;
+				}
+				throw new ValidateException(lock.getProperty("description", String.class));
+			} catch (Exception e) {
+				if (e instanceof TimeoutException) {
+					close(5240, "try new connect");
+				}
+				log.warn("[wss-{}] Try new connection fail ({}): {}", this.account.getDisplay(), i, e.getMessage());
+				ThreadUtil.sleep(5000);
+			}
+		}
+		log.error("[wss-{}] Account disabled", this.account.getDisplay());
+		this.account.setEnable(false);
 	}
 
 	@Override
 	public void onBinaryMessage(WebSocket websocket, byte[] binary) throws Exception {
+		if (this.decompressor == null) {
+			return;
+		}
 		byte[] decompressBinary = this.decompressor.decompress(binary);
 		if (decompressBinary == null) {
 			return;
@@ -89,120 +166,127 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		String json = new String(decompressBinary, StandardCharsets.UTF_8);
 		DataObject data = DataObject.fromJson(json);
 		int opCode = data.getInt("op");
-		if (opCode != WebSocketCode.HEARTBEAT_ACK) {
-			this.sequence.incrementAndGet();
-		}
-		if (opCode == WebSocketCode.HELLO) {
-			if (this.heartbeatTask == null && this.heartExecutor != null) {
-				long interval = data.getObject("d").getLong("heartbeat_interval");
-				this.heartbeatTask =
-						this.heartExecutor.scheduleAtFixedRate(this::heartbeat, interval, interval, TimeUnit.MILLISECONDS);
+		switch (opCode) {
+			case WebSocketCode.HEARTBEAT -> {
+				log.debug("[wss-{}] Receive heartbeat.", this.account.getDisplay());
+				handleHeartbeat();
 			}
-			sayHello();
-		} else if (opCode == WebSocketCode.HEARTBEAT_ACK) {
-			log.trace("[gateway] Heartbeat ack.");
-		} else if (opCode == WebSocketCode.HEARTBEAT) {
-			send(DataObject.empty().put("op", WebSocketCode.HEARTBEAT).put("d", this.sequence));
-		} else if (opCode == WebSocketCode.INVALIDATE_SESSION) {
-			log.debug("[gateway] Invalid session.");
-			close("session invalid");
-		} else if (opCode == WebSocketCode.RECONNECT) {
-			log.debug("[gateway] Received opcode 7 (reconnect).");
-			close("reconnect");
-		} else if (opCode == WebSocketCode.DISPATCH) {
-			onDispatch(data);
+			case WebSocketCode.HEARTBEAT_ACK -> {
+				this.heartbeatAck = true;
+				clearHeartbeatTimeout();
+			}
+			case WebSocketCode.HELLO -> {
+				handleHello(data);
+				doResumeOrIdentify();
+			}
+			case WebSocketCode.RESUME -> {
+				log.debug("[wss-{}] Receive resumed.", this.account.getDisplay());
+				connectSuccess();
+			}
+			case WebSocketCode.RECONNECT -> reconnect("receive server reconnect");
+			case WebSocketCode.INVALIDATE_SESSION -> close(1009, "receive session invalid");
+			case WebSocketCode.DISPATCH -> handleDispatch(data);
+			default -> log.debug("[wss-{}] Receive unknown code: {}.", this.account.getDisplay(), data);
 		}
 	}
 
-	@Override
-	public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame,
-			boolean closedByServer) {
-		reset();
-		int code = 1000;
-		String closeReason = "";
-		if (clientCloseFrame != null) {
-			code = clientCloseFrame.getCloseCode();
-			closeReason = clientCloseFrame.getCloseReason();
-		} else if (serverCloseFrame != null) {
-			code = serverCloseFrame.getCloseCode();
-			closeReason = serverCloseFrame.getCloseReason();
-		}
-		if (code >= 4010 || code == 4004) {
-			log.warn("[gateway] Websocket closed and can't reconnect! code: {}, reason: {}", code, closeReason);
-			System.exit(code);
-			return;
-		}
-		log.warn("[gateway] Websocket closed and will be reconnect... code: {}, reason: {}", code, closeReason);
-		ThreadUtil.execute(() -> {
-			try {
-				retryStart(0);
-			} catch (Exception e) {
-				log.error("[gateway] Websocket reconnect error", e);
-				System.exit(1);
+	private void handleHello(DataObject data) {
+		clearHeartbeatInterval();
+		this.interval = data.getObject("d").getLong("heartbeat_interval");
+		this.heartbeatAck = true;
+		this.heartbeatInterval = this.heartExecutor.scheduleAtFixedRate(() -> {
+			if (this.heartbeatAck) {
+				this.heartbeatAck = false;
+				send(WebSocketCode.HEARTBEAT, this.sequence);
+			} else {
+				reconnect("heartbeat has not ack interval");
 			}
+		}, (long) Math.floor(RandomUtil.randomDouble(0, 1) * this.interval), this.interval, TimeUnit.MILLISECONDS);
+	}
+
+	private void doResumeOrIdentify() {
+		if (CharSequenceUtil.isBlank(this.sessionId)) {
+			log.debug("[wss-{}] Send identify msg.", this.account.getDisplay());
+			send(WebSocketCode.IDENTIFY, this.authData);
+		} else {
+			log.debug("[wss-{}] Send resume msg.", this.account.getDisplay());
+			send(WebSocketCode.RESUME, DataObject.empty().put("token", this.account.getUserToken())
+					.put("session_id", this.sessionId).put("seq", this.sequence));
+		}
+	}
+
+	private void handleHeartbeat() {
+		send(WebSocketCode.HEARTBEAT, this.sequence);
+		this.heartbeatTimeout = ThreadUtil.execAsync(() -> {
+			ThreadUtil.sleep(this.interval);
+			reconnect("heartbeat has not ack");
 		});
 	}
 
-	private void retryStart(int currentRetryTime) throws Exception {
-		try {
-			start();
-		} catch (Exception e) {
-			if (currentRetryTime < CONNECT_RETRY_LIMIT) {
-				currentRetryTime++;
-				log.warn("[gateway] Websocket start fail, retry {} time... error: {}", currentRetryTime,
-						e.getMessage());
-				Thread.sleep(5000L);
-				retryStart(currentRetryTime);
-			} else {
-				throw e;
-			}
-		}
+	private void clearAllStates() {
+		clearSocketStates();
+		clearResumeStates();
 	}
 
-	@Override
-	public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
-		log.error("[gateway] There was some websocket error", cause);
-	}
-
-	private void sayHello() {
-		DataObject data;
-		if (CharSequenceUtil.isBlank(this.sessionId)) {
-			data = DataObject.empty().put("op", WebSocketCode.IDENTIFY).put("d", this.auth);
-			log.trace("[gateway] Say hello: identify");
-		} else {
-			data = DataObject.empty().put("op", WebSocketCode.RESUME).put("d",
-					DataObject.empty().put("token", this.userToken).put("session_id", this.sessionId).put("seq",
-							Math.max(this.sequence.get() - 1, 0)));
-			log.trace("[gateway] Say hello: resume");
-		}
-		send(data);
-	}
-
-	private void close(String reason) {
-		this.connected = false;
-		this.socket.disconnect(1000, reason);
-	}
-
-	private void reset() {
-		this.connected = false;
-		this.sessionId = null;
-		this.sequence.set(0);
-		this.decompressor = null;
+	private void clearSocketStates() {
+		clearHeartbeatTimeout();
+		clearHeartbeatInterval();
 		this.socket = null;
-		if (this.heartbeatTask != null) {
-			this.heartbeatTask.cancel(true);
-			this.heartbeatTask = null;
+		this.decompressor = null;
+	}
+
+	private void clearResumeStates() {
+		this.sessionId = null;
+		this.sequence = null;
+		this.resumeGatewayUrl = null;
+	}
+
+	private void clearHeartbeatInterval() {
+		if (this.heartbeatInterval != null) {
+			this.heartbeatInterval.cancel(true);
+			this.heartbeatInterval = null;
 		}
 	}
 
-	private void heartbeat() {
-		if (!this.connected) {
-			return;
+	private void clearHeartbeatTimeout() {
+		if (this.heartbeatTimeout != null) {
+			this.heartbeatTimeout.cancel(true);
+			this.heartbeatTimeout = null;
 		}
-		send(DataObject.empty().put("op", WebSocketCode.HEARTBEAT).put("d", this.sequence));
 	}
 
-	private void onDispatch(DataObject raw) {
+	private void reconnect(String reason) {
+		close(2001, reason);
+	}
+
+	private void close(int code, String reason) {
+		if (this.socket != null) {
+			this.socket.sendClose(code, reason);
+		}
+	}
+
+	private void send(int op, Object d) {
+		if (this.socket != null) {
+			this.socket.sendText(DataObject.empty().put("op", op).put("d", d).toString());
+		}
+	}
+
+	private void connectSuccess() {
+		this.trying = false;
+		connectFinish(ReturnCode.SUCCESS, "");
+	}
+
+	private void connectFinish(int code, String description) {
+		AsyncLockUtils.LockObject lock = AsyncLockUtils.getLock("wss:" + this.account.getChannelId());
+		if (lock != null) {
+			lock.setProperty("code", code);
+			lock.setProperty("description", description);
+			lock.awake();
+		}
+	}
+
+	private void handleDispatch(DataObject raw) {
+		this.sequence = raw.opt("s").orElse(null);
 		if (!raw.isType("d", DataType.OBJECT)) {
 			return;
 		}
@@ -210,35 +294,54 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		String t = raw.getString("t", null);
 		if ("READY".equals(t)) {
 			this.sessionId = content.getString("session_id");
+			this.resumeGatewayUrl = content.getString("resume_gateway_url");
+			log.debug("[wss-{}] Dispatch ready.", this.account.getDisplay());
+			connectSuccess();
 			return;
 		}
 		try {
 			this.userMessageListener.onMessage(raw);
 		} catch (Exception e) {
-			log.error("user-wss handle message error", e);
+			log.error("[wss-{}] Handle message error", this.account.getDisplay(), e);
 		}
 	}
 
-	protected void send(DataObject message) {
-		log.trace("[gateway] > {}", message);
-		this.socket.sendText(message.toString());
-	}
-
 	private DataObject createAuthData() {
-		UserAgent agent = UserAgent.parseUserAgentString(this.userAgent);
-		DataObject connectionProperties = DataObject.empty().put("os", agent.getOperatingSystem().getName())
-				.put("browser", agent.getBrowser().getGroup().getName()).put("device", "").put("system_locale", "zh-CN")
-				.put("browser_version", agent.getBrowserVersion().toString()).put("browser_user_agent", this.userAgent)
-				.put("referer", "").put("referring_domain", "").put("referrer_current", "")
-				.put("referring_domain_current", "").put("release_channel", "stable").put("client_build_number", 117300)
-				.put("client_event_source", null);
-		DataObject presence = DataObject.empty().put("status", "online").put("since", 0)
-				.put("activities", DataArray.empty()).put("afk", false);
-		DataObject clientState = DataObject.empty().put("guild_hashes", DataArray.empty()).put("highest_last_message_id", "0")
-				.put("read_state_version", 0).put("user_guild_settings_version", -1).put("user_settings_version", -1);
-		return DataObject.empty().put("token", this.userToken).put("capabilities", 4093)
-				.put("properties", connectionProperties).put("presence", presence).put("compress", false)
-				.put("client_state", clientState);
+		UserAgent agent = UserAgent.parseUserAgentString(this.account.getUserAgent());
+		DataObject connectionProperties = DataObject.empty()
+				.put("browser", agent.getBrowser().getGroup().getName())
+				.put("browser_user_agent", this.account.getUserAgent())
+				.put("browser_version", agent.getBrowserVersion().toString())
+				.put("client_build_number", 222963)
+				.put("client_event_source", null)
+				.put("device", "")
+				.put("os", agent.getOperatingSystem().getName())
+				.put("referer", "https://www.midjourney.com")
+				.put("referrer_current", "")
+				.put("referring_domain", "www.midjourney.com")
+				.put("referring_domain_current", "")
+				.put("release_channel", "stable")
+				.put("system_locale", "zh-CN");
+		DataObject presence = DataObject.empty()
+				.put("activities", DataArray.empty())
+				.put("afk", false)
+				.put("since", 0)
+				.put("status", "online");
+		DataObject clientState = DataObject.empty()
+				.put("api_code_version", 0)
+				.put("guild_versions", DataObject.empty())
+				.put("highest_last_message_id", "0")
+				.put("private_channels_version", "0")
+				.put("read_state_version", 0)
+				.put("user_guild_settings_version", -1)
+				.put("user_settings_version", -1);
+		return DataObject.empty()
+				.put("capabilities", 16381)
+				.put("client_state", clientState)
+				.put("compress", false)
+				.put("presence", presence)
+				.put("properties", connectionProperties)
+				.put("token", this.account.getUserToken());
 	}
 
 }
