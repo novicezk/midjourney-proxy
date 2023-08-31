@@ -1,29 +1,24 @@
 package com.github.novicezk.midjourney.wss.user;
 
 
-import com.github.novicezk.midjourney.ProxyProperties;
+import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.thread.ThreadUtil;
+import com.github.novicezk.midjourney.domain.DiscordAccount;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.wss.handle.MessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Component
-public class UserMessageListener implements ApplicationListener<ApplicationStartedEvent> {
-	@Resource
-	private ProxyProperties properties;
-	private final List<MessageHandler> messageHandlers = new ArrayList<>();
+public class UserMessageListener {
+	private final DiscordAccount account;
+	private final List<MessageHandler> messageHandlers;
 
-	@Override
-	public void onApplicationEvent(ApplicationStartedEvent event) {
-		this.messageHandlers.addAll(event.getApplicationContext().getBeansOfType(MessageHandler.class).values());
+	public UserMessageListener(DiscordAccount account, List<MessageHandler> messageHandlers) {
+		this.account = account;
+		this.messageHandlers = messageHandlers;
 	}
 
 	public void onMessage(DataObject raw) {
@@ -35,6 +30,7 @@ public class UserMessageListener implements ApplicationListener<ApplicationStart
 		if (ignoreAndLogMessage(data, messageType)) {
 			return;
 		}
+		ThreadUtil.sleep(50);
 		for (MessageHandler messageHandler : this.messageHandlers) {
 			messageHandler.handle(messageType, data);
 		}
@@ -42,11 +38,11 @@ public class UserMessageListener implements ApplicationListener<ApplicationStart
 
 	private boolean ignoreAndLogMessage(DataObject data, MessageType messageType) {
 		String channelId = data.getString("channel_id");
-		if (!this.properties.getDiscord().getChannelId().equals(channelId)) {
+		if (!CharSequenceUtil.equals(channelId, this.account.getChannelId())) {
 			return true;
 		}
 		String authorName = data.optObject("author").map(a -> a.getString("username")).orElse("System");
-		log.debug("{} - {}: {}", messageType.name(), authorName, data.opt("content").orElse(""));
+		log.debug("{} - {} - {}: {}", this.account.getDisplay(), messageType.name(), authorName, data.opt("content").orElse(""));
 		return false;
 	}
 }

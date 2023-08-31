@@ -2,11 +2,9 @@ package com.github.novicezk.midjourney.wss.handle;
 
 import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
-import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -16,8 +14,6 @@ import java.util.Optional;
  */
 @Component
 public class DescribeSuccessHandler extends MessageHandler {
-	@Autowired
-	private TranslateService translateService;
 
 	@Override
 	public void handle(MessageType messageType, DataObject message) {
@@ -36,7 +32,7 @@ public class DescribeSuccessHandler extends MessageHandler {
 		}
 		String imageUrl = imageOptional.get().getString("url");
 		String taskId = this.discordHelper.findTaskIdWithCdnUrl(imageUrl);
-		Task task = this.taskQueueHelper.getRunningTask(taskId);
+		Task task = this.discordLoadBalancer.getRunningTask(taskId);
 		if (task == null) {
 			return;
 		}

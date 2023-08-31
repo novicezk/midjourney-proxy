@@ -1,15 +1,12 @@
 package com.github.novicezk.midjourney.service;
 
 
-import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.ReturnCode;
+import com.github.novicezk.midjourney.domain.DiscordAccount;
 import com.github.novicezk.midjourney.enums.BlendDimensions;
 import com.github.novicezk.midjourney.result.Message;
-import com.github.novicezk.midjourney.support.DiscordHelper;
 import eu.maxschuster.dataurl.DataUrl;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,65 +15,36 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
-@Service
-@RequiredArgsConstructor
 public class DiscordServiceImpl implements DiscordService {
-	private final ProxyProperties properties;
-	private final DiscordHelper discordHelper;
+	private static final String DEFAULT_SESSION_ID = "f1a313a09ce079ce252459dc70231f30";
 
-	private String discordApiUrl;
-	private String userAgent;
+	private final DiscordAccount account;
+	private final Map<String, String> paramsMap;
+	private final RestTemplate restTemplate;
 
-	private String discordUploadUrl;
-	private String discordSendMessageUrl;
+	private final String discordInteractionUrl;
+	private final String discordAttachmentUrl;
+	private final String discordMessageUrl;
 
-	private String imagineParamsJson;
-	private String upscaleParamsJson;
-	private String variationParamsJson;
-	private String rerollParamsJson;
-	private String describeParamsJson;
-	private String blendParamsJson;
-	private String messageParamsJson;
-
-	private String discordUserToken;
-	private String discordGuildId;
-	private String discordChannelId;
-	private String discordSessionId;
-
-	@PostConstruct
-	void init() {
-		ProxyProperties.DiscordConfig discord = this.properties.getDiscord();
-		this.discordUserToken = discord.getUserToken();
-		this.discordGuildId = discord.getGuildId();
-		this.discordChannelId = discord.getChannelId();
-		this.discordSessionId = discord.getSessionId();
-		this.userAgent = discord.getUserAgent();
-
-		String serverUrl = this.discordHelper.getServer();
-		this.discordApiUrl = serverUrl + "/api/v9/interactions";
-		this.discordUploadUrl = serverUrl + "/api/v9/channels/" + this.discordChannelId + "/attachments";
-		this.discordSendMessageUrl = serverUrl + "/api/v9/channels/" + this.discordChannelId + "/messages";
-
-		this.imagineParamsJson = ResourceUtil.readUtf8Str("api-params/imagine.json");
-		this.upscaleParamsJson = ResourceUtil.readUtf8Str("api-params/upscale.json");
-		this.variationParamsJson = ResourceUtil.readUtf8Str("api-params/variation.json");
-		this.rerollParamsJson = ResourceUtil.readUtf8Str("api-params/reroll.json");
-		this.describeParamsJson = ResourceUtil.readUtf8Str("api-params/describe.json");
-		this.blendParamsJson = ResourceUtil.readUtf8Str("api-params/blend.json");
-		this.messageParamsJson = ResourceUtil.readUtf8Str("api-params/message.json");
+	public DiscordServiceImpl(DiscordAccount account, RestTemplate restTemplate, String discordServer, Map<String, String> paramsMap) {
+		this.account = account;
+		this.restTemplate = restTemplate;
+		this.paramsMap = paramsMap;
+		this.discordInteractionUrl = discordServer + "/api/v9/interactions";
+		this.discordAttachmentUrl = discordServer + "/api/v9/channels/" + account.getChannelId() + "/attachments";
+		this.discordMessageUrl = discordServer + "/api/v9/channels/" + account.getChannelId() + "/messages";
 	}
 
 	@Override
 	public Message<Void> imagine(String prompt, String nonce) {
-		String paramsStr = replaceInteractionParams(this.imagineParamsJson, nonce);
+		String paramsStr = replaceInteractionParams(this.paramsMap.get("imagine"), nonce);
 		JSONObject params = new JSONObject(paramsStr);
 		params.getJSONObject("data").getJSONArray("options").getJSONObject(0)
 				.put("value", prompt);
@@ -85,29 +53,21 @@ public class DiscordServiceImpl implements DiscordService {
 
 	@Override
 	public Message<Void> upscale(String messageId, int index, String messageHash, int messageFlags, String nonce) {
-		String paramsStr = replaceInteractionParams(this.upscaleParamsJson, nonce)
-				.replace("$message_id", messageId)
-				.replace("$index", String.valueOf(index))
-				.replace("$message_hash", messageHash);
+		String paramsStr = replaceInteractionParams(this.paramsMap.get("upscale"), nonce);
 		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
 	@Override
 	public Message<Void> variation(String messageId, int index, String messageHash, int messageFlags, String nonce) {
-		String paramsStr = replaceInteractionParams(this.variationParamsJson, nonce)
-				.replace("$message_id", messageId)
-				.replace("$index", String.valueOf(index))
-				.replace("$message_hash", messageHash);
+		String paramsStr = replaceInteractionParams(this.paramsMap.get("variation"), nonce);
 		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
 		return postJsonAndCheckStatus(paramsStr);
 	}
 
 	@Override
 	public Message<Void> reroll(String messageId, String messageHash, int messageFlags, String nonce) {
-		String paramsStr = replaceInteractionParams(this.rerollParamsJson, nonce)
-				.replace("$message_id", messageId)
-				.replace("$message_hash", messageHash);
+		String paramsStr = replaceInteractionParams(this.paramsMap.get("reroll"), nonce);
 		paramsStr = new JSONObject(paramsStr).put("message_flags", messageFlags).toString();
 		return postJsonAndCheckStatus(paramsStr);
 	}
@@ -115,7 +75,7 @@ public class DiscordServiceImpl implements DiscordService {
 	@Override
 	public Message<Void> describe(String finalFileName, String nonce) {
 		String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
-		String paramsStr = replaceInteractionParams(this.describeParamsJson, nonce)
+		String paramsStr = replaceInteractionParams(this.paramsMap.get("describe"), nonce)
 				.replace("$file_name", fileName)
 				.replace("$final_file_name", finalFileName);
 		return postJsonAndCheckStatus(paramsStr);
@@ -123,7 +83,7 @@ public class DiscordServiceImpl implements DiscordService {
 
 	@Override
 	public Message<Void> blend(List<String> finalFileNames, BlendDimensions dimensions, String nonce) {
-		String paramsStr = replaceInteractionParams(this.blendParamsJson, nonce);
+		String paramsStr = replaceInteractionParams(this.paramsMap.get("blend"), nonce);
 		JSONObject params = new JSONObject(paramsStr);
 		JSONArray options = params.getJSONObject("data").getJSONArray("options");
 		JSONArray attachments = params.getJSONObject("data").getJSONArray("attachments");
@@ -146,9 +106,9 @@ public class DiscordServiceImpl implements DiscordService {
 	}
 
 	private String replaceInteractionParams(String paramsStr, String nonce) {
-		return paramsStr.replace("$guild_id", this.discordGuildId)
-				.replace("$channel_id", this.discordChannelId)
-				.replace("$session_id", this.discordSessionId)
+		return paramsStr.replace("$guild_id", this.account.getGuildId())
+				.replace("$channel_id", this.account.getChannelId())
+				.replace("$session_id", DEFAULT_SESSION_ID)
 				.replace("$nonce", nonce);
 	}
 
@@ -161,7 +121,7 @@ public class DiscordServiceImpl implements DiscordService {
 			fileObj.put("id", "0");
 			JSONObject params = new JSONObject()
 					.put("files", new JSONArray().put(fileObj));
-			ResponseEntity<String> responseEntity = postJson(this.discordUploadUrl, params.toString());
+			ResponseEntity<String> responseEntity = postJson(this.discordAttachmentUrl, params.toString());
 			if (responseEntity.getStatusCode() != HttpStatus.OK) {
 				log.error("上传图片到discord失败, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
 				return Message.of(ReturnCode.VALIDATION_ERROR, "上传图片到discord失败");
@@ -183,11 +143,11 @@ public class DiscordServiceImpl implements DiscordService {
 	@Override
 	public Message<String> sendImageMessage(String content, String finalFileName) {
 		String fileName = CharSequenceUtil.subAfter(finalFileName, "/", true);
-		String paramsStr = this.messageParamsJson.replace("$content", content)
-				.replace("$channel_id", this.discordChannelId)
+		String paramsStr = this.paramsMap.get("message").replace("$content", content)
+				.replace("$channel_id", this.account.getChannelId())
 				.replace("$file_name", fileName)
 				.replace("$final_file_name", finalFileName);
-		ResponseEntity<String> responseEntity = postJson(this.discordSendMessageUrl, paramsStr);
+		ResponseEntity<String> responseEntity = postJson(this.discordMessageUrl, paramsStr);
 		if (responseEntity.getStatusCode() != HttpStatus.OK) {
 			log.error("发送图片消息到discord失败, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
 			return Message.of(ReturnCode.VALIDATION_ERROR, "发送图片消息到discord失败");
@@ -202,24 +162,24 @@ public class DiscordServiceImpl implements DiscordService {
 
 	private void putFile(String uploadUrl, DataUrl dataUrl) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("User-Agent", this.userAgent);
+		headers.add("User-Agent", this.account.getUserAgent());
 		headers.setContentType(MediaType.valueOf(dataUrl.getMimeType()));
 		headers.setContentLength(dataUrl.getData().length);
 		HttpEntity<byte[]> requestEntity = new HttpEntity<>(dataUrl.getData(), headers);
-		new RestTemplate().put(uploadUrl, requestEntity);
+		this.restTemplate.put(uploadUrl, requestEntity);
 	}
 
 	private ResponseEntity<String> postJson(String paramsStr) {
-		return postJson(discordApiUrl, paramsStr);
+		return postJson(this.discordInteractionUrl, paramsStr);
 	}
 
 	private ResponseEntity<String> postJson(String url, String paramsStr) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Authorization", this.discordUserToken);
-		headers.add("User-Agent", this.userAgent);
+		headers.set("Authorization", this.account.getUserToken());
+		headers.set("User-Agent", this.account.getUserAgent());
 		HttpEntity<String> httpEntity = new HttpEntity<>(paramsStr, headers);
-		return new RestTemplate().postForEntity(url, httpEntity, String.class);
+		return this.restTemplate.postForEntity(url, httpEntity, String.class);
 	}
 
 	private Message<Void> postJsonAndCheckStatus(String paramsStr) {
@@ -229,13 +189,17 @@ public class DiscordServiceImpl implements DiscordService {
 				return Message.success();
 			}
 			return Message.of(responseEntity.getStatusCodeValue(), CharSequenceUtil.sub(responseEntity.getBody(), 0, 100));
-		} catch (HttpClientErrorException e) {
-			try {
-				JSONObject error = new JSONObject(e.getResponseBodyAsString());
-				return Message.of(error.optInt("code", e.getRawStatusCode()), error.optString("message"));
-			} catch (Exception je) {
-				return Message.of(e.getRawStatusCode(), CharSequenceUtil.sub(e.getMessage(), 0, 100));
-			}
+		} catch (HttpStatusCodeException e) {
+			return convertHttpStatusCodeException(e);
+		}
+	}
+
+	private Message<Void> convertHttpStatusCodeException(HttpStatusCodeException e) {
+		try {
+			JSONObject error = new JSONObject(e.getResponseBodyAsString());
+			return Message.of(error.optInt("code", e.getRawStatusCode()), error.optString("message"));
+		} catch (Exception je) {
+			return Message.of(e.getRawStatusCode(), CharSequenceUtil.sub(e.getMessage(), 0, 100));
 		}
 	}
 }

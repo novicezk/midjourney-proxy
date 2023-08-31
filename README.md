@@ -4,7 +4,7 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.4&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.5&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 主要功能
@@ -14,9 +14,22 @@
 - [x] 支持任务实时进度
 - [x] 支持中英文翻译，需配置百度翻译或gpt
 - [x] prompt 敏感词判断，支持覆盖调整
-- [x] 任务队列，默认队列10，并发3。可参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整mj.queue
 - [x] user-token 连接 wss，可以获取错误信息和完整功能
 - [x] 支持 discord域名(server、cdn、wss)反代，配置 mj.ng-discord
+- [x] 支持账号池，每个账号可设置对应的任务队列（参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整）
+
+## [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)
+- [x] 支持开源版的所有功能
+- [x] 支持 Shorten(prompt分析) 指令
+- [x] 支持焦点移动: Pan ⬅️ ➡️ ⬆️ ⬇️
+- [x] 支持图片变焦: Zoom 🔍
+- [x] 支持局部重绘: Vary (Region) 🖌
+- [x] 支持几乎所有的关联按钮动作和🎛️ Remix模式，参考 [API接口说明-执行动作](./docs/api.md#3-%E6%89%A7%E8%A1%8C%E4%BB%BB%E5%8A%A1%E7%9A%84%E5%85%B3%E8%81%94%E5%8A%A8%E4%BD%9C)
+- [x] 支持获取图片的seed值
+- [x] 中英文翻译额外支持deepl
+- [x] 账号池持久化，动态维护
+- [x] 支持获取账号/info、/settings信息
+- [x] 内嵌 [管理后台页面](https://github.com/litter-coder/midjourney-proxy-admin)
 
 ## 使用前提
 1. 注册并订阅 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
@@ -34,11 +47,11 @@
 - 更改代码后，构建镜像: Dockerfile取消VOLUME的注释，执行 `docker build . -t midjourney-proxy`
 
 ## 配置项
-- mj.discord.guild-id：discord服务器ID
-- mj.discord.channel-id：discord频道ID
-- mj.discord.user-token：discord用户Token
-- mj.discord.session-id：discord用户的sessionId，不设置时使用默认的，建议从interactions请求中复制替换
-- mj.discord.user-agent：调用discord接口、连接wss时的user-agent，默认使用作者的，建议从浏览器network复制替换
+- mj.accounts: 多账号配置
+- mj.task-store.type: 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis
+- mj.task-store.timeout: 任务存储过期时间，过期后删除，默认30天
+- mj.api-secret: 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret
+- mj.translate-way: 中文prompt翻译成英文的方式，可选null(默认)、baidu、gpt、deepl
 - 更多配置查看 [配置项](./docs/config.md)
 
 ## 相关文档
@@ -59,7 +72,6 @@
 - [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI，基于本接口和SD，可一键打包生成H5和小程序
 - [ChatGPT-Midjourney](https://github.com/Licoy/ChatGPT-Midjourney) : 一键拥有你自己的 ChatGPT+Midjourney 网页服务
 - [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
-- [koishi-plugin-midjourney-discord](https://github.com/araea/koishi-plugin-midjourney-discord) : Koishi插件，在Koishi支持的聊天平台中调用Midjourney
 
 ## 其它
 如果觉得这个项目对你有所帮助，请帮忙点个star；也可以请作者喝杯茶～
