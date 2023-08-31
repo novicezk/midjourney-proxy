@@ -16,7 +16,7 @@
 - [x] 支持 discord域名(server、cdn、wss)反代，配置 mj.ng-discord
 - [x] 支持账号池，每个账号可设置对应的任务队列（参考 [MidJourney订阅级别](https://docs.midjourney.com/docs/plans) 调整）
 
-> 🚀 更多功能请查看 [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)
+**🚀 更多功能请查看 [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)**
 > - [x] 支持开源版的所有功能
 > - [x] 支持 Shorten(prompt分析) 指令
 > - [x] 支持焦点移动: Pan ⬅️ ➡️ ⬆️ ⬇️
