@@ -32,7 +32,7 @@ public class GPTTranslateServiceImpl implements TranslateService {
 	public GPTTranslateServiceImpl(ProxyProperties properties) {
 		this.openaiConfig = properties.getOpenai();
 		if (CharSequenceUtil.isBlank(this.openaiConfig.getGptApiKey())) {
-			throw new BeanDefinitionValidationException("mj-proxy.openai.gpt-api-key未配置");
+			throw new BeanDefinitionValidationException("mj.openai.gpt-api-key未配置");
 		}
 		HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new OpenAILogger());
 		httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);

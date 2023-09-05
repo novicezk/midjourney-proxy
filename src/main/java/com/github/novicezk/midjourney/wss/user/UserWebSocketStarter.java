@@ -119,12 +119,25 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 			this.account.setEnable(false);
 		} else if (code == 2001) {
 			// reconnect
-			log.warn("[wss-{}] Waiting reconnect...", this.account.getDisplay());
-			clearSocketStates();
-			start();
+			log.warn("[wss-{}] Waiting try reconnect...", this.account.getDisplay());
+			tryReconnect();
 		} else {
 			log.warn("[wss-{}] Closed by {}({}). Waiting try new connection...", this.account.getDisplay(), code, closeReason);
-			clearAllStates();
+			tryNewConnect();
+		}
+	}
+
+	private void tryReconnect() {
+		clearSocketStates();
+		try {
+			this.trying = true;
+			tryStart(true);
+		} catch (Exception e) {
+			if (e instanceof TimeoutException) {
+				sendClose(5240, "try new connect");
+			}
+			log.warn("[wss-{}] Try reconnect fail: {}, Waiting try new connection...", this.account.getDisplay(), e.getMessage());
+			ThreadUtil.sleep(1000);
 			tryNewConnect();
 		}
 	}
@@ -132,19 +145,13 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 	private void tryNewConnect() {
 		this.trying = true;
 		for (int i = 1; i <= CONNECT_RETRY_LIMIT; i++) {
+			clearAllStates();
 			try {
-				clearAllStates();
-				start();
-				AsyncLockUtils.LockObject lock = AsyncLockUtils.waitForLock("wss:" + this.account.getChannelId(), Duration.ofSeconds(20));
-				int code = lock.getProperty("code", Integer.class, 0);
-				if (code == ReturnCode.SUCCESS) {
-					log.debug("[wss-{}] New connection success.", this.account.getDisplay());
-					return;
-				}
-				throw new ValidateException(lock.getProperty("description", String.class));
+				tryStart(false);
+				return;
 			} catch (Exception e) {
 				if (e instanceof TimeoutException) {
-					close(5240, "try new connect");
+					sendClose(5240, "try new connect");
 				}
 				log.warn("[wss-{}] Try new connection fail ({}): {}", this.account.getDisplay(), i, e.getMessage());
 				ThreadUtil.sleep(5000);
@@ -152,6 +159,17 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		}
 		log.error("[wss-{}] Account disabled", this.account.getDisplay());
 		this.account.setEnable(false);
+	}
+
+	public void tryStart(boolean reconnect) throws Exception {
+		start();
+		AsyncLockUtils.LockObject lock = AsyncLockUtils.waitForLock("wss:" + this.account.getChannelId(), Duration.ofSeconds(20));
+		int code = lock.getProperty("code", Integer.class, 0);
+		if (code == ReturnCode.SUCCESS) {
+			log.debug("[wss-{}] {} success.", this.account.getDisplay(), reconnect ? "Reconnect" : "New connect");
+			return;
+		}
+		throw new ValidateException(lock.getProperty("description", String.class));
 	}
 
 	@Override
@@ -183,8 +201,8 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 				log.debug("[wss-{}] Receive resumed.", this.account.getDisplay());
 				connectSuccess();
 			}
-			case WebSocketCode.RECONNECT -> reconnect("receive server reconnect");
-			case WebSocketCode.INVALIDATE_SESSION -> close(1009, "receive session invalid");
+			case WebSocketCode.RECONNECT -> sendReconnect("receive server reconnect");
+			case WebSocketCode.INVALIDATE_SESSION -> sendClose(1009, "receive session invalid");
 			case WebSocketCode.DISPATCH -> handleDispatch(data);
 			default -> log.debug("[wss-{}] Receive unknown code: {}.", this.account.getDisplay(), data);
 		}
@@ -199,7 +217,7 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 				this.heartbeatAck = false;
 				send(WebSocketCode.HEARTBEAT, this.sequence);
 			} else {
-				reconnect("heartbeat has not ack interval");
+				sendReconnect("heartbeat has not ack interval");
 			}
 		}, (long) Math.floor(RandomUtil.randomDouble(0, 1) * this.interval), this.interval, TimeUnit.MILLISECONDS);
 	}
@@ -219,7 +237,7 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		send(WebSocketCode.HEARTBEAT, this.sequence);
 		this.heartbeatTimeout = ThreadUtil.execAsync(() -> {
 			ThreadUtil.sleep(this.interval);
-			reconnect("heartbeat has not ack");
+			sendReconnect("heartbeat has not ack");
 		});
 	}
 
@@ -255,11 +273,11 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		}
 	}
 
-	private void reconnect(String reason) {
-		close(2001, reason);
+	private void sendReconnect(String reason) {
+		sendClose(2001, reason);
 	}
 
-	private void close(int code, String reason) {
+	private void sendClose(int code, String reason) {
 		if (this.socket != null) {
 			this.socket.sendClose(code, reason);
 		}
@@ -295,7 +313,11 @@ public class UserWebSocketStarter extends WebSocketAdapter implements WebSocketS
 		if ("READY".equals(t)) {
 			this.sessionId = content.getString("session_id");
 			this.resumeGatewayUrl = content.getString("resume_gateway_url");
-			log.debug("[wss-{}] Dispatch ready.", this.account.getDisplay());
+			log.debug("[wss-{}] Dispatch ready: identify.", this.account.getDisplay());
+			connectSuccess();
+			return;
+		} else if ("RESUMED".equals(t)) {
+			log.debug("[wss-{}] Dispatch read: resumed.", this.account.getDisplay());
 			connectSuccess();
 			return;
 		}
