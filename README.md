@@ -10,10 +10,9 @@
 - [x] Imagine 时支持添加图片base64，作为垫图
 - [x] 支持 Blend(图片混合)、Describe(图生文) 指令
 - [x] 支持任务实时进度
-- [x] 支持中英文翻译，需配置百度翻译或gpt
-- [x] prompt 敏感词判断，支持覆盖调整
+- [x] 支持中文prompt翻译，需配置百度翻译或gpt
+- [x] prompt 敏感词预检测，支持覆盖调整
 - [x] user-token 连接 wss，可以获取错误信息和完整功能
-- [x] 支持 discord域名(server、cdn、wss)反代，配置 mj.ng-discord
 - [x] 支持多账号配置，每个账号可设置对应的任务队列
 
 **🚀 更多功能请查看 [midjourney-proxy-plus](https://github.com/litter-coder/midjourney-proxy-plus)**
@@ -24,13 +23,13 @@
 > - [x] 支持局部重绘: Vary (Region) 🖌
 > - [x] 支持几乎所有的关联按钮动作和🎛️ Remix模式
 > - [x] 支持获取图片的seed值
-> - [x] 中英文翻译额外支持deepl
 > - [x] 账号池持久化，动态维护
 > - [x] 支持获取账号/info、/settings信息
+> - [x] 账号settings设置
 > - [x] 内嵌管理后台页面
 
 ## 使用前提
-1. 注册并订阅 MidJourney，创建自己的频道，参考 https://docs.midjourney.com/docs/quick-start
+1. 注册并订阅 MidJourney，创建`自己的服务器和频道`，参考 https://docs.midjourney.com/docs/quick-start
 2. 获取用户Token、服务器ID、频道ID：[获取方式](./docs/discord-params.md)
 
 ## 快速启动
@@ -49,7 +48,7 @@
 - mj.task-store.type: 任务存储方式，默认in_memory(内存\重启后丢失)，可选redis
 - mj.task-store.timeout: 任务存储过期时间，过期后删除，默认30天
 - mj.api-secret: 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret
-- mj.translate-way: 中文prompt翻译成英文的方式，可选null(默认)、baidu、gpt、deepl
+- mj.translate-way: 中文prompt翻译成英文的方式，可选null(默认)、baidu、gpt
 - 更多配置查看 [配置项](./docs/config.md)
 
 ## 相关文档
@@ -59,8 +58,7 @@
 ## 注意事项
 1. 作图频繁等行为，可能会触发midjourney账号警告，请谨慎使用
 2. 常见问题及解决办法见 [Wiki / FAQ](https://github.com/novicezk/midjourney-proxy/wiki/FAQ)
-3. 在 [Issues](https://github.com/novicezk/midjourney-proxy/issues) 中提出其他问题或建议
-4. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
+3. 感兴趣的朋友也欢迎加入交流群讨论一下，扫码进群名额已满，加管理员微信邀请进群
 
  <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/manager-qrcode.png" width="220" alt="微信二维码"/>
 
@@ -72,8 +70,6 @@
 - [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
 
 ## 其它
-如果觉得这个项目对你有所帮助，请帮忙点个star；也可以请作者喝杯茶～
-
- <img src="https://raw.githubusercontent.com/novicezk/midjourney-proxy/main/docs/receipt-code.png" width="220" alt="二维码"/>
+如果觉得这个项目对你有所帮助，请帮忙点个star
 
 [![Star History Chart](https://api.star-history.com/svg?repos=novicezk/midjourney-proxy&type=Date)](https://star-history.com/#novicezk/midjourney-proxy&Date)
