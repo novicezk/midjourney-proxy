@@ -205,7 +205,7 @@ public class SubmitController {
 
 	private Task newTask(BaseSubmitDTO base) {
 		Task task = new Task();
-		task.setId(System.currentTimeMillis() + "" + RandomUtil.randomNumbers(3));
+		task.setId(System.currentTimeMillis() + RandomUtil.randomNumbers(3));
 		task.setSubmitTime(System.currentTimeMillis());
 		task.setState(base.getState());
 		String notifyHook = CharSequenceUtil.isBlank(base.getNotifyHook()) ? this.properties.getNotifyHook() : base.getNotifyHook();
@@ -215,25 +215,25 @@ public class SubmitController {
 	}
 
 	private String translatePrompt(String prompt) {
-        String image = "";
-        Matcher imageMatcher = Pattern.compile("^https?://[a-z0-9-_:@&?=+,.!/~*'%$]{1,}\\x20{1,}", Pattern.CASE_INSENSITIVE).matcher(prompt);
-        if (imageMatcher.find()) {
-            image = imageMatcher.group(0);
-        }
-
-        String param = "";
-        Matcher paramMatcher = Pattern.compile("\\x20{1,}-{1,2}.*$", Pattern.CASE_INSENSITIVE).matcher(prompt);
-        if (paramMatcher.find()) {
-            param = paramMatcher.group(0);
-        }
-
-        String textPrompt = prompt.substring(image.length(), prompt.length() - param.length());
-
-		String textPromptEn = this.translateService.translateToEnglish(textPrompt).trim();
-		if (CharSequenceUtil.isBlank(textPromptEn)) {
-			textPromptEn = prompt;
+		if (CharSequenceUtil.isBlank(prompt)) {
+			return prompt;
 		}
-		
-		return image + textPromptEn + param;
+		List<String> imageUrls = new ArrayList<>();
+		Matcher imageMatcher = Pattern.compile("https?://[a-z0-9-_:@&?=+,.!/~*'%$]+\\x20+", Pattern.CASE_INSENSITIVE).matcher(prompt);
+		while (imageMatcher.find()) {
+			imageUrls.add(imageMatcher.group(0));
+		}
+		String paramStr = "";
+		Matcher paramMatcher = Pattern.compile("\\x20+-{1,2}[a-z]+.*$", Pattern.CASE_INSENSITIVE).matcher(prompt);
+		if (paramMatcher.find()) {
+			paramStr = paramMatcher.group(0);
+		}
+		String imageStr = CharSequenceUtil.join("", imageUrls);
+		String text = prompt.substring(imageStr.length(), prompt.length() - paramStr.length());
+		if (CharSequenceUtil.isNotBlank(text)) {
+			text = this.translateService.translateToEnglish(prompt).trim();
+		}
+		return imageStr + text + paramStr;
 	}
+
 }
