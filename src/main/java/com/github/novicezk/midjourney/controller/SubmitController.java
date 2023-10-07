@@ -41,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Api(tags = "任务提交")
 @RestController
@@ -213,16 +215,25 @@ public class SubmitController {
 	}
 
 	private String translatePrompt(String prompt) {
-		String promptEn;
-		int paramStart = prompt.indexOf(" --");
-		if (paramStart > 0) {
-			promptEn = this.translateService.translateToEnglish(prompt.substring(0, paramStart)).trim() + prompt.substring(paramStart);
-		} else {
-			promptEn = this.translateService.translateToEnglish(prompt).trim();
+        String image = "";
+        Matcher imageMatcher = Pattern.compile("^https?://[a-z0-9-_:@&?=+,.!/~*'%$]{1,}\\x20{1,}", Pattern.CASE_INSENSITIVE).matcher(prompt);
+        if (imageMatcher.find()) {
+            image = imageMatcher.group(0);
+        }
+
+        String param = "";
+        Matcher paramMatcher = Pattern.compile("\\x20{1,}-{1,2}.*$", Pattern.CASE_INSENSITIVE).matcher(prompt);
+        if (paramMatcher.find()) {
+            param = paramMatcher.group(0);
+        }
+
+        String textPrompt = prompt.substring(image.length(), prompt.length() - param.length());
+
+		String textPromptEn = this.translateService.translateToEnglish(textPrompt).trim();
+		if (CharSequenceUtil.isBlank(textPromptEn)) {
+			textPromptEn = prompt;
 		}
-		if (CharSequenceUtil.isBlank(promptEn)) {
-			promptEn = prompt;
-		}
-		return promptEn;
+		
+		return image + textPromptEn + param;
 	}
 }
