@@ -13,6 +13,7 @@ import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
 import com.github.novicezk.midjourney.dto.SubmitSimpleChangeDTO;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
+import com.github.novicezk.midjourney.enums.TranslateWay;
 import com.github.novicezk.midjourney.exception.BannedPromptException;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.service.TaskService;
@@ -215,7 +216,7 @@ public class SubmitController {
 	}
 
 	private String translatePrompt(String prompt) {
-		if (CharSequenceUtil.isBlank(prompt)) {
+		if (TranslateWay.NULL.equals(this.properties.getTranslateWay()) || CharSequenceUtil.isBlank(prompt)) {
 			return prompt;
 		}
 		List<String> imageUrls = new ArrayList<>();
@@ -231,7 +232,7 @@ public class SubmitController {
 		String imageStr = CharSequenceUtil.join("", imageUrls);
 		String text = prompt.substring(imageStr.length(), prompt.length() - paramStr.length());
 		if (CharSequenceUtil.isNotBlank(text)) {
-			text = this.translateService.translateToEnglish(prompt).trim();
+			text = this.translateService.translateToEnglish(text).trim();
 		}
 		return imageStr + text + paramStr;
 	}
