@@ -3,12 +3,14 @@ package com.github.novicezk.midjourney.wss.handle;
 
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
+import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.ContentParseData;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -22,7 +24,19 @@ public class BlendSuccessHandler extends MessageHandler {
 	public void handle(MessageType messageType, DataObject message) {
 		String content = getMessageContent(message);
 		ContentParseData parseData = ConvertUtils.parseContent(content);
-		if (MessageType.CREATE.equals(messageType) && parseData != null && hasImage(message)) {
+		if (parseData == null || !MessageType.CREATE.equals(messageType)) {
+			return;
+		}
+		Optional<DataObject> interaction = message.optObject("interaction");
+		if (interaction.isPresent() && "blend".equals(interaction.get().getString("name"))) {
+			// blend任务开始时，设置prompt
+			Task task = this.discordLoadBalancer.getRunningTaskByNonce(getMessageNonce(message));
+			if (task != null) {
+				task.setPromptEn(parseData.getPrompt());
+				task.setPrompt(parseData.getPrompt());
+			}
+		}
+		if (hasImage(message)) {
 			TaskCondition condition = new TaskCondition()
 					.setActionSet(Set.of(TaskAction.BLEND))
 					.setFinalPromptEn(parseData.getPrompt());

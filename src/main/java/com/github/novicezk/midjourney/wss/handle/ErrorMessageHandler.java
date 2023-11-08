@@ -9,16 +9,16 @@ import com.github.novicezk.midjourney.support.TaskCondition;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
 @Component
 public class ErrorMessageHandler extends MessageHandler {
-	@Resource
+	@Autowired
 	protected ProxyProperties properties;
 
 	@Override
@@ -42,7 +42,7 @@ public class ErrorMessageHandler extends MessageHandler {
 		} else if (color == 16711680) {
 			log.error("{} - MJ异常信息: {}\n{}\nfooter: {}", channelId, title, description, footerText);
 			String nonce = getMessageNonce(message);
-			Task task = this.taskQueueHelper.getRunningTaskByNonce(nonce);
+			Task task = this.discordLoadBalancer.getRunningTaskByNonce(nonce);
 			if (task != null) {
 				task.fail("[" + title + "] " + description);
 				task.awake();
@@ -57,7 +57,7 @@ public class ErrorMessageHandler extends MessageHandler {
 			}
 			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS))
 					.setProgressMessageId(referenceMessageId);
-			Task task = this.taskQueueHelper.findRunningTask(condition).findFirst().orElse(null);
+			Task task = this.discordLoadBalancer.findRunningTask(condition).findFirst().orElse(null);
 			if (task != null) {
 				task.fail("[" + title + "] " + description);
 				task.awake();
