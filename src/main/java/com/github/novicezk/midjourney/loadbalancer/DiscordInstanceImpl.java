@@ -104,6 +104,17 @@ public class DiscordInstanceImpl implements DiscordInstance {
 	}
 
 	@Override
+	public int getThreadActiveCount(){
+		return this.taskExecutor.getActiveCount();
+	}
+
+	@Override
+	public int getTaskQueueSize(){
+		return this.taskExecutor.getQueueSize();
+	}
+
+
+	@Override
 	public synchronized SubmitResultVO submitTask(Task task, Callable<Message<Void>> discordSubmit) {
 		this.taskStoreService.save(task);
 		int currentWaitNumbers;

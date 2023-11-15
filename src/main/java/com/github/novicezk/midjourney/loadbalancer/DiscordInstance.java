@@ -29,6 +29,10 @@ public interface DiscordInstance extends DiscordService {
 
 	Map<String, Future<?>> getRunningFutures();
 
-	SubmitResultVO submitTask(Task task, Callable<Message<Void>> discordSubmit);
+	int getThreadActiveCount();
+
+	int getTaskQueueSize();
+
+    SubmitResultVO submitTask(Task task, Callable<Message<Void>> discordSubmit);
 
 }

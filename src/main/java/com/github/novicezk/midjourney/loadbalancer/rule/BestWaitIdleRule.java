@@ -15,15 +15,22 @@ public class BestWaitIdleRule implements IRule {
 		if (instances.isEmpty()) {
 			return null;
 		}
-		return instances.stream().min((i1, i2) -> {
-			int wait1 = i1.getRunningFutures().size() - i1.account().getCoreSize();
-			int wait2 = i2.getRunningFutures().size() - i2.account().getCoreSize();
-			if (wait1 == wait2 && wait1 == 0) {
-				// 都不需要等待时，选择空闲数最多的
-				int idle1 = i1.account().getCoreSize() - i1.getRunningTasks().size();
-				int idle2 = i2.account().getCoreSize() - i2.getRunningTasks().size();
-				return idle2 - idle1;
-			}
+		// 核心线程空闲最多的 账户
+		DiscordInstance discordInstance = instances.stream().filter(e -> {
+			return e.account().getCoreSize() - e.getThreadActiveCount() > 0;
+		}).max((i1, i2) -> {
+			int wait1 = i1.account().getCoreSize() - i1.getThreadActiveCount();
+			int wait2 = i2.account().getCoreSize() - i2.getThreadActiveCount();
+			return wait1 - wait2;
+		}).orElse(null);
+
+		if(null != discordInstance){
+			return discordInstance;
+		}
+		// 获取剩余任务队列大小最大的 账户
+		return instances.stream().max((i1, i2) -> {
+			int wait1 = i1.account().getQueueSize() - i1.getTaskQueueSize();
+			int wait2 = i2.account().getQueueSize() - i2.getTaskQueueSize();
 			return wait1 - wait2;
 		}).orElse(null);
 	}
