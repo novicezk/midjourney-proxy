@@ -2,7 +2,6 @@ package com.github.novicezk.midjourney.loadbalancer;
 
 
 import com.github.novicezk.midjourney.domain.DiscordAccount;
-import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.service.DiscordService;

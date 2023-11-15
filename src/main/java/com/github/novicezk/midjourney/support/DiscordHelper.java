@@ -21,6 +21,10 @@ public class DiscordHelper {
 	 * DISCORD_WSS_URL.
 	 */
 	public static final String DISCORD_WSS_URL = "wss://gateway.discord.gg";
+	/**
+	 * DISCORD_UPLOAD_URL.
+	 */
+	public static final String DISCORD_UPLOAD_URL = "https://discord-attachments-uploads-prd.storage.googleapis.com";
 
 	public String getServer() {
 		if (CharSequenceUtil.isBlank(this.properties.getNgDiscord().getServer())) {
@@ -53,6 +57,17 @@ public class DiscordHelper {
 			wssUrl = wssUrl.substring(0, wssUrl.length() - 1);
 		}
 		return wssUrl;
+	}
+
+	public String getDiscordUploadUrl(String uploadUrl) {
+		if (CharSequenceUtil.isBlank(this.properties.getNgDiscord().getUploadServer()) || CharSequenceUtil.isBlank(uploadUrl)) {
+			return uploadUrl;
+		}
+		String uploadServer = this.properties.getNgDiscord().getUploadServer();
+		if (uploadServer.endsWith("/")) {
+			uploadServer = uploadServer.substring(0, uploadServer.length() - 1);
+		}
+		return uploadUrl.replaceFirst(DISCORD_UPLOAD_URL, uploadServer);
 	}
 
 	public String findTaskIdWithCdnUrl(String url) {

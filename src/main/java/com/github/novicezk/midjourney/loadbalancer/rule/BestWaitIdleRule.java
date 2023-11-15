@@ -1,12 +1,16 @@
 package com.github.novicezk.midjourney.loadbalancer.rule;
 
+import cn.hutool.core.util.RandomUtil;
 import com.github.novicezk.midjourney.loadbalancer.DiscordInstance;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 最少等待空闲.
- * 选择等待数最少的实例，如果都不需要等待，则选择空闲数最多的实例
+ * 选择等待数最少的实例，如果都不需要等待，则随机选择
  */
 public class BestWaitIdleRule implements IRule {
 
@@ -15,17 +19,13 @@ public class BestWaitIdleRule implements IRule {
 		if (instances.isEmpty()) {
 			return null;
 		}
-		return instances.stream().min((i1, i2) -> {
-			int wait1 = i1.getRunningFutures().size() - i1.account().getCoreSize();
-			int wait2 = i2.getRunningFutures().size() - i2.account().getCoreSize();
-			if (wait1 == wait2 && wait1 == 0) {
-				// 都不需要等待时，选择空闲数最多的
-				int idle1 = i1.account().getCoreSize() - i1.getRunningTasks().size();
-				int idle2 = i2.account().getCoreSize() - i2.getRunningTasks().size();
-				return idle2 - idle1;
-			}
-			return wait1 - wait2;
-		}).orElse(null);
+		Map<Integer, List<DiscordInstance>> map = instances.stream()
+				.collect(Collectors.groupingBy(i -> {
+					int wait = i.getRunningFutures().size() - i.account().getCoreSize();
+					return wait >= 0 ? wait : -1;
+				}));
+		List<DiscordInstance> instanceList = map.entrySet().stream().min(Comparator.comparingInt(Map.Entry::getKey)).orElseThrow().getValue();
+		return RandomUtil.randomEle(instanceList);
 	}
 
 }
