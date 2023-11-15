@@ -2,7 +2,6 @@ package com.github.novicezk.midjourney.loadbalancer;
 
 
 import com.github.novicezk.midjourney.domain.DiscordAccount;
-import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.result.Message;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
 import com.github.novicezk.midjourney.service.DiscordService;
@@ -29,10 +28,6 @@ public interface DiscordInstance extends DiscordService {
 
 	Map<String, Future<?>> getRunningFutures();
 
-	int getThreadActiveCount();
-
-	int getTaskQueueSize();
-
-    SubmitResultVO submitTask(Task task, Callable<Message<Void>> discordSubmit);
+	SubmitResultVO submitTask(Task task, Callable<Message<Void>> discordSubmit);
 
 }

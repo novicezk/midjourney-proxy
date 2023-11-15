@@ -38,7 +38,6 @@ public class DiscordAccountHelper {
 		var messageListener = new UserMessageListener(account, this.messageHandlers);
 		var webSocketStarter = new UserWebSocketStarter(this.discordHelper.getWss(), account, messageListener, this.properties.getProxy());
 		return new DiscordInstanceImpl(account, webSocketStarter, this.restTemplate,
-				this.taskStoreService, this.notifyService,
-				this.discordHelper.getServer(), this.paramsMap);
+				this.taskStoreService, this.notifyService, this.paramsMap);
 	}
 }

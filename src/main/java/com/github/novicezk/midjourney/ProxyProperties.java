@@ -187,6 +187,10 @@ public class ProxyProperties {
 		 * wss://gateway.discord.gg 反代.
 		 */
 		private String wss;
+		/**
+		 * https://discord-attachments-uploads-prd.storage.googleapis.com 反代.
+		 */
+		private String uploadServer;
 	}
 
 	@Data
