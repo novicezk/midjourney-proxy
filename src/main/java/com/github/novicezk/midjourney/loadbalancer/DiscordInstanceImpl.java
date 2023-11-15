@@ -42,13 +42,12 @@ public class DiscordInstanceImpl implements DiscordInstance {
 	private final Map<String, Future<?>> taskFutureMap = Collections.synchronizedMap(new HashMap<>());
 
 	public DiscordInstanceImpl(DiscordAccount account, UserWebSocketStarter socketStarter, RestTemplate restTemplate,
-			TaskStoreService taskStoreService, NotifyService notifyService,
-			String discordServer, Map<String, String> paramsMap) {
+			TaskStoreService taskStoreService, NotifyService notifyService, Map<String, String> paramsMap) {
 		this.account = account;
 		this.socketStarter = socketStarter;
 		this.taskStoreService = taskStoreService;
 		this.notifyService = notifyService;
-		this.service = new DiscordServiceImpl(account, restTemplate, discordServer, paramsMap);
+		this.service = new DiscordServiceImpl(account, restTemplate, paramsMap);
 		this.runningTasks = new CopyOnWriteArrayList<>();
 		this.taskExecutor = new ThreadPoolTaskExecutor();
 		this.taskExecutor.setCorePoolSize(account.getCoreSize());
