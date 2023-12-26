@@ -27,6 +27,7 @@
 > - [x] 支持获取账号/info、/settings信息
 > - [x] 账号settings设置
 > - [x] 支持niji bot机器人
+> - [x] 支持InsightFace人脸替换机器人
 > - [x] 内嵌管理后台页面
 
 ## 使用前提
@@ -66,6 +67,7 @@
 ## 应用项目
 依赖此项目且开源的，欢迎联系作者，加到此处展示
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
+- [chatgpt-web-midjourney-proxy](https://github.com/Dooy/chatgpt-web-midjourney-proxy) : chatgpt web, midjourney, gpts,tts, whisper 一套ui全搞定
 - [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI，基于本接口和SD，可一键打包生成H5和小程序
 - [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
 
