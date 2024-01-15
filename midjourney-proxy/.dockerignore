@@ -1,0 +1,22 @@
+target/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+
+### Macos ###
+.DS_Store
+
+### application config #
+config/application.yml
+
+.git
+.gitignore
+docker
+docs
+README.md
