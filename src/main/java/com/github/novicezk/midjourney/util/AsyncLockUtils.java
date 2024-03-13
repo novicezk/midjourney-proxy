@@ -23,10 +23,12 @@ public class AsyncLockUtils {
 	public static LockObject waitForLock(String key, Duration duration) throws TimeoutException {
 		LockObject lockObject;
 		synchronized (LOCK_MAP) {
-			if (!LOCK_MAP.containsKey(key)) {
-				LOCK_MAP.put(key, new LockObject(key));
+			if (LOCK_MAP.containsKey(key)) {
+				lockObject = LOCK_MAP.get(key);
+			} else {
+				lockObject = new LockObject(key);
+				LOCK_MAP.put(key, lockObject);
 			}
-			lockObject = LOCK_MAP.get(key);
 		}
 		Future<?> future = ThreadUtil.execAsync(() -> {
 			try {

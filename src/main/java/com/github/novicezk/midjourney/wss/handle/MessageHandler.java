@@ -3,6 +3,7 @@ package com.github.novicezk.midjourney.wss.handle;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.loadbalancer.DiscordInstance;
 import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.api.utils.data.DataObject;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
+import java.util.Optional;
 
 public abstract class MessageHandler {
 	@Resource
@@ -19,7 +21,11 @@ public abstract class MessageHandler {
 	@Resource
 	protected DiscordHelper discordHelper;
 
-	public abstract void handle(MessageType messageType, DataObject message);
+	public abstract void handle(DiscordInstance instance, MessageType messageType, DataObject message);
+
+	public int order() {
+		return 100;
+	}
 
 	protected String getMessageContent(DataObject message) {
 		return message.hasKey("content") ? message.getString("content") : "";
@@ -29,14 +35,25 @@ public abstract class MessageHandler {
 		return message.hasKey("nonce") ? message.getString("nonce") : "";
 	}
 
-	protected void findAndFinishImageTask(TaskCondition condition, String finalPrompt, DataObject message) {
+	protected String getInteractionName(DataObject message) {
+		Optional<DataObject> interaction = message.optObject("interaction");
+		return interaction.map(dataObject -> dataObject.getString("name", "")).orElse("");
+	}
+
+	protected String getReferenceMessageId(DataObject message) {
+		Optional<DataObject> reference = message.optObject("message_reference");
+		return reference.map(dataObject -> dataObject.getString("message_id", "")).orElse("");
+	}
+
+	protected void findAndFinishImageTask(DiscordInstance instance, TaskCondition condition, String finalPrompt, DataObject message) {
 		String imageUrl = getImageUrl(message);
 		String messageHash = this.discordHelper.getMessageHash(imageUrl);
 		condition.setMessageHash(messageHash);
-		Task task = this.discordLoadBalancer.findRunningTask(condition)
+		Task task = instance.findRunningTask(condition)
 				.findFirst().orElseGet(() -> {
 					condition.setMessageHash(null);
-					return this.discordLoadBalancer.findRunningTask(condition)
+					return instance.findRunningTask(condition)
+							.filter(t -> t.getStartTime() != null)
 							.min(Comparator.comparing(Task::getStartTime))
 							.orElse(null);
 				});
