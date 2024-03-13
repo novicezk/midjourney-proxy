@@ -10,8 +10,8 @@ import com.github.novicezk.midjourney.loadbalancer.DiscordInstanceImpl;
 import com.github.novicezk.midjourney.service.NotifyService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.wss.handle.MessageHandler;
+import com.github.novicezk.midjourney.wss.user.SpringUserWebSocketStarter;
 import com.github.novicezk.midjourney.wss.user.UserMessageListener;
-import com.github.novicezk.midjourney.wss.user.UserWebSocketStarter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,9 +35,10 @@ public class DiscordAccountHelper {
 		if (CharSequenceUtil.isBlank(account.getUserAgent())) {
 			account.setUserAgent(Constants.DEFAULT_DISCORD_USER_AGENT);
 		}
-		var messageListener = new UserMessageListener(account, this.messageHandlers);
-		var webSocketStarter = new UserWebSocketStarter(this.discordHelper.getWss(), account, messageListener, this.properties.getProxy());
-		return new DiscordInstanceImpl(account, webSocketStarter, this.restTemplate,
-				this.taskStoreService, this.notifyService, this.paramsMap);
+		var messageListener = new UserMessageListener(this.messageHandlers);
+		var webSocketStarter = new SpringUserWebSocketStarter(this.discordHelper.getWss(), this.discordHelper.getResumeWss(), account, messageListener);
+		var discordInstance = new DiscordInstanceImpl(account, webSocketStarter, this.restTemplate, this.taskStoreService, this.notifyService, this.paramsMap);
+		messageListener.setInstance(discordInstance);
+		return discordInstance;
 	}
 }

@@ -52,32 +52,12 @@ public class DiscordLoadBalancer {
 		return taskIds;
 	}
 
-	public Stream<Task> findRunningTask(TaskCondition condition) {
-		return getAliveInstances().stream().flatMap(instance -> instance.getRunningTasks().stream().filter(condition));
-	}
-
-	public Task getRunningTask(String id) {
+	public List<Task> getQueueTasks() {
+		List<Task> tasks = new ArrayList<>();
 		for (DiscordInstance instance : getAliveInstances()) {
-			Optional<Task> optional = instance.getRunningTasks().stream().filter(t -> id.equals(t.getId())).findFirst();
-			if (optional.isPresent()) {
-				return optional.get();
-			}
+			tasks.addAll(instance.getQueueTasks());
 		}
-		return null;
-	}
-
-	public Task getRunningTaskByNonce(String nonce) {
-		if (CharSequenceUtil.isBlank(nonce)) {
-			return null;
-		}
-		TaskCondition condition = new TaskCondition().setNonce(nonce);
-		for (DiscordInstance instance : getAliveInstances()) {
-			Optional<Task> optional = instance.getRunningTasks().stream().filter(condition).findFirst();
-			if (optional.isPresent()) {
-				return optional.get();
-			}
-		}
-		return null;
+		return tasks;
 	}
 
 }

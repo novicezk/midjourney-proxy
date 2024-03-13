@@ -4,9 +4,9 @@
 
 English | [中文](./README_CN.md)
 
-代理 MidJourney 的discord频道，实现api形式调用AI绘图
+Proxy the Discord channel for MidJourney to enable API-based calls for AI drawing
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.5.5&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.6.0&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 </div>
@@ -103,7 +103,7 @@ display.
 
 Provides unofficial MJ/SD open API, add administrator WeChat for inquiries, please remark: api
 
-## 其它
+## Others
 
 If you find this project helpful, please consider giving it a star.
 
