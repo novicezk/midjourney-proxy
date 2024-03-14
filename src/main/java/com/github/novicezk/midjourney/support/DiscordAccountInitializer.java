@@ -31,7 +31,7 @@ public class DiscordAccountInitializer implements ApplicationRunner {
 	private final ProxyProperties properties;
 
 	@Override
-	public void run(ApplicationArguments args) throws Exception {
+	public void run(ApplicationArguments args) {
 		ProxyProperties.ProxyConfig proxy = this.properties.getProxy();
 		if (Strings.isNotBlank(proxy.getHost())) {
 			System.setProperty("http.proxyHost", proxy.getHost());
@@ -66,7 +66,7 @@ public class DiscordAccountInitializer implements ApplicationRunner {
 			}
 		}
 		Set<String> enableInstanceIds = instances.stream().filter(DiscordInstance::isAlive).map(DiscordInstance::getInstanceId).collect(Collectors.toSet());
-		log.info("当前可用账号数 [{}] - {}", enableInstanceIds.size(), String.join(", ", enableInstanceIds));
+		log.info("Number of currently available accounts [{}] - {}", enableInstanceIds.size(), String.join(", ", enableInstanceIds));
 	}
 
 }
