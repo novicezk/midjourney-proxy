@@ -118,13 +118,6 @@
             <version>5.0.0-beta.21</version>
         </dependency>
 
-<!--        Image SDK-->
-        <dependency>
-            <groupId>com.github.imagekit-developer</groupId>
-            <artifactId>imagekit-java</artifactId>
-            <version>2.0.0</version>
-        </dependency>
-
 <!--        Dot Env for Config-->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
@@ -132,6 +125,11 @@
             <version>3.0.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -139,12 +137,6 @@
             <id>dv8tion</id>
             <name>m2-dv8tion</name>
             <url>https://m2.dv8tion.net/releases</url>
-        </repository>
-
-<!--        Image SDK-->
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 
