@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public class OnErrorAction {
 
     public static void imageErrorMessage(SlashCommandInteractionEvent event) {
-        event.reply("Oops! We couldn't find the image. Please run the command `/upload-image` and try again.")
+        event.reply("Oops! We couldn't find any image. Please run the command `/upload-image` and try again.")
                 .setEphemeral(true)
                 .queue();
     }

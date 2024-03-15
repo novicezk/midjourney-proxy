@@ -1,0 +1,27 @@
+{
+  "base_prompt": "image showcase full length UI/UX game design, user interface with hue lights, multiple views full body upper body reference sheet, clothes sheet, character chart, body proportions, diagrammatic drawing, analytic drawing, technical drawing, vector, illustration, sketch, insane detailed, turnaround",
+  "characters": [
+    {
+      "name": "Luna",
+      "value": "girl, skinny, funny"
+    }
+  ],
+  "styles": [
+    {
+      "name": "3D",
+      "value": "3d render",
+      "ref": "concept_art"
+    },
+    {
+      "name": "Cartoon",
+      "value": "cartoon 2d",
+      "ref": "concept_art"
+    }
+  ],
+  "refs": [
+    {
+      "name": "concept_art",
+      "value": "https://i.postimg.cc/BQGDLKzC/image.png https://i.postimg.cc/BvWG4Jbt/image.png https://i.postimg.cc/Yq1PYQC2/image.png"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
+import com.github.novicezk.midjourney.bot.prompt.DataProvider;
+import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -18,51 +20,71 @@ import java.util.List;
 @Slf4j
 public class CommandsManager extends ListenerAdapter {
 
-
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
-
             case "upload-image":
-                OptionMapping mainImageOption = event.getOption("main_image");
-
-                if (mainImageOption != null && mainImageOption.getAsAttachment().isImage()) {
-                    List<String> imageUrls = new ArrayList<>();
-
-                    Message.Attachment mainImage = mainImageOption.getAsAttachment();
-                    imageUrls.add(mainImage.getUrl());
-
-                    for (int i = 2; i <= 4; i++) {
-                        OptionMapping imageOption = event.getOption("image" + i);
-                        if (imageOption != null && imageOption.getAsAttachment().isImage()) {
-                            Message.Attachment attachment = imageOption.getAsAttachment();
-                            imageUrls.add(attachment.getUrl());
-                        }
-                    }
-
-                    ImageStorage.addImageUrl(event.getUser().getId(), imageUrls);
-                    event.reply("Your images have been successfully uploaded.").setEphemeral(true).queue();
-                } else {
-                    OnErrorAction.imageValidateErrorMessage(event);
-                }
-
+                handleUploadImageCommand(event);
                 break;
-
             case "get-images":
-                List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
-                if (imageUrls != null && !imageUrls.isEmpty()) {
-                    StringBuilder response = new StringBuilder("Your uploaded images:\n");
-                    for (String url : imageUrls) {
-                        response.append(url).append("\n");
-                    }
-                    event.reply(response.toString()).setEphemeral(true).queue();
-                } else {
-                    OnErrorAction.imageErrorMessage(event);
-                }
+                handleGetImagesCommand(event);
                 break;
-
+            case "generate":
+                handleGenerateCommand(event);
+                break;
             default:
                 break;
+        }
+    }
+
+    private void handleUploadImageCommand(SlashCommandInteractionEvent event) {
+        OptionMapping mainImageOption = event.getOption("main_image");
+
+        if (mainImageOption != null && mainImageOption.getAsAttachment().isImage()) {
+            List<String> imageUrls = extractImageUrls(event);
+            ImageStorage.addImageUrl(event.getUser().getId(), imageUrls);
+            event.reply("Your images have been successfully uploaded.").setEphemeral(true).queue();
+        } else {
+            OnErrorAction.imageValidateErrorMessage(event);
+        }
+    }
+
+    private List<String> extractImageUrls(SlashCommandInteractionEvent event) {
+        List<String> imageUrls = new ArrayList<>();
+        OptionMapping mainImageOption = event.getOption("main_image");
+        Message.Attachment mainImage = mainImageOption.getAsAttachment();
+        imageUrls.add(mainImage.getUrl());
+
+        for (int i = 2; i <= 4; i++) {
+            OptionMapping imageOption = event.getOption("image" + i);
+            if (imageOption != null && imageOption.getAsAttachment().isImage()) {
+                Message.Attachment attachment = imageOption.getAsAttachment();
+                imageUrls.add(attachment.getUrl());
+            }
+        }
+        return imageUrls;
+    }
+
+    private void handleGetImagesCommand(SlashCommandInteractionEvent event) {
+        List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            StringBuilder response = new StringBuilder("Your uploaded images:\n");
+            for (String url : imageUrls) {
+                response.append(url).append("\n");
+            }
+            event.reply(response.toString()).setEphemeral(true).queue();
+        } else {
+            OnErrorAction.imageErrorMessage(event);
+        }
+    }
+
+    private void handleGenerateCommand(SlashCommandInteractionEvent event) {
+        List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            PromptGenerator promptGenerator = new PromptGenerator(new DataProvider());
+            event.reply(promptGenerator.generatePrompt(imageUrls)).setEphemeral(true).queue();
+        } else {
+            OnErrorAction.imageErrorMessage(event);
         }
     }
 
@@ -70,13 +92,14 @@ public class CommandsManager extends ListenerAdapter {
     public void onGuildReady(GuildReadyEvent event) {
         List<CommandData> commandData = new ArrayList<>();
 
-        OptionData attachment = new OptionData(OptionType.ATTACHMENT, "main_image", "choose your image", true);
-        OptionData attachment2 = new OptionData(OptionType.ATTACHMENT, "image2", "choose your image", false);
-        OptionData attachment3 = new OptionData(OptionType.ATTACHMENT, "image3", "choose your image", false);
-        OptionData attachment4 = new OptionData(OptionType.ATTACHMENT, "image4", "choose your image", false);
+        OptionData attachment = new OptionData(OptionType.ATTACHMENT, "main_image", "Choose your image", true);
+        OptionData attachment2 = new OptionData(OptionType.ATTACHMENT, "image2", "Choose your image", false);
+        OptionData attachment3 = new OptionData(OptionType.ATTACHMENT, "image3", "Choose your image", false);
+        OptionData attachment4 = new OptionData(OptionType.ATTACHMENT, "image4", "Choose your image", false);
         commandData.add(Commands.slash("upload-image", "Upload your image to generate something amazing!")
                 .addOptions(attachment, attachment2, attachment3, attachment4));
         commandData.add(Commands.slash("get-images", "Get your currently uploaded images."));
+        commandData.add(Commands.slash("generate", "Need some inspiration? Use the \"generate\" command to get random avatar images!"));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
