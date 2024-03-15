@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.bot;
 
 import com.github.novicezk.midjourney.bot.commands.CommandsManager;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -18,8 +19,10 @@ import org.springframework.stereotype.Component;
 public class AdamBotInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
+        Dotenv config = Dotenv.configure().ignoreIfMissing().load();
+        String token = config.get("DISCORD_BOT_TOKEN");
         JDA api = JDABuilder
-                .createDefault("MTIxNzM4MDg3NTU3NDk2ODQxMQ.GpcsUn.Z6WEURRO-rsPYdMt8gVHVpT9GvfsGorilO0wrk")
+                .createDefault(token)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .setActivity(Activity.listening("your commands"))
                 .build();
