@@ -15,7 +15,13 @@ public class PromptGenerator {
         this.dataProvider = new DataProvider();
     }
 
-    public GeneratedPromptData generatePrompt(List<String> imageUrls) {
+    /**
+     *
+     * @param imageUrls
+     * @param username is an optional, default is the Discord's name
+     * @return
+     */
+    public GeneratedPromptData generatePrompt(List<String> imageUrls, String username) {
         String basePrompt = dataProvider.getBasePrompt();
         Style style = getRandomStyle(dataProvider.getStyles());
         Character character = getRandomCharacter(dataProvider.getCharacters());
@@ -30,6 +36,7 @@ public class PromptGenerator {
 
         promptBuilder.append(basePrompt).append(", ")
                 .append(character.getValue()).append(", ")
+                .append("signature \"").append(username).append("\", ")
                 .append(style.getValue()).append(", ")
                 .append(aspectRatio).append(" ")
                 .append(version.getValue()).append(" ")
