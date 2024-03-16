@@ -2,8 +2,8 @@
   "base_prompt": "image showcase full length UI/UX game design, user interface with hue lights, multiple views full body upper body reference sheet, clothes sheet, character chart, body proportions, diagrammatic drawing, analytic drawing, technical drawing, vector, illustration, sketch, insane detailed, turnaround",
   "characters": [
     {
-      "name": "Luna",
-      "value": "girl, skinny, funny"
+      "name": "Bard",
+      "value": "skinny, funny"
     }
   ],
   "styles": [
@@ -18,6 +18,24 @@
       "ref": "concept_art"
     }
   ],
+  "arguments": {
+    "aspect_ratio": [
+      {
+        "name": "Square",
+        "value": "--ar 1:1"
+      }
+    ],
+    "versions": [
+      {
+        "name": "Anime",
+        "value": "--niji 6"
+      },
+      {
+        "name": "Realistic",
+        "value": "--v 6"
+      }
+    ]
+  },
   "refs": [
     {
       "name": "concept_art",

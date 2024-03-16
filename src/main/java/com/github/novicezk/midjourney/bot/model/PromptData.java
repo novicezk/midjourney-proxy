@@ -20,4 +20,7 @@ public class PromptData {
 
     @JsonProperty("refs")
     private List<Reference> references;
+
+    @JsonProperty("arguments")
+    private Arguments arguments;
 }

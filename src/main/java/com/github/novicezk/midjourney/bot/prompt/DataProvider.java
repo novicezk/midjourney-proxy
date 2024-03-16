@@ -1,10 +1,8 @@
 package com.github.novicezk.midjourney.bot.prompt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.novicezk.midjourney.bot.model.*;
 import com.github.novicezk.midjourney.bot.model.Character;
-import com.github.novicezk.midjourney.bot.model.PromptData;
-import com.github.novicezk.midjourney.bot.model.Reference;
-import com.github.novicezk.midjourney.bot.model.Style;
 
 import java.io.InputStream;
 import java.util.List;
@@ -44,5 +42,9 @@ public class DataProvider {
 
     public List<Character> getCharacters() {
         return data.getCharacters();
+    }
+
+    public Arguments getArguments() {
+        return data.getArguments();
     }
 }

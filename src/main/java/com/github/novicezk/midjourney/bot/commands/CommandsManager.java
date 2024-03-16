@@ -1,7 +1,6 @@
 package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
-import com.github.novicezk.midjourney.bot.prompt.DataProvider;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -43,7 +42,9 @@ public class CommandsManager extends ListenerAdapter {
         if (mainImageOption != null && mainImageOption.getAsAttachment().isImage()) {
             List<String> imageUrls = extractImageUrls(event);
             ImageStorage.addImageUrl(event.getUser().getId(), imageUrls);
-            event.reply("Your images have been successfully uploaded.").setEphemeral(true).queue();
+            event.reply("Your images have been successfully uploaded! Now you can use the command `/generate` to get inspired.")
+                    .setEphemeral(true)
+                    .queue();
         } else {
             OnErrorAction.imageValidateErrorMessage(event);
         }
@@ -81,8 +82,8 @@ public class CommandsManager extends ListenerAdapter {
     private void handleGenerateCommand(SlashCommandInteractionEvent event) {
         List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
         if (imageUrls != null && !imageUrls.isEmpty()) {
-            PromptGenerator promptGenerator = new PromptGenerator(new DataProvider());
-            event.reply(promptGenerator.generatePrompt(imageUrls)).setEphemeral(true).queue();
+            PromptGenerator promptGenerator = new PromptGenerator();
+            event.reply(promptGenerator.generatePrompt(imageUrls).getPrompt()).setEphemeral(true).queue();
         } else {
             OnErrorAction.imageErrorMessage(event);
         }
@@ -93,13 +94,13 @@ public class CommandsManager extends ListenerAdapter {
         List<CommandData> commandData = new ArrayList<>();
 
         OptionData attachment = new OptionData(OptionType.ATTACHMENT, "main_image", "Choose your image", true);
-        OptionData attachment2 = new OptionData(OptionType.ATTACHMENT, "image2", "Choose your image", false);
-        OptionData attachment3 = new OptionData(OptionType.ATTACHMENT, "image3", "Choose your image", false);
-        OptionData attachment4 = new OptionData(OptionType.ATTACHMENT, "image4", "Choose your image", false);
+        OptionData attachment2 = new OptionData(OptionType.ATTACHMENT, "image2", "Optional image", false);
+        OptionData attachment3 = new OptionData(OptionType.ATTACHMENT, "image3", "Optional image", false);
+        OptionData attachment4 = new OptionData(OptionType.ATTACHMENT, "image4", "Optional image", false);
         commandData.add(Commands.slash("upload-image", "Upload your image to generate something amazing!")
                 .addOptions(attachment, attachment2, attachment3, attachment4));
         commandData.add(Commands.slash("get-images", "Get your currently uploaded images."));
-        commandData.add(Commands.slash("generate", "Need some inspiration? Use the \"generate\" command to get random avatar images!"));
+        commandData.add(Commands.slash("generate", "Need some inspiration? Use this command to generate random images!"));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
