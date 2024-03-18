@@ -74,6 +74,7 @@
 依赖此项目且开源的，欢迎联系作者，加到此处展示
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
 - [chatgpt-web-midjourney-proxy](https://github.com/Dooy/chatgpt-web-midjourney-proxy) : chatgpt web, midjourney, gpts,tts, whisper 一套ui全搞定
+- [chatnio](https://github.com/Deeptrain-Community/chatnio) : 下一代 AI 一站式 B/C 端解决方案, 集成精美 UI 和强大功能的聚合模型平台
 - [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI，基于本接口和SD，可一键打包生成H5和小程序
 - [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
 
