@@ -26,9 +26,9 @@ public class TaskTimeoutSchedule {
 					.toList();
 			for (Task task : tasks) {
 				if (Set.of(TaskStatus.FAILURE, TaskStatus.SUCCESS).contains(task.getStatus())) {
-					log.warn("task status is failure/success but is in the queue, end it. id: {}", task.getId());
+					log.warn("[{}] - task status is failure/success but is in the queue, end it. id: {}", instance.account().getDisplay(), task.getId());
 				} else {
-					log.debug("task timeout, id: {}", task.getId());
+					log.debug("[{}] - task timeout, id: {}", instance.account().getDisplay(), task.getId());
 					task.fail("任务超时");
 				}
 				instance.exitTask(task);
