@@ -20,7 +20,6 @@ import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
-import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.BannedPromptUtils;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
@@ -118,15 +117,6 @@ public class SubmitController {
 			description += " R";
 		} else {
 			description += " " + changeDTO.getAction().name().charAt(0) + changeDTO.getIndex();
-		}
-		if (TaskAction.UPSCALE.equals(changeDTO.getAction())) {
-			TaskCondition condition = new TaskCondition().setDescription(description);
-			Task existTask = this.taskStoreService.findOne(condition);
-			if (existTask != null) {
-				return SubmitResultVO.of(ReturnCode.EXISTED, "任务已存在", existTask.getId())
-						.setProperty("status", existTask.getStatus())
-						.setProperty("imageUrl", existTask.getImageUrl());
-			}
 		}
 		Task targetTask = this.taskStoreService.get(changeDTO.getTaskId());
 		if (targetTask == null) {
