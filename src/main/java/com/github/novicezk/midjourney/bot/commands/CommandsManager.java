@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
+import com.github.novicezk.midjourney.bot.images.ImageValidator;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -67,16 +68,27 @@ public class CommandsManager extends ListenerAdapter {
     }
 
     private void handleGetImagesCommand(SlashCommandInteractionEvent event) {
+        Long time = System.currentTimeMillis();
+
         List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
         if (imageUrls != null && !imageUrls.isEmpty()) {
-            StringBuilder response = new StringBuilder("Your uploaded images:\n");
+            StringBuilder validImageUrls = new StringBuilder("Your uploaded images:\n");
+
             for (String url : imageUrls) {
-                response.append(url).append("\n");
+                if (ImageValidator.isValidImageUrl(url)) {
+                    validImageUrls.append(url).append("\n");
+                }
             }
-            event.reply(response.toString()).setEphemeral(true).queue();
+
+            if (validImageUrls.length() > "Your uploaded images:\n".length()) {
+                event.reply(validImageUrls.toString()).setEphemeral(true).queue();
+            } else {
+                OnErrorAction.imageErrorMessage(event);
+            }
         } else {
             OnErrorAction.imageErrorMessage(event);
         }
+        log.debug("image checked for " + (System.currentTimeMillis() - time));
     }
 
     private void handleGenerateCommand(SlashCommandInteractionEvent event) {
