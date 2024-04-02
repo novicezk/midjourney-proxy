@@ -12,9 +12,6 @@ public class PromptData {
     @JsonProperty("base_prompt")
     private String basePrompt;
 
-    @JsonProperty("characters")
-    private List<Character> characters;
-
     @JsonProperty("styles")
     private List<Style> styles;
 

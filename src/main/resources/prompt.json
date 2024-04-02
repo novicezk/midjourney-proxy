@@ -1,11 +1,5 @@
 {
   "base_prompt": "image showcase full length UI/UX game design, user interface with hue lights, multiple views full body upper body reference sheet, clothes sheet, character chart, body proportions, diagrammatic drawing, analytic drawing, technical drawing, vector, illustration, sketch, insane detailed, turnaround",
-  "characters": [
-    {
-      "name": "Bard",
-      "value": "skinny, funny"
-    }
-  ],
   "styles": [
     {
       "name": "3D",
