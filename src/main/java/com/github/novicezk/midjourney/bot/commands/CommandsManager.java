@@ -95,7 +95,8 @@ public class CommandsManager extends ListenerAdapter {
         List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
         if (imageUrls != null && !imageUrls.isEmpty()) {
             PromptGenerator promptGenerator = new PromptGenerator();
-            event.reply(promptGenerator.generatePrompt(imageUrls, event.getUser().getName()).getPrompt()).setEphemeral(true).queue();
+            event.reply(promptGenerator.generatePrompt(imageUrls, event.getUser().getName()).getMessage())
+                    .setEphemeral(true).queue();
         } else {
             OnErrorAction.imageErrorMessage(event);
         }

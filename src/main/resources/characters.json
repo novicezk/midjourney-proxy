@@ -3,7 +3,7 @@
     "name": "rindo",
     "display_name": "Rindo",
     "prompt": "A cute anime character is at the school uniform wearing a white blouse a ruffled collar with a happy expression, in a cute pose. The character has blue hair and large green eyes with cat ears on the hear. In the style of anime.",
-    "sref": "",
+    "sref": [],
     "cref": [
       "https://i.postimg.cc/rFwmz1ff/image.png",
       "https://i.postimg.cc/jSpv7cNz/image.png"
@@ -12,8 +12,8 @@
   {
     "name": "protogen",
     "display_name": "Protogen",
-    "prompt": "furry art, super cute protogen, an anthropomorphic wolf, has black and white fur with glowing accents on the face and breast, wearing mecha suit with geometric patterns, crouching to ready pose for combat ready to fight, league of legends character art style, cyberpunk, futuristic helmet, cute looking character, fox like tail, sleek costume, future technology sense. Furry art in the style of row Yuumei.",
-    "sref": "",
+    "prompt": "furry art, super cute protogen, an anthropomorphic wolf, has black and white fur with glowing accents on the face and breast, wearing mecha suit with geometric patterns, ready pose for combat ready to fight, league of legends character art style, cyberpunk, futuristic helmet, cute looking character, fox like tail, sleek costume, future technology sense. Furry art in the style of row Yuumei.",
+    "sref": [],
     "cref": [
       "https://i.postimg.cc/qvn09gG7/image.png",
       "https://i.postimg.cc/v83F4khb/image.png"
@@ -23,7 +23,7 @@
     "name": "awtter",
     "display_name": "Awtter",
     "prompt": "Character model of the otter in the style of Pixar, in the style of Disney animation. wearing red collar around its neck. cartoon character, cute face, head and tail visible, glasses, has brown fur. The colors used for the character must include brown, gray, black, red, orange, pink, yellow, green, purple, and teal, in the style of minimalistic vector art.",
-    "sref": "",
+    "sref": [],
     "cref": [
       "https://i.postimg.cc/76fGC6Q0/image.png",
       "https://i.postimg.cc/2Sg9Vb6N/image.png"
@@ -33,7 +33,7 @@
     "name": "zyre",
     "display_name": "Zyre",
     "prompt": "anime chibi furry chibi deer boy fur with antlers, brown hair and yellow eyes, wearing a black collar and deer horns, cute character, in a chibi style drawing. The character design has a cartoonish and lowpoly aesthetic style. It should have a 3D look and feel to it, wearing an animal snout around the neck, 3D cartoonish game art style.",
-    "sref": "",
+    "sref": [],
     "cref": [
       "https://i.postimg.cc/9QkKZgLS/image.png",
       "https://i.postimg.cc/T1T4fzPy/image.png"

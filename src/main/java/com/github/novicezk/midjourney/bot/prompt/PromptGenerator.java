@@ -35,7 +35,7 @@ public class PromptGenerator {
         }
 
         promptBuilder.append(basePrompt).append(", ")
-                .append(character.getValue()).append(", ")
+                .append(character.getDisplayName()).append(", ")
                 .append("signature \"").append(username).append("\", ")
                 .append(style.getValue()).append(", ")
                 .append(aspectRatio).append(" ")
@@ -43,6 +43,7 @@ public class PromptGenerator {
                 .append("--sref ").append(reference);
 
         GeneratedPromptData promptData = new GeneratedPromptData();
+        promptData.setMessage(character.getDisplayName());
         promptData.setPrompt(promptBuilder.toString());
         return promptData;
     }

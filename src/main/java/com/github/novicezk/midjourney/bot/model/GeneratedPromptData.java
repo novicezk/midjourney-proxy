@@ -6,5 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GeneratedPromptData {
+    private String message;
+
     private String prompt;
 }
