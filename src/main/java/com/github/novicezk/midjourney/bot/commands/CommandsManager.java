@@ -102,7 +102,7 @@ public class CommandsManager extends ListenerAdapter {
 
     private String generateTitle(boolean isImagesEmpty, String defaultTitle) {
         if (isImagesEmpty) {
-            return "Oops! No image uploaded or link expired. We'll use your avatar instead. To upload a new one, try `/upload-image`.\n";
+            return "Oops! No image uploaded or link expired. We'll use your avatar instead. To upload a new image, try `/upload-image`.\n";
         } else {
             return defaultTitle;
         }
