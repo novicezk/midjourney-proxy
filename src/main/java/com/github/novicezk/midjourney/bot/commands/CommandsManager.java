@@ -5,6 +5,7 @@ import com.github.novicezk.midjourney.bot.images.ImageValidator;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -47,7 +48,7 @@ public class CommandsManager extends ListenerAdapter {
                     .setEphemeral(true)
                     .queue();
         } else {
-            OnErrorAction.imageValidateErrorMessage(event);
+            OnErrorAction.onImageValidateErrorMessage(event);
         }
     }
 
@@ -68,38 +69,71 @@ public class CommandsManager extends ListenerAdapter {
     }
 
     private void handleGetImagesCommand(SlashCommandInteractionEvent event) {
-        Long time = System.currentTimeMillis();
+        List<String> imageUrls = getUserUrls(event.getUser().getId());
+        String title = generateTitle(imageUrls.isEmpty(), "Your uploaded images:\n");
 
-        List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            StringBuilder validImageUrls = new StringBuilder("Your uploaded images:\n");
-
-            for (String url : imageUrls) {
-                if (ImageValidator.isValidImageUrl(url)) {
-                    validImageUrls.append(url).append("\n");
-                }
-            }
-
-            if (validImageUrls.length() > "Your uploaded images:\n".length()) {
-                event.reply(validImageUrls.toString()).setEphemeral(true).queue();
-            } else {
-                OnErrorAction.imageErrorMessage(event);
-            }
-        } else {
-            OnErrorAction.imageErrorMessage(event);
+        if (imageUrls.isEmpty() && getImageUrlFromDiscordAvatar(event.getUser()) != null) {
+            imageUrls.add(getImageUrlFromDiscordAvatar(event.getUser()));
         }
-        log.debug("image checked for " + (System.currentTimeMillis() - time));
+
+        if (!imageUrls.isEmpty()) {
+            event.reply(title + formatImageUrls(imageUrls)).setEphemeral(true).queue();
+        } else {
+            OnErrorAction.onImageErrorMessage(event);
+        }
     }
 
     private void handleGenerateCommand(SlashCommandInteractionEvent event) {
-        List<String> imageUrls = ImageStorage.getImageUrls(event.getUser().getId());
-        if (imageUrls != null && !imageUrls.isEmpty()) {
+        List<String> imageUrls = getUserUrls(event.getUser().getId());
+        String title = generateTitle(imageUrls.isEmpty(), "");
+
+        if (imageUrls.isEmpty() && getImageUrlFromDiscordAvatar(event.getUser()) != null) {
+            imageUrls.add(getImageUrlFromDiscordAvatar(event.getUser()));
+        }
+
+        if (!imageUrls.isEmpty()) {
             PromptGenerator promptGenerator = new PromptGenerator();
-            event.reply(promptGenerator.generatePrompt(imageUrls, event.getUser().getName()).getMessage())
+            event.reply(title + promptGenerator.generatePrompt(imageUrls, event.getUser().getName()).getMessage())
                     .setEphemeral(true).queue();
         } else {
-            OnErrorAction.imageErrorMessage(event);
+            OnErrorAction.onImageErrorMessage(event);
         }
+    }
+
+    private String generateTitle(boolean isImagesEmpty, String defaultTitle) {
+        if (isImagesEmpty) {
+            return "Oops! No image uploaded or link expired. We'll use your avatar instead. To upload a new one, try `/upload-image`.\n";
+        } else {
+            return defaultTitle;
+        }
+    }
+
+    private String formatImageUrls(List<String> imageUrls) {
+        StringBuilder validImageUrls = new StringBuilder();
+        for (String url : imageUrls) {
+            validImageUrls.append(url).append("\n");
+        }
+        return validImageUrls.toString();
+    }
+
+    private List<String> getUserUrls(String userId) {
+        List<String> imageUrls = new ArrayList<>();
+        for (String url : ImageStorage.getImageUrls(userId)) {
+            if (ImageValidator.isValidImageUrl(url)) {
+                imageUrls.add(url);
+            }
+        }
+        return imageUrls;
+    }
+
+    private String getImageUrlFromDiscordAvatar(User user) {
+        String url = null;
+
+        if (user.getAvatarUrl() != null) {
+            url = user.getAvatarUrl().replace(".gif", ".png");
+        }
+
+        return url;
     }
 
     @Override

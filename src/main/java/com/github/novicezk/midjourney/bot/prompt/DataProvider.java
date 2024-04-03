@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.util.List;
 
 public class DataProvider {
-    private static final String JSON_PROMPT_PATH = "prompt.json";
-    private static final String JSON_CHARACTERS_PATH = "characters.json";
+    private static final String JSON_PROMPT_PATH = "data-generation/prompt.json";
+    private static final String JSON_CHARACTERS_PATH = "data-generation/characters.json";
 
     final private ObjectMapper objectMapper;
     private PromptData data;
