@@ -1,0 +1,18 @@
+{
+  "aspect_ratio": [
+    {
+      "name": "Square",
+      "value": "--ar 1:1"
+    }
+  ],
+  "versions": [
+    {
+      "name": "Anime",
+      "value": "--niji 6"
+    },
+    {
+      "name": "Realistic",
+      "value": "--v 6"
+    }
+  ]
+}

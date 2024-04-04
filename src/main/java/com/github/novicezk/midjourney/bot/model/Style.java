@@ -4,15 +4,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class Style {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("value")
-    private String value;
+    @JsonProperty("display_name")
+    private String displayName;
 
-    @JsonProperty("ref")
-    private String ref;
+    @JsonProperty("prompt")
+    private String prompt;
+
+    @JsonProperty("sref")
+    private List<String> sref;
 }

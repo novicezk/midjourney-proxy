@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
 import com.github.novicezk.midjourney.bot.images.ImageValidator;
+import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -92,9 +93,18 @@ public class CommandsManager extends ListenerAdapter {
         }
 
         if (!imageUrls.isEmpty()) {
-            PromptGenerator promptGenerator = new PromptGenerator();
-            event.reply(title + promptGenerator.generatePrompt(imageUrls, event.getUser().getName()).getMessage())
-                    .setEphemeral(true).queue();
+            GeneratedPromptData promptData =
+                    new PromptGenerator().generatePrompt(imageUrls, event.getUser().getGlobalName());
+
+            StringBuilder promptBuilder = new StringBuilder();
+            promptBuilder.append(title)
+                    .append("Generated **").append(promptData.getStyle()).append("**")
+                    .append(" for <@").append(event.getUser().getId()).append(">\n")
+                    .append("Character **").append(promptData.getCharacter()).append("** ")
+                    .append("strength **").append(promptData.getCharacterStrength().getStrengthName()).append("**\n\n")
+                    .append("prompt:\n`").append(promptData.getPrompt()).append("`");
+
+            event.reply(promptBuilder.toString()).setEphemeral(true).queue();
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }

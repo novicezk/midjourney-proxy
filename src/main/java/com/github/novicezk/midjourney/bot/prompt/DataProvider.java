@@ -10,12 +10,18 @@ import java.io.InputStream;
 import java.util.List;
 
 public class DataProvider {
-    private static final String JSON_PROMPT_PATH = "data-generation/prompt.json";
+    private static final String JSON_PROMPT_PATH = "data-generation/arguments.json";
     private static final String JSON_CHARACTERS_PATH = "data-generation/characters.json";
+    private static final String JSON_STYLES_PATH = "data-generation/styles.json";
+
+    private final static String DEFAULT_ASPECT_RATION = "Square";
+    private final static String DEFAULT_VERSION = "Realistic";
+    private final static String DEFAULT_STYLE = "concept_art";
 
     final private ObjectMapper objectMapper;
-    private PromptData data;
+    private Arguments arguments;
     private List<Character> characters;
+    private List<Style> styles;
 
     public DataProvider() {
         this.objectMapper = new ObjectMapper();
@@ -26,40 +32,61 @@ public class DataProvider {
         try {
             loadPromptData();
             loadCharacterData();
+            loadStylesData();
         } catch (IOException e) {
-            throw new RuntimeException("Error loading data", e);
+            throw new RuntimeException(e);
         }
     }
 
     private void loadPromptData() throws IOException {
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(JSON_PROMPT_PATH)) {
-            data = objectMapper.readValue(in, PromptData.class);
+            arguments = objectMapper.readValue(in, Arguments.class);
         }
     }
 
     private void loadCharacterData() throws IOException {
         try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(JSON_CHARACTERS_PATH)) {
-            characters = objectMapper.readValue(in, new TypeReference<>() {});
+            characters = objectMapper.readValue(in, new TypeReference<>() {
+            });
         }
     }
 
-    public String getBasePrompt() {
-        return data.getBasePrompt();
+    private void loadStylesData() throws IOException {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(JSON_STYLES_PATH)) {
+            styles = objectMapper.readValue(in, new TypeReference<>() {
+            });
+        }
     }
 
-    public List<Style> getStyles() {
-        return data.getStyles();
-    }
+    public Style getDefaultStyle() {
+        for (Style style: styles) {
+            if (style.getName().equalsIgnoreCase(DEFAULT_STYLE)) {
+                return style;
+            }
+        }
 
-    public List<Reference> getRefs() {
-        return data.getReferences();
+        return new Style();
     }
 
     public List<Character> getCharacters() {
         return characters;
     }
 
-    public Arguments getArguments() {
-        return data.getArguments();
+    public String getDefaultVersion() {
+        for (Version version : arguments.getVersions()) {
+            if (version.getName().equalsIgnoreCase(DEFAULT_VERSION)) {
+                return version.getValue();
+            }
+        }
+        return "";
+    }
+
+    public String getDefaultAspectRatio() {
+        for (AspectRatio aspectRatio : arguments.getAspectRatio()) {
+            if (aspectRatio.getName().equalsIgnoreCase(DEFAULT_ASPECT_RATION)) {
+                return aspectRatio.getValue();
+            }
+        }
+        return "";
     }
 }
