@@ -6,6 +6,7 @@ import com.github.novicezk.midjourney.bot.images.ImageValidator;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
+import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
@@ -112,6 +113,7 @@ public class CommandsManager extends ListenerAdapter {
                     new PromptGenerator().generatePrompt(imageUrls, event.getUser());
 
             event.reply(title + promptData.getMessage()).setEphemeral(true).queue();
+            SeasonTracker.incrementGenerationCount();
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }

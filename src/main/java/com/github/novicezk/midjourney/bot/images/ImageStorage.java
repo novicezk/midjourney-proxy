@@ -23,7 +23,7 @@ public class ImageStorage {
         return imageUrlsMap.getOrDefault(userId, new ArrayList<>());
     }
 
-    public static void saveImageUrls() {
+    private static void saveImageUrls() {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             outputStream.writeObject(imageUrlsMap);
         } catch (IOException e) {
@@ -41,5 +41,4 @@ public class ImageStorage {
             }
         }
     }
-
 }

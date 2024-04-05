@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.bot.prompt;
 
 import com.github.novicezk.midjourney.bot.model.*;
 import com.github.novicezk.midjourney.bot.model.Character;
+import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.entities.User;
 
@@ -100,7 +101,8 @@ public class PromptGenerator {
         messageBuilder
                 .append("**Generated Style:** ").append(messageStyle).append("\n")
                 .append("**Character Reference:** ").append(character.getDisplayName()).append("\n")
-                .append("**Seed:** s").append(seasonVersion).append(".").append("123\n");
+                .append("**Seed:** s").append(SeasonTracker.getCurrentSeasonVersion())
+                .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\n");
 
         if (characterStrength != CharacterStrength.COMMON) {
             messageBuilder.append("\n**Rarity Level:** ").append(characterStrength.getStrengthName()).append("\n")
@@ -109,14 +111,6 @@ public class PromptGenerator {
         }
 
         return messageBuilder.append("\n").append("**prompt:**\n`").append(prompt).append("`");
-    }
-
-    private Character getRandomCharacter(List<Character> characters) {
-        return characters.get(new Random().nextInt(characters.size()));
-    }
-
-    private CharacterClass getRandomCharacterClass(List<CharacterClass> classes) {
-        return classes.get(new Random().nextInt(classes.size()));
     }
 
     private String formatListReferences(List<String> urls) {
