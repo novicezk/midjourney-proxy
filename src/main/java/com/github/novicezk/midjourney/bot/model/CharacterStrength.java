@@ -45,4 +45,14 @@ public enum CharacterStrength {
             default -> 100;
         };
     }
+
+    public String getStrengthEmoji() {
+        return switch (this) {
+            case EPIC -> "\uD83D\uDCAA\uD83D\uDCAA\uD83D\uDCAA\uD83D\uDCAA";
+            case UNIQUE -> "\uD83D\uDCAA\uD83D\uDCAA\uD83D\uDCAA";
+            case STRANGE -> "\uD83D\uDCAA\uD83D\uDCAA";
+            case RARE -> "\uD83D\uDCAA";
+            default -> "";
+        };
+    }
 }

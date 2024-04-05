@@ -109,17 +109,9 @@ public class CommandsManager extends ListenerAdapter {
 
         if (!imageUrls.isEmpty()) {
             GeneratedPromptData promptData =
-                    new PromptGenerator().generatePrompt(imageUrls, event.getUser().getGlobalName());
+                    new PromptGenerator().generatePrompt(imageUrls, event.getUser());
 
-            StringBuilder promptBuilder = new StringBuilder();
-            promptBuilder.append(title)
-                    .append("**Generated:** ").append(promptData.getStyle())
-                    .append(" for <@").append(event.getUser().getId()).append(">\n")
-                    .append("**Character:** ").append(promptData.getCharacter()).append(" ")
-                    .append("with ").append(promptData.getCharacterStrength().getStrengthName()).append(" strength\n\n")
-                    .append("prompt:\n`").append(promptData.getPrompt()).append("`");
-
-            event.reply(promptBuilder.toString()).setEphemeral(true).queue();
+            event.reply(title + promptData.getMessage()).setEphemeral(true).queue();
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }

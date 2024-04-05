@@ -13,6 +13,7 @@ public class DataProvider {
     private static final String JSON_PROMPT_PATH = "data-generation/arguments.json";
     private static final String JSON_CHARACTERS_PATH = "data-generation/characters.json";
     private static final String JSON_STYLES_PATH = "data-generation/styles.json";
+    private static final String JSON_CLASSES_PATH = "data-generation/classes.json";
 
     private final static String DEFAULT_ASPECT_RATION = "Square";
     private final static String DEFAULT_VERSION = "Realistic";
@@ -22,6 +23,7 @@ public class DataProvider {
     private Arguments arguments;
     private List<Character> characters;
     private List<Style> styles;
+    private List<CharacterClass> classes;
 
     public DataProvider() {
         this.objectMapper = new ObjectMapper();
@@ -33,6 +35,7 @@ public class DataProvider {
             loadPromptData();
             loadCharacterData();
             loadStylesData();
+            loadClassesData();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -58,6 +61,13 @@ public class DataProvider {
         }
     }
 
+    private void loadClassesData() throws IOException {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(JSON_CLASSES_PATH)) {
+            classes = objectMapper.readValue(in, new TypeReference<>() {
+            });
+        }
+    }
+
     public Style getDefaultStyle() {
         for (Style style: styles) {
             if (style.getName().equalsIgnoreCase(DEFAULT_STYLE)) {
@@ -70,6 +80,10 @@ public class DataProvider {
 
     public List<Character> getCharacters() {
         return characters;
+    }
+
+    public List<CharacterClass> getCharacterClasses() {
+        return classes;
     }
 
     public String getDefaultVersion() {
