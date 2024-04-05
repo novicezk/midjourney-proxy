@@ -3,20 +3,26 @@ package com.github.novicezk.midjourney.bot.model;
 import java.util.Random;
 
 public enum CharacterStrength {
-    COMMON("Common"),
-    RARE("Rare"),
-    STRANGE("Strange"),
-    UNIQUE("Unique"),
-    EPIC("Epic");
+    COMMON("Common", "1225826423311437824"),
+    RARE("Rare", "1225826457981423748"),
+    STRANGE("Strange", "1225826281153761362"),
+    UNIQUE("Unique", "1225826496824742070"),
+    EPIC("Epic", "1225826560997851216");
 
     private final String strengthName;
+    private final String roleId;
 
-    CharacterStrength(String strengthName) {
+    CharacterStrength(String strengthName, String roleId) {
         this.strengthName = strengthName;
+        this.roleId = roleId;
     }
 
     public String getStrengthName() {
         return strengthName;
+    }
+
+    public String getRoleId() {
+        return roleId;
     }
 
     public static CharacterStrength getRandomStrength() {

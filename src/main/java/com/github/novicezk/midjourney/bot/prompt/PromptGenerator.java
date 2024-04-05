@@ -42,12 +42,14 @@ public class PromptGenerator {
         StringBuilder promptBuilder = new StringBuilder();
         promptBuilder.append(basePrompt)
                 .append(" ").append(character.getPrompt())
-                .append(" ").append("name ").append("\"").append(user.getGlobalName()).append("\" ")
-                .append(" ").append("character ").append("\"").append(character.getDisplayName()).append("\" ");
+                .append(" ").append("name: ").append("\"").append(user.getGlobalName()).append("\", ")
+                .append(" ").append("character: ").append("\"").append(character.getDisplayName()).append("\", ");
 
         appendCharacterClass(characterStrength, characterClass, promptBuilder);
 
-        promptBuilder.append(dataProvider.getDefaultAspectRatio())
+        promptBuilder.append("watermark: ").append("\"AVIS s").append(SeasonTracker.getCurrentSeasonVersion())
+                .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\"")
+                .append(" ").append(dataProvider.getDefaultAspectRatio())
                 .append(" ").append(dataProvider.getDefaultVersion())
                 .append(" ").append("--sref ").append(styleSref).append(characterSref)
                 .append("--cref ").append(userCref).append(characterCref)
@@ -86,7 +88,7 @@ public class PromptGenerator {
 
     private void appendCharacterClass(CharacterStrength characterStrength, CharacterClass characterClass, StringBuilder promptBuilder) {
         if (characterStrength != CharacterStrength.COMMON) {
-            promptBuilder.append("class ").append("\"").append(characterClass.getName()).append("\" ");
+            promptBuilder.append("class: ").append("\"").append(characterClass.getName()).append("\", ");
         }
     }
 
@@ -105,7 +107,7 @@ public class PromptGenerator {
                 .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\n");
 
         if (characterStrength != CharacterStrength.COMMON) {
-            messageBuilder.append("\n**Rarity Level:** ").append(characterStrength.getStrengthName()).append("\n")
+            messageBuilder.append("\n**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n")
                     .append("**Class Name:** ").append(characterClass.getName()).append("\n")
                     .append("**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n");
         }
