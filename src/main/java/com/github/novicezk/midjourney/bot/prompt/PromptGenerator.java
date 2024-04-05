@@ -20,63 +20,45 @@ public class PromptGenerator {
     }
 
     /**
-     *
      * @param imageUrls
-     * @param user is an optional, default is the Discord's name
+     * @param user      is an optional, default is the Discord's name
      * @return
      */
     public GeneratedPromptData generatePrompt(List<String> imageUrls, User user) {
         CharacterStrength characterStrength = CharacterStrength.getRandomStrength();
-        Character character = getRandomCharacter(dataProvider.getCharacters());
-        String aspectRatio = dataProvider.getDefaultAspectRatio();
-        String version = dataProvider.getDefaultVersion();
+        Character character = getRandomCharacter();
         Style defaultStyle = dataProvider.getDefaultStyle();
-        CharacterClass characterClass = getRandomCharacterClass(dataProvider.getCharacterClasses());
+        CharacterClass characterClass = getRandomCharacterClass();
 
-        String characterSref =  formatListReferences(character.getSref());
+        String characterSref = formatListReferences(character.getSref());
         String styleSref = formatListReferences(defaultStyle.getSref());
-        String characterCref =  formatListReferences(character.getCref());
+        String characterCref = formatListReferences(character.getCref());
         String userCref = formatListReferences(imageUrls);
 
-        String messageStyle;
-        String basePrompt;
-
-        if (characterStrength == CharacterStrength.COMMON) {
-            basePrompt = defaultStyle.getPrompt();
-            messageStyle = defaultStyle.getDisplayName();
-        } else {
-            basePrompt = characterClass.getPrompt();
-            messageStyle = "Reference";
-        }
+        String messageStyle = getMessageStyle(characterStrength, defaultStyle);
+        String basePrompt = getBasePrompt(characterStrength, characterClass, defaultStyle);
 
         StringBuilder promptBuilder = new StringBuilder();
-        promptBuilder.append(basePrompt).append(" ")
-                .append(character.getPrompt()).append(" ")
-                .append("name ").append("\"").append(user.getGlobalName()).append("\" ")
-                .append("character ").append("\"").append(character.getDisplayName()).append("\" ");
+        promptBuilder.append(basePrompt)
+                .append(" ").append(character.getPrompt())
+                .append(" ").append("name ").append("\"").append(user.getGlobalName()).append("\" ")
+                .append(" ").append("character ").append("\"").append(character.getDisplayName()).append("\" ");
 
-        if (characterStrength != CharacterStrength.COMMON) {
-            promptBuilder.append("class ").append("\"").append(characterClass.getName()).append("\" ");
-        }
+        appendCharacterClass(characterStrength, characterClass, promptBuilder);
 
-        promptBuilder.append(aspectRatio).append(" ")
-                .append(version).append(" ")
-                .append("--sref ").append(styleSref).append(characterSref)
+        promptBuilder.append(dataProvider.getDefaultAspectRatio())
+                .append(" ").append(dataProvider.getDefaultVersion())
+                .append(" ").append("--sref ").append(styleSref).append(characterSref)
                 .append("--cref ").append(userCref).append(characterCref)
                 .append("--cw ").append(characterStrength.getCW());
 
-        StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append("**Generated Style:** ").append(messageStyle).append("\n")
-                .append("**Character Name:** ").append(character.getDisplayName()).append("\n");
-
-        if (characterStrength != CharacterStrength.COMMON) {
-            messageBuilder.append("**Class Name:** ").append(characterClass.getName()).append("\n");
-            messageBuilder.append("**Rarity Level:** ").append(characterStrength.getStrengthName()).append("\n");
-            messageBuilder.append("**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n");
-        }
-
-        messageBuilder.append("**Version:** v").append(seasonVersion).append(".").append("123").append("\n\n")
-                .append("**prompt:**\n`").append(promptBuilder).append("`");
+        StringBuilder messageBuilder = buildMessage(
+                character,
+                characterStrength,
+                characterClass,
+                messageStyle,
+                promptBuilder.toString()
+        );
 
         GeneratedPromptData promptData = new GeneratedPromptData();
         promptData.setPrompt(promptBuilder.toString());
@@ -85,21 +67,61 @@ public class PromptGenerator {
         return promptData;
     }
 
+    private Character getRandomCharacter() {
+        return dataProvider.getCharacters().get(new Random().nextInt(dataProvider.getCharacters().size()));
+    }
+
+    private CharacterClass getRandomCharacterClass() {
+        return dataProvider.getCharacterClasses().get(new Random().nextInt(dataProvider.getCharacterClasses().size()));
+    }
+
+    private String getMessageStyle(CharacterStrength characterStrength, Style defaultStyle) {
+        return (characterStrength == CharacterStrength.COMMON) ? defaultStyle.getDisplayName() : "Reference";
+    }
+
+    private String getBasePrompt(CharacterStrength characterStrength, CharacterClass characterClass, Style defaultStyle) {
+        return (characterStrength == CharacterStrength.COMMON) ? defaultStyle.getPrompt() : characterClass.getPrompt();
+    }
+
+    private void appendCharacterClass(CharacterStrength characterStrength, CharacterClass characterClass, StringBuilder promptBuilder) {
+        if (characterStrength != CharacterStrength.COMMON) {
+            promptBuilder.append("class ").append("\"").append(characterClass.getName()).append("\" ");
+        }
+    }
+
+    private StringBuilder buildMessage(
+            Character character,
+            CharacterStrength characterStrength,
+            CharacterClass characterClass,
+            String messageStyle,
+            String prompt
+    ) {
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder
+                .append("**Generated Style:** ").append(messageStyle).append("\n")
+                .append("**Character Reference:** ").append(character.getDisplayName()).append("\n")
+                .append("**Seed:** s").append(seasonVersion).append(".").append("123\n");
+
+        if (characterStrength != CharacterStrength.COMMON) {
+            messageBuilder.append("\n**Rarity Level:** ").append(characterStrength.getStrengthName()).append("\n")
+                    .append("**Class Name:** ").append(characterClass.getName()).append("\n")
+                    .append("**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n");
+        }
+
+        return messageBuilder.append("\n").append("**prompt:**\n`").append(prompt).append("`");
+    }
+
     private Character getRandomCharacter(List<Character> characters) {
-        Random random = new Random();
-        int index = random.nextInt(characters.size());
-        return characters.get(index);
+        return characters.get(new Random().nextInt(characters.size()));
     }
 
     private CharacterClass getRandomCharacterClass(List<CharacterClass> classes) {
-        Random random = new Random();
-        int index = random.nextInt(classes.size());
-        return classes.get(index);
+        return classes.get(new Random().nextInt(classes.size()));
     }
 
     private String formatListReferences(List<String> urls) {
         StringBuilder referencesBuilder = new StringBuilder();
-        for (String imageUrl: urls) {
+        for (String imageUrl : urls) {
             referencesBuilder.append(imageUrl).append(" ");
         }
 
