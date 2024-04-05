@@ -11,7 +11,8 @@ public class OnErrorAction {
     }
 
     public static void onImageValidateErrorMessage(SlashCommandInteractionEvent event) {
-        event.reply("Oops! Something went wrong. Please double check and make sure you've selected an image file.")
+        event.getHook()
+                .sendMessage("Oops! Something went wrong. Please double check and make sure you've selected an image file.")
                 .setEphemeral(true)
                 .queue();
     }
