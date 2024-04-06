@@ -32,6 +32,7 @@ public class SpringUserWebSocketStarter implements WebSocketStarter {
 	private final String resumeWss;
 
 	private boolean running = false;
+	private boolean sessionClosing = false;
 
 	private WebSocketSession webSocketSession = null;
 	private ResumeData resumeData = null;
@@ -49,6 +50,7 @@ public class SpringUserWebSocketStarter implements WebSocketStarter {
 	}
 
 	private void start(boolean reconnect) {
+		this.sessionClosing = false;
 		WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
 		headers.add("Accept-Encoding", "gzip, deflate, br");
 		headers.add("Accept-Language", "zh-CN,zh;q=0.9");
@@ -89,7 +91,8 @@ public class SpringUserWebSocketStarter implements WebSocketStarter {
 	}
 
 	private void onSocketFailure(int code, String reason) {
-		if (code == 1001) {
+		if (this.sessionClosing) {
+			this.sessionClosing = false;
 			return;
 		}
 		closeSocketSessionWhenIsOpen();
@@ -170,7 +173,8 @@ public class SpringUserWebSocketStarter implements WebSocketStarter {
 	private void closeSocketSessionWhenIsOpen() {
 		try {
 			if (this.webSocketSession != null && this.webSocketSession.isOpen()) {
-				this.webSocketSession.close(CloseStatus.GOING_AWAY);
+				this.sessionClosing = true;
+				this.webSocketSession.close();
 			}
 		} catch (IOException e) {
 			// do nothing
