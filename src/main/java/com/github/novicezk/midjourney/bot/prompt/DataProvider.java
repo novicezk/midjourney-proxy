@@ -17,7 +17,7 @@ public class DataProvider {
 
     private final static String DEFAULT_ASPECT_RATION = "Square";
     private final static String DEFAULT_VERSION = "Realistic";
-    private final static String DEFAULT_STYLE = "concept_art";
+    private final static String DEFAULT_STYLE = "Common";
 
     final private ObjectMapper objectMapper;
     private Arguments arguments;
@@ -66,6 +66,19 @@ public class DataProvider {
             classes = objectMapper.readValue(in, new TypeReference<>() {
             });
         }
+    }
+
+    public Style getStyleByStrength(CharacterStrength strength) {
+        return getStyleByName(strength.getStrengthName());
+    }
+
+    private Style getStyleByName(String name) {
+        for (Style style: styles) {
+            if (style.getName().equalsIgnoreCase(name)) {
+                return style;
+            }
+        }
+        return getDefaultStyle();
     }
 
     public Style getDefaultStyle() {

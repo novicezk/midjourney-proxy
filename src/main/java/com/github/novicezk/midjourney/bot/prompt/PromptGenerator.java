@@ -28,16 +28,15 @@ public class PromptGenerator {
     public GeneratedPromptData generatePrompt(List<String> imageUrls, User user) {
         CharacterStrength characterStrength = CharacterStrength.getRandomStrength();
         Character character = getRandomCharacter();
-        Style defaultStyle = dataProvider.getDefaultStyle();
+        Style style = dataProvider.getStyleByStrength(characterStrength);
         CharacterClass characterClass = getRandomCharacterClass();
 
         String characterSref = formatListReferences(character.getSref());
-        String styleSref = formatListReferences(defaultStyle.getSref());
         String characterCref = formatListReferences(character.getCref());
         String userCref = formatListReferences(imageUrls);
 
-        String messageStyle = getMessageStyle(characterStrength, defaultStyle);
-        String basePrompt = getBasePrompt(characterStrength, characterClass, defaultStyle);
+        String basePrompt = getBasePrompt(characterStrength, characterClass, style);
+        String styleSref = getRandomFromListReferences(style.getSref());
 
         StringBuilder promptBuilder = new StringBuilder();
         promptBuilder.append(basePrompt)
@@ -47,19 +46,19 @@ public class PromptGenerator {
 
         appendCharacterClass(characterStrength, characterClass, promptBuilder);
 
-        promptBuilder.append("watermark: ").append("\"AVIS s").append(SeasonTracker.getCurrentSeasonVersion())
+        promptBuilder.append("signature: ").append("\"AVIS s").append(SeasonTracker.getCurrentSeasonVersion())
                 .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\"")
                 .append(" ").append(dataProvider.getDefaultAspectRatio())
                 .append(" ").append(dataProvider.getDefaultVersion())
                 .append(" ").append("--sref ").append(styleSref).append(characterSref)
-                .append("--cref ").append(userCref).append(characterCref)
+                .append(" ").append("--cref ").append(userCref).append(characterCref)
                 .append("--cw ").append(characterStrength.getCW());
 
         StringBuilder messageBuilder = buildMessage(
                 character,
                 characterStrength,
                 characterClass,
-                messageStyle,
+                style.getDisplayName(),
                 promptBuilder.toString()
         );
 
@@ -78,12 +77,9 @@ public class PromptGenerator {
         return dataProvider.getCharacterClasses().get(new Random().nextInt(dataProvider.getCharacterClasses().size()));
     }
 
-    private String getMessageStyle(CharacterStrength characterStrength, Style defaultStyle) {
-        return (characterStrength == CharacterStrength.COMMON) ? defaultStyle.getDisplayName() : "Reference";
-    }
-
-    private String getBasePrompt(CharacterStrength characterStrength, CharacterClass characterClass, Style defaultStyle) {
-        return (characterStrength == CharacterStrength.COMMON) ? defaultStyle.getPrompt() : characterClass.getPrompt();
+    private String getBasePrompt(CharacterStrength characterStrength, CharacterClass characterClass, Style style) {
+        return (characterStrength == CharacterStrength.COMMON)
+                ? style.getPrompt() : style.getPrompt() + " " + characterClass.getPrompt();
     }
 
     private void appendCharacterClass(CharacterStrength characterStrength, CharacterClass characterClass, StringBuilder promptBuilder) {
@@ -101,13 +97,14 @@ public class PromptGenerator {
     ) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder
+                .append("**Reference Name:** ").append(character.getDisplayName()).append("\n")
                 .append("**Generated Style:** ").append(messageStyle).append("\n")
-                .append("**Character Reference:** ").append(character.getDisplayName()).append("\n")
                 .append("**Seed:** s").append(SeasonTracker.getCurrentSeasonVersion())
                 .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\n");
 
         if (characterStrength != CharacterStrength.COMMON) {
-            messageBuilder.append("\n**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n")
+            messageBuilder
+                    .append("\n**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n")
                     .append("**Class Name:** ").append(characterClass.getName()).append("\n")
                     .append("**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n");
         }
@@ -122,5 +119,9 @@ public class PromptGenerator {
         }
 
         return referencesBuilder.toString();
+    }
+
+    private String getRandomFromListReferences(List<String> urls) {
+        return urls.get(new Random().nextInt(urls.size()));
     }
 }

@@ -1,10 +1,48 @@
 [
   {
-    "name": "concept_art",
+    "name": "Common",
     "display_name": "Concept Art",
     "prompt": "character design, multiple concept designs, character concept art, character sheet.",
     "sref": [
       "https://i.postimg.cc/TP3rb21P/image.png"
+    ]
+  },
+  {
+    "name": "Rare",
+    "display_name": "Reference",
+    "prompt": "Character reference.",
+    "sref": [
+      "https://i.postimg.cc/4dx83PBJ/image.png",
+      "https://i.postimg.cc/Y0yxF2fV/image.png"
+    ]
+  },
+  {
+    "name": "Strange",
+    "display_name": "Reference",
+    "prompt": "Character reference.",
+    "sref": [
+      "https://i.postimg.cc/5tM6scsR/image.png",
+      "https://i.postimg.cc/N0Z8QGkf/image.png"
+    ]
+  },
+  {
+    "name": "Unique",
+    "display_name": "Reference",
+    "prompt": "Character reference.",
+    "sref": [
+      "https://i.postimg.cc/5tL1k6XB/image.png",
+      "https://i.postimg.cc/wjt0zNcm/image.png",
+      " https://i.postimg.cc/tTHKYbXp/image.png"
+    ]
+  },
+  {
+    "name": "Epic",
+    "display_name": "Reference",
+    "prompt": "Character reference.",
+    "sref": [
+      "https://i.postimg.cc/7ZnYxK1C/image.png",
+      "https://i.postimg.cc/kGWPT5fV/image.png",
+      "https://i.postimg.cc/kgqRF6fb/image.png"
     ]
   }
 ]
