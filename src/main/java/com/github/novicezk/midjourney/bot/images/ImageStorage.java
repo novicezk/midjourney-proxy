@@ -1,44 +1,50 @@
 package com.github.novicezk.midjourney.bot.images;
 
-import java.io.*;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ImageStorage {
-    private static final String FILE_PATH = "image_urls.ser";
-    private static Map<String, List<String>> imageUrlsMap = new HashMap<>();
+    private static final String DATABASE_URL = "jdbc:sqlite:image_urls.db";
 
     static {
-        loadImageUrls();
+        initializeDatabase();
     }
 
     public static void addImageUrl(String userId, List<String> urls) {
-        imageUrlsMap.put(userId, urls);
-        saveImageUrls();
-    }
-
-    public static List<String> getImageUrls(String userId) {
-        return imageUrlsMap.getOrDefault(userId, new ArrayList<>());
-    }
-
-    private static void saveImageUrls() {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            outputStream.writeObject(imageUrlsMap);
-        } catch (IOException e) {
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO image_urls (user_id, url) VALUES (?, ?)")) {
+            for (String url : urls) {
+                statement.setString(1, userId);
+                statement.setString(2, url);
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void loadImageUrls() {
-        File file = new File(FILE_PATH);
-        if (file.exists()) {
-            try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
-                imageUrlsMap = (Map<String, List<String>>) inputStream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+    public static List<String> getImageUrls(String userId) {
+        List<String> urls = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement statement = connection.prepareStatement("SELECT url FROM image_urls WHERE user_id = ?")) {
+            statement.setString(1, userId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                urls.add(resultSet.getString("url"));
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return urls;
+    }
+
+    public static void initializeDatabase() {
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS image_urls (user_id TEXT, url TEXT)");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

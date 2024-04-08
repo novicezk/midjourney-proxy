@@ -1,16 +1,12 @@
 package com.github.novicezk.midjourney.bot.utils;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+ import java.sql.*;
 
 public class SeasonTracker {
-    private static final String FILE_PATH = "generations_count.ser";
-
-    private static Map<Integer, Integer> generationCounts = new HashMap<>();
+    private static final String DATABASE_URL = "jdbc:sqlite:generations_count.db";
 
     static {
-        loadGenerationsCount();
+        initializeDatabase();
     }
 
     public static int getCurrentSeasonVersion() {
@@ -19,33 +15,41 @@ public class SeasonTracker {
 
     public static int getCurrentGenerationCount() {
         int seasonVersion = getCurrentSeasonVersion();
-        return generationCounts.getOrDefault(seasonVersion, 1);
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement statement = connection.prepareStatement("SELECT generation_count FROM generations WHERE season_version = ?")) {
+            statement.setInt(1, seasonVersion);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("generation_count");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 1; // Default value if no data is found
     }
 
     public static void incrementGenerationCount() {
         int seasonVersion = getCurrentSeasonVersion();
-        int currentGenerationCount = generationCounts.getOrDefault(seasonVersion, 1);
-        generationCounts.put(seasonVersion, currentGenerationCount + 1);
-
-        saveGenerationsCount();
-    }
-
-    private static void saveGenerationsCount() {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            outputStream.writeObject(generationCounts);
-        } catch (IOException e) {
+        int currentGenerationCount = getCurrentGenerationCount();
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement statement = connection.prepareStatement("INSERT OR REPLACE INTO generations (season_version, generation_count) VALUES (?, ?)")) {
+            statement.setInt(1, seasonVersion);
+            statement.setInt(2, currentGenerationCount + 1);
+            statement.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void loadGenerationsCount() {
-        File file = new File(FILE_PATH);
-        if (file.exists()) {
-            try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
-                generationCounts = (Map<Integer, Integer>) inputStream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+    private static void initializeDatabase() {
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS generations (" +
+                    "season_version INTEGER PRIMARY KEY," +
+                    "generation_count INTEGER NOT NULL DEFAULT 1)");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
