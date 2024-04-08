@@ -1,16 +1,12 @@
 package com.github.novicezk.midjourney.bot.utils;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SeasonTracker {
     private static final String FILE_PATH = "generations_count.ser";
-    private static final String SEASON_VERSION_KEY = "SEASON_VERSION";
 
-    private static Dotenv config = Dotenv.configure().ignoreIfMissing().load();
     private static Map<Integer, Integer> generationCounts = new HashMap<>();
 
     static {
@@ -18,7 +14,7 @@ public class SeasonTracker {
     }
 
     public static int getCurrentSeasonVersion() {
-        return Integer.parseInt(config.get(SEASON_VERSION_KEY));
+        return Config.getSeasonVersion();
     }
 
     public static int getCurrentGenerationCount() {

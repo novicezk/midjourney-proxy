@@ -2,7 +2,6 @@ package com.github.novicezk.midjourney.bot.images;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
-import io.github.cdimascio.dotenv.Dotenv;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -12,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.novicezk.midjourney.bot.utils.Config;
 
 import java.io.IOException;
 
@@ -22,8 +22,7 @@ public class ImageBBUploader {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
-        Dotenv config = Dotenv.configure().ignoreIfMissing().load();
-        API_KEY = config.get("IMGBB_TOKEN");
+        API_KEY = Config.getImgbbToken();
 
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
