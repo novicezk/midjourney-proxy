@@ -12,7 +12,7 @@ RUN groupadd -g 1000 ${group} \
 	&& chown -R ${user}:${group} $SPRING_HOME/config $SPRING_HOME/logs
 
 # Railway 不支持使用 VOLUME, 本地需要构建时，取消下一行的注释
-# VOLUME ["$SPRING_HOME/config", "$SPRING_HOME/logs"]
+VOLUME ["$SPRING_HOME/config", "$SPRING_HOME/logs"]
 
 USER ${user}
 WORKDIR $SPRING_HOME

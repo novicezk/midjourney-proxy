@@ -3,7 +3,6 @@ package com.github.novicezk.midjourney.bot.prompt;
 import com.github.novicezk.midjourney.bot.model.*;
 import com.github.novicezk.midjourney.bot.model.Character;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
-import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
@@ -11,13 +10,9 @@ import java.util.Random;
 
 public class PromptGenerator {
     private final DataProvider dataProvider;
-    private Dotenv config = Dotenv.configure().ignoreIfMissing().load();
-    private final int seasonVersion;
-
 
     public PromptGenerator() {
         this.dataProvider = new DataProvider();
-        this.seasonVersion = Integer.parseInt(config.get("SEASON_VERSION"));
     }
 
     /**
