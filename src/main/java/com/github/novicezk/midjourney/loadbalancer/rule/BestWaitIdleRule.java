@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 最少等待空闲.
- * 选择等待数最少的实例，如果都不需要等待，则随机选择
- */
+ * Wait for at least idle time.
+ * Select the instance with the least waiting number. If there is no need to wait, select it randomly.
+ * */
 public class BestWaitIdleRule implements IRule {
 
 	@Override

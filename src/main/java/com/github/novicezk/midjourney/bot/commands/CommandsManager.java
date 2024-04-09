@@ -7,6 +7,7 @@ import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
+import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
@@ -24,6 +25,12 @@ import java.util.List;
 
 @Slf4j
 public class CommandsManager extends ListenerAdapter {
+    private final DiscordLoadBalancer discordLoadBalancer;
+
+    public CommandsManager(DiscordLoadBalancer discordLoadBalancer) {
+        this.discordLoadBalancer = discordLoadBalancer;
+    }
+
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -44,7 +51,7 @@ public class CommandsManager extends ListenerAdapter {
 
     private void handleUploadImageCommand(SlashCommandInteractionEvent event) {
         // Defer reply to avoid timeout
-        event.deferReply().queue();
+        event.deferReply().setEphemeral(true).queue();
 
         OptionMapping mainImageOption = event.getOption("main_image");
         if (mainImageOption != null && mainImageOption.getAsAttachment().isImage()) {
@@ -114,6 +121,8 @@ public class CommandsManager extends ListenerAdapter {
 
             event.reply(title + promptData.getMessage()).setEphemeral(true).queue();
             SeasonTracker.incrementGenerationCount();
+
+            discordLoadBalancer.chooseInstance().imagine(promptData.getPrompt(), "");
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }

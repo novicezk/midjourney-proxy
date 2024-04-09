@@ -50,7 +50,7 @@ public class ProxyProperties {
 	 */
 	private TranslateWay translateWay = TranslateWay.NULL;
 	/**
-	 * 接口密钥，为空不启用鉴权；调用接口时需要加请求头 mj-api-secret.
+	 * Interface key, if empty, authentication will not be enabled; when calling the interface, you need to add the request header mj-api-secret.
 	 */
 	private String apiSecret;
 	/**

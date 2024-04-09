@@ -3,11 +3,13 @@ package com.github.novicezk.midjourney.bot.prompt;
 import com.github.novicezk.midjourney.bot.model.*;
 import com.github.novicezk.midjourney.bot.model.Character;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 public class PromptGenerator {
     private final DataProvider dataProvider;
 
@@ -17,7 +19,7 @@ public class PromptGenerator {
 
     /**
      * @param imageUrls
-     * @param user      is an optional, default is the Discord's name
+     * @param user is an optional, default is the Discord's name
      * @return
      */
     public GeneratedPromptData generatePrompt(List<String> imageUrls, User user) {

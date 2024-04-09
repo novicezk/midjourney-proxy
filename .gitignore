@@ -1,5 +1,6 @@
 .env
 /config.properties
+/src/main/resources/config/application.yml
 
 target/
 !.mvn/wrapper/maven-wrapper.jar

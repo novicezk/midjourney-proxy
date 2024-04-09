@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 轮询.
+ * polling.
  */
 public class RoundRobinRule implements IRule {
 	private final AtomicInteger position = new AtomicInteger(0);
