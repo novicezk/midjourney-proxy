@@ -13,11 +13,16 @@ public class ImageStorage {
 
     public static void addImageUrl(String userId, List<String> urls) {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-             PreparedStatement statement = connection.prepareStatement("INSERT INTO image_urls (user_id, url) VALUES (?, ?)")) {
+             PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM image_urls WHERE user_id = ?");
+             PreparedStatement insertStatement = connection.prepareStatement("INSERT INTO image_urls (user_id, url) VALUES (?, ?)")) {
+            // Clear all the data for this userId
+            deleteStatement.setString(1, userId);
+            deleteStatement.executeUpdate();
+
             for (String url : urls) {
-                statement.setString(1, userId);
-                statement.setString(2, url);
-                statement.executeUpdate();
+                insertStatement.setString(1, userId);
+                insertStatement.setString(2, url);
+                insertStatement.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();

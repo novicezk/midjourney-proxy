@@ -5,38 +5,37 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class ReturnCode {
 	/**
-	 * 成功.
+	 * success.
 	 */
 	public static final int SUCCESS = 1;
 	/**
-	 * 数据未找到.
+	 * Data not found.
 	 */
 	public static final int NOT_FOUND = 3;
 	/**
-	 * 校验错误.
+	 * Verification error.
 	 */
 	public static final int VALIDATION_ERROR = 4;
 	/**
-	 * 系统异常.
+	 * System exception.
 	 */
 	public static final int FAILURE = 9;
 
 	/**
-	 * 已存在.
+	 * existed.
 	 */
 	public static final int EXISTED = 21;
 	/**
-	 * 排队中.
+	 * in the line.
 	 */
 	public static final int IN_QUEUE = 22;
 	/**
-	 * 队列已满.
+	 * The queue is full.
 	 */
 	public static final int QUEUE_REJECTED = 23;
 	/**
-	 * prompt包含敏感词.
+	 * prompt contains sensitive words.
 	 */
 	public static final int BANNED_PROMPT = 24;
-
 
 }

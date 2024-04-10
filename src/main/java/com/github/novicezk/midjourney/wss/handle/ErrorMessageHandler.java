@@ -55,10 +55,10 @@ public class ErrorMessageHandler extends MessageHandler {
 		}
 		int color = embed.getInt("color", 0);
 		if (color == 16239475) {
-			log.warn("{} - MJ警告信息: {}\n{}\nfooter: {}", instance.getInstanceId(), title, description, footerText);
+			log.warn("{} - MJ warning message: {}\n{}\nfooter: {}", instance.getInstanceId(), title, description, footerText);
 		} else if (color == 16711680) {
 			message.put(Constants.MJ_MESSAGE_HANDLED, true);
-			log.error("{} - MJ异常信息: {}\n{}\nfooter: {}", instance.getInstanceId(), title, description, footerText);
+			log.error("{} - MJ abnormal information: {}\n{}\nfooter: {}", instance.getInstanceId(), title, description, footerText);
 			String nonce = getMessageNonce(message);
 			Task task;
 			if (CharSequenceUtil.isNotBlank(nonce)) {
@@ -78,7 +78,7 @@ public class ErrorMessageHandler extends MessageHandler {
 			Task task = findTaskWhenError(instance, messageType, message);
 			if (task != null) {
 				message.put(Constants.MJ_MESSAGE_HANDLED, true);
-				log.warn("{} - MJ可能的异常信息: {}\n{}\nfooter: {}", instance.getInstanceId(), title, description, footerText);
+				log.warn("{} - Possible abnormal information about MJ: {}\n{}\nfooter: {}", instance.getInstanceId(), title, description, footerText);
 				task.fail("[" + title + "] " + description);
 				task.awake();
 			}

@@ -5,7 +5,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public class OnErrorAction {
 
     public static void onImageErrorMessage(SlashCommandInteractionEvent event) {
-        event.reply("Oops! We couldn't find any image. Please run the command `/upload-image` and try again.")
+        event.getHook()
+                .sendMessage("Oops! We couldn't find any image. Please run the command `/upload-image` and try again.")
                 .setEphemeral(true)
                 .queue();
     }
@@ -18,7 +19,8 @@ public class OnErrorAction {
     }
 
     public static void defaultMessage(SlashCommandInteractionEvent event) {
-        event.reply("Sorry, but I couldn't complete your request at this time. Please try again later.")
+        event.getHook()
+                .sendMessage("Sorry, but I couldn't complete your request at this time. Please try again later.")
                 .setEphemeral(true)
                 .queue();
     }

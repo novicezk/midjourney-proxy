@@ -1,16 +1,21 @@
 package com.github.novicezk.midjourney.bot.commands;
 
+import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.bot.images.ImageBBUploader;
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
 import com.github.novicezk.midjourney.bot.images.ImageValidator;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
+import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -19,6 +24,9 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import com.github.novicezk.midjourney.result.Message;
+import net.dv8tion.jda.api.entities.Message.Attachment;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +66,7 @@ public class CommandsManager extends ListenerAdapter {
             List<String> imageUrls = extractImageUrls(event);
             if (!imageUrls.isEmpty()) {
                 ImageStorage.addImageUrl(event.getUser().getId(), imageUrls);
-                event.getHook().sendMessage("Your images have been successfully uploaded! Now you can use the command `/generate` to get inspired.")
+                event.getHook().sendMessage("Your images are in! Now you can use `/generate` to start generating characters or try `/get-images` to see what you've uploaded.")
                         .setEphemeral(true)
                         .queue();
             } else {
@@ -72,7 +80,7 @@ public class CommandsManager extends ListenerAdapter {
     private List<String> extractImageUrls(SlashCommandInteractionEvent event) {
         List<String> imageUrls = new ArrayList<>();
         OptionMapping mainImageOption = event.getOption("main_image");
-        Message.Attachment mainImage = mainImageOption.getAsAttachment();
+        Attachment mainImage = mainImageOption.getAsAttachment();
 
         ImageResponse uploadedImageResponse = ImageBBUploader.uploadImageNew(mainImage.getUrl());
         if (uploadedImageResponse != null && uploadedImageResponse.getData().getUrl() != null) {
@@ -82,7 +90,7 @@ public class CommandsManager extends ListenerAdapter {
         for (int i = 2; i <= 4; i++) {
             OptionMapping imageOption = event.getOption("image" + i);
             if (imageOption != null && imageOption.getAsAttachment().isImage()) {
-                Message.Attachment attachment = imageOption.getAsAttachment();
+                Attachment attachment = imageOption.getAsAttachment();
                 ImageResponse response = ImageBBUploader.uploadImageNew(attachment.getUrl());
                 if (response != null && response.getData().getUrl() != null) {
                     imageUrls.add(response.getData().getUrl());
@@ -93,6 +101,8 @@ public class CommandsManager extends ListenerAdapter {
     }
 
     private void handleGetImagesCommand(SlashCommandInteractionEvent event) {
+        event.deferReply().setEphemeral(true).queue();
+
         List<String> imageUrls = getUserUrls(event.getUser().getId());
         String title = generateTitle(imageUrls.isEmpty(), "Your uploaded images:\n");
 
@@ -101,13 +111,15 @@ public class CommandsManager extends ListenerAdapter {
         }
 
         if (!imageUrls.isEmpty()) {
-            event.reply(title + formatImageUrls(imageUrls)).setEphemeral(true).queue();
+            event.getHook().sendMessage(title + formatImageUrls(imageUrls)).setEphemeral(true).queue();
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }
     }
 
     private void handleGenerateCommand(SlashCommandInteractionEvent event) {
+        event.deferReply().setEphemeral(true).queue();
+
         List<String> imageUrls = getUserUrls(event.getUser().getId());
         String title = generateTitle(imageUrls.isEmpty(), "");
 
@@ -119,13 +131,70 @@ public class CommandsManager extends ListenerAdapter {
             GeneratedPromptData promptData =
                     new PromptGenerator().generatePrompt(imageUrls, event.getUser());
 
-            event.reply(title + promptData.getMessage()).setEphemeral(true).queue();
+            String text = title + promptData.getMessage();
             SeasonTracker.incrementGenerationCount();
 
-            discordLoadBalancer.chooseInstance().imagine(promptData.getPrompt(), "");
+            Message<Void> message = discordLoadBalancer.chooseInstance().imagine(promptData.getPrompt(), "");
+            if (message != null) {
+                handleCommandResponse(message.getCode(), message.getDescription(), text, event);
+            } else {
+                OnErrorAction.onImageErrorMessage(event);
+            }
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }
+    }
+
+    private void handleCommandResponse(
+            int responseCode,
+            String responseMessage,
+            String text,
+            SlashCommandInteractionEvent event
+    ) {
+        switch (responseCode) {
+            case ReturnCode.SUCCESS -> {
+                sendMessage(event.getGuild(), event.getUser().getId(), text);
+
+                event.getHook()
+                        .deleteOriginal()
+                        .queue();
+            }
+
+            case ReturnCode.IN_QUEUE -> event.getHook()
+                    .sendMessage("Added to queue!")
+                    .queue();
+            case ReturnCode.QUEUE_REJECTED -> event.getHook()
+                    .sendMessage("Queue is full!")
+                    .queue();
+
+            default -> {
+                sendMessage(event.getGuild(), event.getUser().getId(), "Critical fail! \uD83C\uDFB2\uD83E\uDD26 Try again!");
+                log.error("{}: {}", responseCode, responseMessage);
+
+                event.getHook()
+                        .deleteOriginal()
+                        .queue();
+            }
+        }
+    }
+
+    private void sendMessage(@Nullable Guild guild, String userId, String text) {
+        if (guild != null) {
+            TextChannel channel = guild.getTextChannelById(Config.getSendingChannel());
+            if (channel != null) {
+                channel.sendMessage("<@" + userId + "> \n\n" + text).queue();
+            }
+        }
+    }
+
+    private MessageEmbed buildErrorEmbed(int code, String message) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Oops, something went wrong!\n");
+        embedBuilder.addField("Code", String.valueOf(code), true);
+        embedBuilder.addField("Message", message, true);
+        embedBuilder.setColor(0xF44336);
+
+        return embedBuilder.build();
     }
 
     private String generateTitle(boolean isImagesEmpty, String defaultTitle) {

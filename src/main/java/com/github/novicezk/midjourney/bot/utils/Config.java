@@ -8,6 +8,7 @@ public class Config {
     private static final String SEASON_VERSION = "SEASON_VERSION";
     private static final String DISCORD_BOT_TOKEN = "DISCORD_BOT_TOKEN";
     private static final String IMGBB_TOKEN = "IMGBB_TOKEN";
+    private static final String SENDING_CHANNEL = "SENDING_CHANNEL";
 
     private static final String CONFIG_FILE = "adam-ai/config.properties";
     private static final Properties properties = new Properties();
@@ -30,5 +31,9 @@ public class Config {
 
     public static String getImgbbToken() {
         return properties.getProperty(IMGBB_TOKEN);
+    }
+
+    public static String getSendingChannel() {
+        return properties.getProperty(SENDING_CHANNEL);
     }
 }

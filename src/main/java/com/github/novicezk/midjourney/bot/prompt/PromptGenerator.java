@@ -29,7 +29,7 @@ public class PromptGenerator {
         CharacterClass characterClass = getRandomCharacterClass();
 
         String characterSref = formatListReferences(character.getSref());
-        String characterCref = formatListReferences(character.getCref());
+        String characterCref = getRandomFromListReferences(character.getCref());
         String userCref = formatListReferences(imageUrls);
 
         String basePrompt = getBasePrompt(characterStrength, characterClass, style);
@@ -49,7 +49,7 @@ public class PromptGenerator {
                 .append(" ").append(dataProvider.getDefaultVersion())
                 .append(" ").append("--sref ").append(styleSref).append(characterSref)
                 .append(" ").append("--cref ").append(userCref).append(characterCref)
-                .append("--cw ").append(characterStrength.getCW());
+                .append(" ").append("--cw ").append(characterStrength.getCW());
 
         StringBuilder messageBuilder = buildMessage(
                 character,
@@ -101,8 +101,8 @@ public class PromptGenerator {
 
         if (characterStrength != CharacterStrength.COMMON) {
             messageBuilder
-                    .append("**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n")
-                    .append("\n**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n")
+                    .append("\n**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n")
+                    .append("**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n")
                     .append("**Class Name:** ").append(characterClass.getName()).append("\n");
         }
 
