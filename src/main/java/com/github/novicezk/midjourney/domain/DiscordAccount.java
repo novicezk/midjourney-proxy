@@ -25,7 +25,7 @@ public class DiscordAccount extends DomainObject {
 	private boolean enable = true;
 
 	@ApiModelProperty("Number_of_concurrencies")
-	private int coreSize = 3;
+	private int coreSize = 1;
 	@ApiModelProperty("Waiting_queue_length")
 	private int queueSize = 10;
 	@ApiModelProperty("Task_timeout_(minutes)")

@@ -29,7 +29,7 @@ public class TaskTimeoutSchedule {
 					log.warn("[{}] - task status is failure/success but is in the queue, end it. id: {}", instance.account().getDisplay(), task.getId());
 				} else {
 					log.debug("[{}] - task timeout, id: {}", instance.account().getDisplay(), task.getId());
-					task.fail("任务超时");
+					task.fail("Task timeout");
 				}
 				instance.exitTask(task);
 			}

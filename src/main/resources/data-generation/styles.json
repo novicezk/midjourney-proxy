@@ -10,6 +10,24 @@
   {
     "name": "Rare",
     "display_name": "Reference",
+    "aspect_ratio": [
+      {
+        "name": "Horizontal-169",
+        "value": "--ar 16:9"
+      },
+      {
+        "name": "Vertical-916",
+        "value": "--ar 9:16"
+      },
+      {
+        "name": "Horizontal-32",
+        "value": "--ar 3:2"
+      },
+      {
+        "name": "Vertical-23",
+        "value": "--ar 2:3"
+      }
+    ],
     "prompt": "Character reference.",
     "sref": [
       "https://i.postimg.cc/4dx83PBJ/image.png",
@@ -19,6 +37,24 @@
   {
     "name": "Strange",
     "display_name": "Reference",
+    "aspect_ratio": [
+      {
+        "name": "Horizontal-169",
+        "value": "--ar 16:9"
+      },
+      {
+        "name": "Vertical-916",
+        "value": "--ar 9:16"
+      },
+      {
+        "name": "Horizontal-32",
+        "value": "--ar 3:2"
+      },
+      {
+        "name": "Vertical-23",
+        "value": "--ar 2:3"
+      }
+    ],
     "prompt": "Character reference.",
     "sref": [
       "https://i.postimg.cc/5tM6scsR/image.png",
@@ -28,6 +64,24 @@
   {
     "name": "Unique",
     "display_name": "Reference",
+    "aspect_ratio": [
+      {
+        "name": "Horizontal-169",
+        "value": "--ar 16:9"
+      },
+      {
+        "name": "Vertical-916",
+        "value": "--ar 9:16"
+      },
+      {
+        "name": "Horizontal-32",
+        "value": "--ar 3:2"
+      },
+      {
+        "name": "Vertical-23",
+        "value": "--ar 2:3"
+      }
+    ],
     "prompt": "Character reference.",
     "sref": [
       "https://i.postimg.cc/5tL1k6XB/image.png",
@@ -38,6 +92,24 @@
   {
     "name": "Epic",
     "display_name": "Reference",
+    "aspect_ratio": [
+      {
+        "name": "Horizontal-169",
+        "value": "--ar 16:9"
+      },
+      {
+        "name": "Vertical-916",
+        "value": "--ar 9:16"
+      },
+      {
+        "name": "Horizontal-32",
+        "value": "--ar 3:2"
+      },
+      {
+        "name": "Vertical-23",
+        "value": "--ar 2:3"
+      }
+    ],
     "prompt": "Character reference.",
     "sref": [
       "https://i.postimg.cc/7ZnYxK1C/image.png",

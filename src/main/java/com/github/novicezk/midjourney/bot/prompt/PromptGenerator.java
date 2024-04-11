@@ -5,6 +5,7 @@ import com.github.novicezk.midjourney.bot.model.Character;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.User;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Random;
@@ -45,7 +46,7 @@ public class PromptGenerator {
 
         promptBuilder.append("signature: ").append("\"AVIS s").append(SeasonTracker.getCurrentSeasonVersion())
                 .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\"")
-                .append(" ").append(dataProvider.getDefaultAspectRatio())
+                .append(" ").append(getAspectRation(characterStrength, style.getAspectRatio()))
                 .append(" ").append(dataProvider.getDefaultVersion())
                 .append(" ").append("--sref ").append(styleSref).append(characterSref)
                 .append(" ").append("--cref ").append(userCref).append(characterCref)
@@ -64,6 +65,14 @@ public class PromptGenerator {
         promptData.setMessage(messageBuilder.toString());
 
         return promptData;
+    }
+
+    private String getAspectRation(CharacterStrength characterStrength, @Nullable List<AspectRatio> aspectRatio) {
+        if (characterStrength != CharacterStrength.COMMON && aspectRatio != null) {
+            return aspectRatio.get(new Random().nextInt(aspectRatio.size())).getValue();
+        }
+
+        return dataProvider.getDefaultAspectRatio();
     }
 
     private Character getRandomCharacter() {
@@ -104,6 +113,9 @@ public class PromptGenerator {
                     .append("\n**Strength:** ").append(characterStrength.getStrengthEmoji()).append("\n")
                     .append("**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n")
                     .append("**Class Name:** ").append(characterClass.getName()).append("\n");
+        } else {
+            messageBuilder
+                    .append("\n**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n");
         }
 
         return messageBuilder.append("\n").append("**prompt:**\n`").append(prompt).append("`");

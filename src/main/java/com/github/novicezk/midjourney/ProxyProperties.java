@@ -14,39 +14,39 @@ import java.util.List;
 @ConfigurationProperties(prefix = "mj")
 public class ProxyProperties {
 	/**
-	 * task存储配置.
+	 * task storage configuration.
 	 */
 	private final TaskStore taskStore = new TaskStore();
 	/**
-	 * discord账号选择规则.
+	 * discord account selection rules.
 	 */
 	private String accountChooseRule = "BestWaitIdleRule";
 	/**
-	 * discord单账号配置.
+	 * discord single account configuration.
 	 */
 	private final DiscordAccountConfig discord = new DiscordAccountConfig();
 	/**
-	 * discord账号池配置.
+	 * discord account pool configuration.
 	 */
 	private final List<DiscordAccountConfig> accounts = new ArrayList<>();
 	/**
-	 * 代理配置.
+	 * Agent configuration.
 	 */
 	private final ProxyConfig proxy = new ProxyConfig();
 	/**
-	 * 反代配置.
+	 * Anti-generation configuration.
 	 */
 	private final NgDiscordConfig ngDiscord = new NgDiscordConfig();
 	/**
-	 * 百度翻译配置.
+	 * Baidu translation configuration.
 	 */
 	private final BaiduTranslateConfig baiduTranslate = new BaiduTranslateConfig();
 	/**
-	 * openai配置.
+	 * openai configuration.
 	 */
 	private final OpenaiConfig openai = new OpenaiConfig();
 	/**
-	 * 中文prompt翻译方式.
+	 * Chinese prompt translation method.
 	 */
 	private TranslateWay translateWay = TranslateWay.NULL;
 	/**
@@ -54,11 +54,11 @@ public class ProxyProperties {
 	 */
 	private String apiSecret;
 	/**
-	 * 任务状态变更回调地址.
+	 * Task status change callback address.
 	 */
 	private String notifyHook;
 	/**
-	 * 通知回调线程池大小.
+	 * Notification callback thread pool size.
 	 */
 	private int notifyPoolSize = 10;
 
@@ -69,31 +69,31 @@ public class ProxyProperties {
 		 */
 		private String guildId;
 		/**
-		 * 频道ID.
+		 * Channel ID.
 		 */
 		private String channelId;
 		/**
-		 * 用户Token.
+		 * UserToken.
 		 */
 		private String userToken;
 		/**
-		 * 用户UserAgent.
+		 * UserUserAgent.
 		 */
 		private String userAgent = Constants.DEFAULT_DISCORD_USER_AGENT;
 		/**
-		 * 是否可用.
+		 * it's usable or not.
 		 */
 		private boolean enable = true;
 		/**
-		 * 并发数.
+		 * Number of concurrencies.
 		 */
-		private int coreSize = 3;
+		private int coreSize = 1;
 		/**
-		 * 等待队列长度.
+		 * Waiting queue length.
 		 */
 		private int queueSize = 10;
 		/**
-		 * 任务超时时间(分钟).
+		 * Task timeout (minutes).
 		 */
 		private int timeoutMinutes = 5;
 	}
@@ -101,11 +101,11 @@ public class ProxyProperties {
 	@Data
 	public static class BaiduTranslateConfig {
 		/**
-		 * 百度翻译的APP_ID.
+		 * Baidu Translation APP_ID.
 		 */
 		private String appid;
 		/**
-		 * 百度翻译的密钥.
+		 * Baidu's translation key.
 		 */
 		private String appSecret;
 	}
@@ -113,27 +113,27 @@ public class ProxyProperties {
 	@Data
 	public static class OpenaiConfig {
 		/**
-		 * 自定义gpt的api-url.
+		 * Customize the api-url of gpt.
 		 */
 		private String gptApiUrl;
 		/**
-		 * gpt的api-key.
+		 * api-key of gpt.
 		 */
 		private String gptApiKey;
 		/**
-		 * 超时时间.
+		 * overtime time.
 		 */
 		private Duration timeout = Duration.ofSeconds(30);
 		/**
-		 * 使用的模型.
+		 * Model used.
 		 */
 		private String model = "gpt-3.5-turbo";
 		/**
-		 * 返回结果的最大分词数.
+		 * The maximum number of words returned in the result.
 		 */
 		private int maxTokens = 2048;
 		/**
-		 * 相似度，取值 0-2.
+		 * Similarity, value 0-2.
 		 */
 		private double temperature = 0;
 	}
@@ -141,11 +141,11 @@ public class ProxyProperties {
 	@Data
 	public static class TaskStore {
 		/**
-		 * 任务过期时间，默认30天.
+		 * Task expiration time, default 30 days.
 		 */
 		private Duration timeout = Duration.ofDays(30);
 		/**
-		 * 任务存储方式: redis(默认)、in_memory.
+		 * Task storage method: redis (default), in_memory.
 		 */
 		private Type type = Type.IN_MEMORY;
 
@@ -164,11 +164,11 @@ public class ProxyProperties {
 	@Data
 	public static class ProxyConfig {
 		/**
-		 * 代理host.
+		 * Proxy host.
 		 */
 		private String host;
 		/**
-		 * 代理端口.
+		 * proxy port.
 		 */
 		private Integer port;
 	}
@@ -200,15 +200,15 @@ public class ProxyProperties {
 	@Data
 	public static class TaskQueueConfig {
 		/**
-		 * 并发数.
+		 * Number of concurrencies.
 		 */
-		private int coreSize = 3;
+		private int coreSize = 1;
 		/**
-		 * 等待队列长度.
+		 * Waiting queue length.
 		 */
 		private int queueSize = 10;
 		/**
-		 * 任务超时时间(分钟).
+		 * Task timeout (minutes).
 		 */
 		private int timeoutMinutes = 5;
 	}
