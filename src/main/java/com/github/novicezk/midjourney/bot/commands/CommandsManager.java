@@ -9,7 +9,9 @@ import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
-import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
+import com.github.novicezk.midjourney.controller.SubmitController;
+import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
+import com.github.novicezk.midjourney.result.SubmitResultVO;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -24,7 +26,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import com.github.novicezk.midjourney.result.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,10 +34,10 @@ import java.util.List;
 
 @Slf4j
 public class CommandsManager extends ListenerAdapter {
-    private final DiscordLoadBalancer discordLoadBalancer;
+    private final SubmitController submitController;
 
-    public CommandsManager(DiscordLoadBalancer discordLoadBalancer) {
-        this.discordLoadBalancer = discordLoadBalancer;
+    public CommandsManager(SubmitController submitController) {
+        this.submitController = submitController;
     }
 
 
@@ -134,9 +135,11 @@ public class CommandsManager extends ListenerAdapter {
             String text = title + promptData.getMessage();
             SeasonTracker.incrementGenerationCount();
 
-            Message<Void> message = discordLoadBalancer.chooseInstance().imagine(promptData.getPrompt(), "");
-            if (message != null) {
-                handleCommandResponse(message.getCode(), message.getDescription(), text, event);
+            SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
+            imagineDTO.setPrompt(promptData.getPrompt());
+            SubmitResultVO resultVO = submitController.imagine(imagineDTO);
+            if (resultVO != null) {
+                handleCommandResponse(resultVO.getCode(), resultVO.getDescription(), text, event);
             } else {
                 OnErrorAction.onImageErrorMessage(event);
             }

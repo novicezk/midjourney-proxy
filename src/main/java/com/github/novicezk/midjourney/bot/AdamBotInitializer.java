@@ -2,7 +2,7 @@ package com.github.novicezk.midjourney.bot;
 
 import com.github.novicezk.midjourney.bot.commands.CommandsManager;
 import com.github.novicezk.midjourney.bot.utils.Config;
-import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
+import com.github.novicezk.midjourney.controller.SubmitController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AdamBotInitializer implements ApplicationRunner {
-    private final DiscordLoadBalancer discordLoadBalancer;
+    private final SubmitController submitController;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -29,6 +29,6 @@ public class AdamBotInitializer implements ApplicationRunner {
                 .setActivity(Activity.listening("your commands"))
                 .build();
 
-        api.addEventListener(new CommandsManager(discordLoadBalancer));
+        api.addEventListener(new CommandsManager(submitController));
     }
 }

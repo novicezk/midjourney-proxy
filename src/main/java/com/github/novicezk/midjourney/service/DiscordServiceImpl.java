@@ -136,20 +136,20 @@ public class DiscordServiceImpl implements DiscordService {
 					.put("files", new JSONArray().put(fileObj));
 			ResponseEntity<String> responseEntity = postJson(this.discordAttachmentUrl, params.toString());
 			if (responseEntity.getStatusCode() != HttpStatus.OK) {
-				log.error("上传图片到discord失败, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
-				return Message.of(ReturnCode.VALIDATION_ERROR, "上传图片到discord失败");
+				log.error("Failed to upload pictures to discord, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
+				return Message.of(ReturnCode.VALIDATION_ERROR, "Failed to upload pictures to discord");
 			}
 			JSONArray array = new JSONObject(responseEntity.getBody()).getJSONArray("attachments");
 			if (array.length() == 0) {
-				return Message.of(ReturnCode.VALIDATION_ERROR, "上传图片到discord失败");
+				return Message.of(ReturnCode.VALIDATION_ERROR, "Failed to upload pictures to discord");
 			}
 			String uploadUrl = array.getJSONObject(0).getString("upload_url");
 			String uploadFilename = array.getJSONObject(0).getString("upload_filename");
 			putFile(uploadUrl, dataUrl);
 			return Message.success(uploadFilename);
 		} catch (Exception e) {
-			log.error("上传图片到discord失败", e);
-			return Message.of(ReturnCode.FAILURE, "上传图片到discord失败");
+			log.error("Failed to upload pictures to discord", e);
+			return Message.of(ReturnCode.FAILURE, "Failed to upload pictures to discord");
 		}
 	}
 
@@ -162,15 +162,15 @@ public class DiscordServiceImpl implements DiscordService {
 				.replace("$final_file_name", finalFileName);
 		ResponseEntity<String> responseEntity = postJson(this.discordMessageUrl, paramsStr);
 		if (responseEntity.getStatusCode() != HttpStatus.OK) {
-			log.error("发送图片消息到discord失败, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
-			return Message.of(ReturnCode.VALIDATION_ERROR, "发送图片消息到discord失败");
+			log.error("Failed to send picture message to discord, status: {}, msg: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
+			return Message.of(ReturnCode.VALIDATION_ERROR, "Failed to send picture message to discord");
 		}
 		JSONObject result = new JSONObject(responseEntity.getBody());
 		JSONArray attachments = result.optJSONArray("attachments");
 		if (!attachments.isEmpty()) {
 			return Message.success(attachments.getJSONObject(0).optString("url"));
 		}
-		return Message.failure("发送图片消息到discord失败: 图片不存在");
+		return Message.failure("Failed to send picture message to discord: picture does not exist");
 	}
 
 	private void putFile(String uploadUrl, DataUrl dataUrl) {

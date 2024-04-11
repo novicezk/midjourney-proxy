@@ -28,7 +28,7 @@ public class TaskServiceImpl implements TaskService {
 	public SubmitResultVO submitImagine(Task task, List<DataUrl> dataUrls) {
 		DiscordInstance instance = this.discordLoadBalancer.chooseInstance();
 		if (instance == null) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "No account instance available");
 		}
 		task.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, instance.getInstanceId());
 		return instance.submitTask(task, () -> {
@@ -61,7 +61,7 @@ public class TaskServiceImpl implements TaskService {
 		String instanceId = task.getPropertyGeneric(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID);
 		DiscordInstance discordInstance = this.discordLoadBalancer.getDiscordInstance(instanceId);
 		if (discordInstance == null || !discordInstance.isAlive()) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "账号不可用: " + instanceId);
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "Account is unavailable: " + instanceId);
 		}
 		return discordInstance.submitTask(task, () -> discordInstance.upscale(targetMessageId, index, targetMessageHash, messageFlags, task.getPropertyGeneric(Constants.TASK_PROPERTY_NONCE)));
 	}
@@ -71,7 +71,7 @@ public class TaskServiceImpl implements TaskService {
 		String instanceId = task.getPropertyGeneric(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID);
 		DiscordInstance discordInstance = this.discordLoadBalancer.getDiscordInstance(instanceId);
 		if (discordInstance == null || !discordInstance.isAlive()) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "账号不可用: " + instanceId);
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "Account is unavailable: " + instanceId);
 		}
 		return discordInstance.submitTask(task, () -> discordInstance.variation(targetMessageId, index, targetMessageHash, messageFlags, task.getPropertyGeneric(Constants.TASK_PROPERTY_NONCE)));
 	}
@@ -81,7 +81,7 @@ public class TaskServiceImpl implements TaskService {
 		String instanceId = task.getPropertyGeneric(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID);
 		DiscordInstance discordInstance = this.discordLoadBalancer.getDiscordInstance(instanceId);
 		if (discordInstance == null || !discordInstance.isAlive()) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "账号不可用: " + instanceId);
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "Account is unavailable: " + instanceId);
 		}
 		return discordInstance.submitTask(task, () -> discordInstance.reroll(targetMessageId, targetMessageHash, messageFlags, task.getPropertyGeneric(Constants.TASK_PROPERTY_NONCE)));
 	}
@@ -90,7 +90,7 @@ public class TaskServiceImpl implements TaskService {
 	public SubmitResultVO submitDescribe(Task task, DataUrl dataUrl) {
 		DiscordInstance discordInstance = this.discordLoadBalancer.chooseInstance();
 		if (discordInstance == null) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "No account instance available");
 		}
 		task.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, discordInstance.getInstanceId());
 		return discordInstance.submitTask(task, () -> {
@@ -108,7 +108,7 @@ public class TaskServiceImpl implements TaskService {
 	public SubmitResultVO submitBlend(Task task, List<DataUrl> dataUrls, BlendDimensions dimensions) {
 		DiscordInstance discordInstance = this.discordLoadBalancer.chooseInstance();
 		if (discordInstance == null) {
-			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "无可用的账号实例");
+			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "No account instance available");
 		}
 		task.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, discordInstance.getInstanceId());
 		return discordInstance.submitTask(task, () -> {

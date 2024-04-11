@@ -13,10 +13,10 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class SubmitImagineDTO extends BaseSubmitDTO {
 
-	@ApiModelProperty(value = "提示词", required = true, example = "Cat")
+	@ApiModelProperty(value = "prompt word", required = true, example = "Cat")
 	private String prompt;
 
-	@ApiModelProperty(value = "垫图base64数组")
+	@ApiModelProperty(value = "Mat map base64 array")
 	private List<String> base64Array;
 
 	@ApiModelProperty(hidden = true)

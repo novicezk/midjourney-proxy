@@ -68,7 +68,7 @@ public class NotifyServiceImpl implements NotifyService {
 			}
 			this.taskStatusMap.put(taskId, currentStatusStr);
 		}
-		log.debug("推送任务变更, 任务: {}({}), hook: {}", taskId, currentStatusStr, notifyHook);
+		log.debug("push task changes, task: {}({}), hook: {}", taskId, currentStatusStr, notifyHook);
 		ResponseEntity<String> responseEntity = postJson(notifyHook, paramsStr);
 		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 			log.warn("Notify task change fail, task: {}({}), hook: {}, code: {}, msg: {}", taskId, currentStatusStr, notifyHook, responseEntity.getStatusCodeValue(), responseEntity.getBody());

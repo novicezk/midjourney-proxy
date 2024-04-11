@@ -120,18 +120,18 @@ public class DiscordInstanceImpl implements DiscordInstance {
 			this.queueTasks.add(task);
 		} catch (RejectedExecutionException e) {
 			this.taskStoreService.delete(task.getId());
-			return SubmitResultVO.fail(ReturnCode.QUEUE_REJECTED, "队列已满，请稍后尝试")
+			return SubmitResultVO.fail(ReturnCode.QUEUE_REJECTED, "The queue is full, please try later")
 					.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, this.getInstanceId());
 		} catch (Exception e) {
 			log.error("submit task error", e);
-			return SubmitResultVO.fail(ReturnCode.FAILURE, "提交失败，系统异常")
+			return SubmitResultVO.fail(ReturnCode.FAILURE, "Submission failed, system exception")
 					.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, this.getInstanceId());
 		}
 		if (currentWaitNumbers == 0) {
-			return SubmitResultVO.of(ReturnCode.SUCCESS, "提交成功", task.getId())
+			return SubmitResultVO.of(ReturnCode.SUCCESS, "Submitted successfully", task.getId())
 					.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, this.getInstanceId());
 		} else {
-			return SubmitResultVO.of(ReturnCode.IN_QUEUE, "排队中，前面还有" + currentWaitNumbers + "个任务", task.getId())
+			return SubmitResultVO.of(ReturnCode.IN_QUEUE, "Queuing, there are others ahead" + currentWaitNumbers + "tasks", task.getId())
 					.setProperty("numberOfQueues", currentWaitNumbers)
 					.setProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID, this.getInstanceId());
 		}
@@ -160,7 +160,7 @@ public class DiscordInstanceImpl implements DiscordInstance {
 			Thread.currentThread().interrupt();
 		} catch (Exception e) {
 			log.error("task execute error", e);
-			task.fail("执行错误，系统异常");
+			task.fail("Execution error, system exception");
 			saveAndNotify(task);
 		} finally {
 			this.runningTasks.remove(task);

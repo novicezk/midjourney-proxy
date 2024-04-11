@@ -23,7 +23,7 @@
 
 
 ## 2. 任务提交返回
-- code=1: 提交成功，result为任务ID
+- code=1: Submitted successfully，result为任务ID
     ```json
     {
       "code": 1,
@@ -46,7 +46,7 @@
          }
     }
     ```
-- code=22: 提交成功，进入队列等待
+- code=22: Submitted successfully，进入队列等待
     ```json
     {
         "code": 22,
