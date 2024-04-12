@@ -5,23 +5,23 @@ import lombok.Getter;
 
 public enum TaskStatus {
 	/**
-	 * 未启动.
+	 * have not started.
 	 */
 	NOT_START(0),
 	/**
-	 * 已提交.
+	 * submitted.
 	 */
 	SUBMITTED(1),
 	/**
-	 * 执行中.
+	 * Executing.
 	 */
 	IN_PROGRESS(3),
 	/**
-	 * 失败.
+	 * fail.
 	 */
 	FAILURE(4),
 	/**
-	 * 成功.
+	 * success.
 	 */
 	SUCCESS(4);
 

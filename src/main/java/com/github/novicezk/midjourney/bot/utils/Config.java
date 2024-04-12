@@ -9,6 +9,8 @@ public class Config {
     private static final String DISCORD_BOT_TOKEN = "DISCORD_BOT_TOKEN";
     private static final String IMGBB_TOKEN = "IMGBB_TOKEN";
     private static final String SENDING_CHANNEL = "SENDING_CHANNEL";
+    private static final String QUEUE_CHANNEL = "QUEUE_CHANNEL";
+    private static final String GUILD_ID = "GUILD_ID";
 
     private static final String CONFIG_FILE = "adam-ai/config.properties";
     private static final Properties properties = new Properties();
@@ -35,5 +37,13 @@ public class Config {
 
     public static String getSendingChannel() {
         return properties.getProperty(SENDING_CHANNEL);
+    }
+
+    public static String getQueueChannel() {
+        return properties.getProperty(QUEUE_CHANNEL);
+    }
+
+    public static String getGuildId() {
+        return properties.getProperty(GUILD_ID);
     }
 }

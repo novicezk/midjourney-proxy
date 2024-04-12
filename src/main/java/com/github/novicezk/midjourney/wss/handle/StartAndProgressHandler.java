@@ -31,21 +31,21 @@ public class StartAndProgressHandler extends MessageHandler {
 		String content = getMessageContent(message);
 		ContentParseData parseData = ConvertUtils.parseContent(content);
 		if (MessageType.CREATE.equals(messageType) && CharSequenceUtil.isNotBlank(nonce)) {
-			// 任务开始
+			// Mission starts
 			Task task = instance.getRunningTaskByNonce(nonce);
 			if (task == null) {
 				return;
 			}
 			message.put(Constants.MJ_MESSAGE_HANDLED, true);
 			task.setProperty(Constants.TASK_PROPERTY_PROGRESS_MESSAGE_ID, message.getString("id"));
-			// 兼容少数content为空的场景
+			// Compatible with a few scenarios where the content is empty
 			if (parseData != null) {
 				task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, parseData.getPrompt());
 			}
 			task.setStatus(TaskStatus.IN_PROGRESS);
 			task.awake();
 		} else if (MessageType.UPDATE.equals(messageType) && parseData != null) {
-			// 任务进度
+			// task progress
 			if ("Stopped".equals(parseData.getStatus())) {
 				return;
 			}
@@ -65,5 +65,4 @@ public class StartAndProgressHandler extends MessageHandler {
 			task.awake();
 		}
 	}
-
 }

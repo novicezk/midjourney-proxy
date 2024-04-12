@@ -7,6 +7,7 @@ import com.github.novicezk.midjourney.bot.images.ImageValidator;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
+import com.github.novicezk.midjourney.bot.queue.QueueManager;
 import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import com.github.novicezk.midjourney.controller.SubmitController;
@@ -137,9 +138,9 @@ public class CommandsManager extends ListenerAdapter {
 
             SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
             imagineDTO.setPrompt(promptData.getPrompt());
-            SubmitResultVO resultVO = submitController.imagine(imagineDTO);
-            if (resultVO != null) {
-                handleCommandResponse(resultVO.getCode(), resultVO.getDescription(), text, event);
+            SubmitResultVO result = submitController.imagine(imagineDTO);
+            if (result != null) {
+                handleCommandResponse(result, text, event);
             } else {
                 OnErrorAction.onImageErrorMessage(event);
             }
@@ -148,36 +149,15 @@ public class CommandsManager extends ListenerAdapter {
         }
     }
 
-    private void handleCommandResponse(
-            int responseCode,
-            String responseMessage,
-            String text,
-            SlashCommandInteractionEvent event
-    ) {
-        switch (responseCode) {
-            case ReturnCode.SUCCESS -> {
-                sendMessage(event.getGuild(), event.getUser().getId(), text);
-
-                event.getHook()
-                        .deleteOriginal()
-                        .queue();
-            }
-
-            case ReturnCode.IN_QUEUE -> event.getHook()
-                    .sendMessage("Added to queue!")
-                    .queue();
-            case ReturnCode.QUEUE_REJECTED -> event.getHook()
-                    .sendMessage("Queue is full!")
-                    .queue();
-
-            default -> {
-                sendMessage(event.getGuild(), event.getUser().getId(), "Critical fail! \uD83C\uDFB2\uD83E\uDD26 Try again!");
-                log.error("{}: {}", responseCode, responseMessage);
-
-                event.getHook()
-                        .deleteOriginal()
-                        .queue();
-            }
+    private void handleCommandResponse(SubmitResultVO result, String text, SlashCommandInteractionEvent event) {
+        if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
+            QueueManager.addToQueue(event.getUser().getId(), result.getResult(), text);
+            sendMessage(event.getGuild(), event.getUser().getId(), text);
+            event.getHook().deleteOriginal().queue();
+        } else {
+            sendMessage(event.getGuild(), event.getUser().getId(), "Critical fail! \uD83C\uDFB2\uD83E\uDD26 Try again!");
+            event.getHook().deleteOriginal().queue();
+            log.error("{}: {}", result.getCode(), result.getDescription());
         }
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 
 
 @Data
-@ApiModel("Imagine提交参数")
+@ApiModel("Imagine submission parameters")
 @EqualsAndHashCode(callSuper = true)
 public class SubmitImagineDTO extends BaseSubmitDTO {
 
