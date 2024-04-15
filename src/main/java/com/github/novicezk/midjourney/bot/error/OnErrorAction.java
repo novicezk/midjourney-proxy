@@ -1,4 +1,4 @@
-package com.github.novicezk.midjourney.bot.commands;
+package com.github.novicezk.midjourney.bot.error;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 

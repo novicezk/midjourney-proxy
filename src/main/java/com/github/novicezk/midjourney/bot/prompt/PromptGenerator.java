@@ -31,7 +31,7 @@ public class PromptGenerator {
 
         String characterSref = formatListReferences(character.getSref());
         String characterCref = getRandomFromListReferences(character.getCref());
-        String userCref = formatListReferences(imageUrls);
+        String userCref = getRandomFromListReferences(imageUrls);
 
         String basePrompt = getBasePrompt(characterStrength, characterClass, style);
         String styleSref = getRandomFromListReferences(style.getSref());

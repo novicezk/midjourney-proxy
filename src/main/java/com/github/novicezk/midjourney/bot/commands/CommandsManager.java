@@ -1,6 +1,8 @@
 package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.ReturnCode;
+import com.github.novicezk.midjourney.bot.error.ErrorMessageStorage;
+import com.github.novicezk.midjourney.bot.error.OnErrorAction;
 import com.github.novicezk.midjourney.bot.images.ImageBBUploader;
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
 import com.github.novicezk.midjourney.bot.images.ImageValidator;
@@ -9,6 +11,7 @@ import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
 import com.github.novicezk.midjourney.bot.utils.Config;
+import com.github.novicezk.midjourney.bot.error.ErrorMessageHandler;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import com.github.novicezk.midjourney.controller.SubmitController;
 import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
@@ -54,9 +57,33 @@ public class CommandsManager extends ListenerAdapter {
             case "generate":
                 handleGenerateCommand(event);
                 break;
+            case "get-log":
+                handleGetErrorMessagesCommand(event);
+                break;
+            case "ping":
+                handlePingCommand(event);
+                break;
             default:
                 break;
         }
+    }
+
+    private void handlePingCommand(SlashCommandInteractionEvent event) {
+        event.reply("who was that?").queue();
+    }
+
+    private void handleGetErrorMessagesCommand(SlashCommandInteractionEvent event) {
+        event.reply(listToString(ErrorMessageStorage.getErrorMessages()))
+                .setEphemeral(true)
+                .queue();
+    }
+
+    public static String listToString(List<String> list) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            stringBuilder.append(i + 1).append(". ").append(list.get(i)).append("\n");
+        }
+        return stringBuilder.toString();
     }
 
     private void handleUploadImageCommand(SlashCommandInteractionEvent event) {
@@ -155,7 +182,12 @@ public class CommandsManager extends ListenerAdapter {
             sendMessage(event.getGuild(), event.getUser().getId(), text);
             event.getHook().deleteOriginal().queue();
         } else {
-            sendMessage(event.getGuild(), event.getUser().getId(), "Critical fail! \uD83C\uDFB2\uD83E\uDD26 Try again!");
+            ErrorMessageHandler.sendMessage(
+                    event.getGuild(),
+                    event.getUser().getId(),
+                    "Critical fail! \uD83C\uDFB2\uD83E\uDD26 Try again or upload new image!",
+                    result.getCode() + " " + result.getDescription()
+            );
             event.getHook().deleteOriginal().queue();
             log.error("{}: {}", result.getCode(), result.getDescription());
         }
@@ -228,6 +260,8 @@ public class CommandsManager extends ListenerAdapter {
                 .addOptions(attachment, attachment2, attachment3, attachment4));
         commandData.add(Commands.slash("get-images", "Get your currently uploaded images."));
         commandData.add(Commands.slash("generate", "Need some inspiration? Use this command to generate random images!"));
+        commandData.add(Commands.slash("get-log", "Logs file"));
+        commandData.add(Commands.slash("ping", "default fockin ping"));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
