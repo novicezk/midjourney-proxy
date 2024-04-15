@@ -59,8 +59,7 @@ public class PromptGenerator {
                 character,
                 characterStrength,
                 characterClass,
-                style.getDisplayName(),
-                promptBuilder.toString()
+                style.getDisplayName()
         );
 
         GeneratedPromptData promptData = new GeneratedPromptData();
@@ -101,8 +100,7 @@ public class PromptGenerator {
             Character character,
             CharacterStrength characterStrength,
             CharacterClass characterClass,
-            String messageStyle,
-            String prompt
+            String messageStyle
     ) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder
@@ -121,7 +119,7 @@ public class PromptGenerator {
                     .append("\n**Rarity Level:** <@&").append(characterStrength.getRoleId()).append(">\n");
         }
 
-        return messageBuilder.append("\n").append("**prompt:**\n`").append(prompt).append("`");
+        return messageBuilder;
     }
 
     private String formatListReferences(List<String> urls) {

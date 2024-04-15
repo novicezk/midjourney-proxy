@@ -42,9 +42,19 @@ public class QueueMessageHandler extends MessageHandler {
                 try {
                     File imageFile = ImageDownloader.downloadImage(getImageUrl(message));
                     FileUpload file = FileUpload.fromData(imageFile);
-                    channel.sendMessage("<@" + userId + ">")
-                            .addFiles(file)
-                            .queue();
+
+                    // remove from queue
+                    QueueEntry entry = QueueManager.removeFromQueue(userId);
+                    if (entry != null) {
+                        // send the message
+                        channel.sendMessage("<@" + userId + ">\n\n" + entry.getMessage())
+                                .addFiles(file)
+                                .queue();
+                    } else {
+                        channel.sendMessage("<@" + userId + ">")
+                                .addFiles(file)
+                                .queue();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

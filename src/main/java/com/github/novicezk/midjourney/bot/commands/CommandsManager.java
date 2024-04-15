@@ -167,19 +167,23 @@ public class CommandsManager extends ListenerAdapter {
         }
 
         if (!imageUrls.isEmpty()) {
-            GeneratedPromptData promptData =
-                    new PromptGenerator().generatePrompt(imageUrls, event.getUser());
+            if (!QueueManager.isUserInQueue(event.getUser().getId())) {
+                GeneratedPromptData promptData =
+                        new PromptGenerator().generatePrompt(imageUrls, event.getUser());
 
-            String text = title + promptData.getMessage();
-            SeasonTracker.incrementGenerationCount();
+                String text = title + promptData.getMessage();
+                SeasonTracker.incrementGenerationCount();
 
-            SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
-            imagineDTO.setPrompt(promptData.getPrompt());
-            SubmitResultVO result = submitController.imagine(imagineDTO);
-            if (result != null) {
-                handleCommandResponse(result, text, event);
+                SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
+                imagineDTO.setPrompt(promptData.getPrompt());
+                SubmitResultVO result = submitController.imagine(imagineDTO);
+                if (result != null) {
+                    handleCommandResponse(result, text, event);
+                } else {
+                    OnErrorAction.onImageErrorMessage(event);
+                }
             } else {
-                OnErrorAction.onImageErrorMessage(event);
+                OnErrorAction.queueMessage(event);
             }
         } else {
             OnErrorAction.onImageErrorMessage(event);
