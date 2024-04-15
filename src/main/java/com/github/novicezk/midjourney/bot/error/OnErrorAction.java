@@ -18,7 +18,7 @@ public class OnErrorAction {
 
     public static void queueMessage(SlashCommandInteractionEvent event) {
         event.getHook()
-                .sendMessage("You're already in the queue so just sit back and relax.")
+                .sendMessage("You're already in the queue so just sit back and relax \uD83D\uDE0E")
                 .queue();
     }
 }

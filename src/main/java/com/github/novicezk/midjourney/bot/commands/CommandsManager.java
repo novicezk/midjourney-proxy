@@ -162,29 +162,36 @@ public class CommandsManager extends ListenerAdapter {
         List<String> imageUrls = getUserUrls(event.getUser().getId());
         String title = generateTitle(imageUrls.isEmpty(), "");
 
-        if (imageUrls.isEmpty() && getImageUrlFromDiscordAvatar(event.getUser()) != null) {
-            imageUrls.add(getImageUrlFromDiscordAvatar(event.getUser()));
+        if (imageUrls.isEmpty()) {
+            String discordAvatarUrl = getImageUrlFromDiscordAvatar(event.getUser());
+            if (discordAvatarUrl != null) {
+                imageUrls.add(discordAvatarUrl);
+            }
         }
 
-        if (!imageUrls.isEmpty()) {
-            if (!QueueManager.isUserInQueue(event.getUser().getId())) {
-                GeneratedPromptData promptData =
-                        new PromptGenerator().generatePrompt(imageUrls, event.getUser());
+        if (imageUrls.isEmpty()) {
+            OnErrorAction.onImageErrorMessage(event);
+            return;
+        }
 
-                String text = title + promptData.getMessage();
-                SeasonTracker.incrementGenerationCount();
+        if (QueueManager.isUserInQueue(event.getUser().getId())) {
+            OnErrorAction.queueMessage(event);
+            return;
+        }
 
-                SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
-                imagineDTO.setPrompt(promptData.getPrompt());
-                SubmitResultVO result = submitController.imagine(imagineDTO);
-                if (result != null) {
-                    handleCommandResponse(result, text, event);
-                } else {
-                    OnErrorAction.onImageErrorMessage(event);
-                }
-            } else {
-                OnErrorAction.queueMessage(event);
-            }
+        GeneratedPromptData promptData = new PromptGenerator().generatePrompt(imageUrls, event.getUser());
+        processPromptData(promptData, title, event);
+    }
+
+    private void processPromptData(GeneratedPromptData promptData, String title, SlashCommandInteractionEvent event) {
+        String text = title + promptData.getMessage();
+        SeasonTracker.incrementGenerationCount();
+
+        SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
+        imagineDTO.setPrompt(promptData.getPrompt());
+        SubmitResultVO result = submitController.imagine(imagineDTO);
+        if (result != null) {
+            handleCommandResponse(result, text, event);
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }
@@ -193,7 +200,7 @@ public class CommandsManager extends ListenerAdapter {
     private void handleCommandResponse(SubmitResultVO result, String text, SlashCommandInteractionEvent event) {
         if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
             QueueManager.addToQueue(event.getUser().getId(), result.getResult(), text);
-            event.getHook().sendMessage("You're in the queue!").queue();
+            event.getHook().sendMessage("You're in the queue! \uD83E\uDD73").queue();
         } else {
             ErrorMessageHandler.sendMessage(
                     event.getGuild(),
@@ -204,16 +211,6 @@ public class CommandsManager extends ListenerAdapter {
             event.getHook().deleteOriginal().queue();
             log.error("{}: {}", result.getCode(), result.getDescription());
         }
-    }
-
-    private MessageEmbed buildErrorEmbed(int code, String message) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle("Oops, something went wrong!\n");
-        embedBuilder.addField("Code", String.valueOf(code), true);
-        embedBuilder.addField("Message", message, true);
-        embedBuilder.setColor(0xF44336);
-
-        return embedBuilder.build();
     }
 
     private String generateTitle(boolean isImagesEmpty, String defaultTitle) {
