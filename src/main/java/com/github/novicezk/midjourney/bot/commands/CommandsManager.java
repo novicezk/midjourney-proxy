@@ -19,6 +19,7 @@ import com.github.novicezk.midjourney.result.SubmitResultVO;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -73,9 +74,21 @@ public class CommandsManager extends ListenerAdapter {
     }
 
     private void handleGetErrorMessagesCommand(SlashCommandInteractionEvent event) {
-        event.reply(listToString(ErrorMessageStorage.getErrorMessages()))
-                .setEphemeral(true)
-                .queue();
+        Member member = event.getMember();
+        if (member != null && member.getRoles().stream().anyMatch(role -> role.getId().equals(Config.getGodfatherId()))) {
+            event.reply(listToString(ErrorMessageStorage.getErrorMessages()))
+                    .setEphemeral(true)
+                    .queue();
+        } else {
+            // Getting the user id
+            String userId = event.getUser().getId();
+            // We get a list of errors by user id
+            List<String> userErrorMessages = ErrorMessageStorage.getErrorMessages(userId);
+            // Convert the list of errors into a string and send it to the user
+            event.reply(listToString(userErrorMessages))
+                    .setEphemeral(true)
+                    .queue();
+        }
     }
 
     public static String listToString(List<String> list) {

@@ -55,7 +55,7 @@ public class QueueMessageHandler extends MessageHandler {
 
         int color = embed.getInt("color", 0);
         if (color == 16711680) {
-            return "**type:** " + embed.getString("type", null) + " - **title:** " + embed.getString("title", null) + " - **desc:** " + embed.getString("description", null);
+            return "**title:** " + embed.getString("title", null) + " - **desc:** " + embed.getString("description", null);
         }
 
         String description = embed.getString("description", null);
