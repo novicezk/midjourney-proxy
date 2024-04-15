@@ -48,8 +48,11 @@ public class PromptGenerator {
                 .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\"")
                 .append(" ").append(getAspectRation(characterStrength, style.getAspectRatio()))
                 .append(" ").append(dataProvider.getDefaultVersion())
-                .append(" ").append("--sref ").append(styleSref).append(characterSref)
-                .append(" ").append("--cref ").append(userCref).append(characterCref)
+                .append(" ").append("--sref")
+                .append(" ").append(styleSref).append(characterSref)
+                .append(" ").append("--cref")
+                .append(" ").append(userCref)
+                .append(" ").append(characterCref)
                 .append(" ").append("--cw ").append(characterStrength.getCW());
 
         StringBuilder messageBuilder = buildMessage(

@@ -29,13 +29,13 @@ public enum CharacterStrength {
         Random random = new Random();
         int randomNumber = random.nextInt(100) + 1; // Generate random number from 1 to 100
 
-        if (randomNumber <= 72) {
+        if (randomNumber <= 50) {
             return COMMON;
-        } else if (randomNumber <= 87) {
+        } else if (randomNumber <= 73) {
             return RARE;
-        } else if (randomNumber <= 95) {
+        } else if (randomNumber <= 88) {
             return STRANGE;
-        } else if (randomNumber <= 99) {
+        } else if (randomNumber <= 96) {
             return UNIQUE;
         } else {
             return EPIC;

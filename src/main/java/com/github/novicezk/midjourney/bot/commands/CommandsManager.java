@@ -18,11 +18,9 @@ import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -32,7 +30,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.entities.Message.Attachment;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,13 +67,13 @@ public class CommandsManager extends ListenerAdapter {
     }
 
     private void handlePingCommand(SlashCommandInteractionEvent event) {
-        event.reply("who was that?").queue();
+        event.reply("what was that?").queue();
     }
 
     private void handleGetErrorMessagesCommand(SlashCommandInteractionEvent event) {
         Member member = event.getMember();
         if (member != null && member.getRoles().stream().anyMatch(role -> role.getId().equals(Config.getGodfatherId()))) {
-            event.reply(listToString(ErrorMessageStorage.getErrorMessages()))
+            event.reply("**Full logs:** \n\n" + listToString(ErrorMessageStorage.getErrorMessages()))
                     .setEphemeral(true)
                     .queue();
         } else {
@@ -192,8 +189,7 @@ public class CommandsManager extends ListenerAdapter {
     private void handleCommandResponse(SubmitResultVO result, String text, SlashCommandInteractionEvent event) {
         if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
             QueueManager.addToQueue(event.getUser().getId(), result.getResult(), text);
-            sendMessage(event.getGuild(), event.getUser().getId(), text);
-            event.getHook().deleteOriginal().queue();
+            event.getHook().sendMessage("You're in the queue!").queue();
         } else {
             ErrorMessageHandler.sendMessage(
                     event.getGuild(),
@@ -203,15 +199,6 @@ public class CommandsManager extends ListenerAdapter {
             );
             event.getHook().deleteOriginal().queue();
             log.error("{}: {}", result.getCode(), result.getDescription());
-        }
-    }
-
-    private void sendMessage(@Nullable Guild guild, String userId, String text) {
-        if (guild != null) {
-            TextChannel channel = guild.getTextChannelById(Config.getSendingChannel());
-            if (channel != null) {
-                channel.sendMessage("<@" + userId + "> \n\n" + text).queue();
-            }
         }
     }
 

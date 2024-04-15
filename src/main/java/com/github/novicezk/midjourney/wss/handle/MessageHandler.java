@@ -45,6 +45,14 @@ public abstract class MessageHandler {
 		return reference.map(dataObject -> dataObject.getString("message_id", "")).orElse("");
 	}
 
+	protected String getAuthorId(DataObject message) {
+		DataArray mentions = message.optArray("mentions").orElse(DataArray.empty());
+		if (!mentions.isEmpty()) {
+			return mentions.getObject(0).getString("id");
+		}
+		return null;
+	}
+
 	protected void findAndFinishImageTask(DiscordInstance instance, TaskCondition condition, String finalPrompt, DataObject message) {
 		String imageUrl = getImageUrl(message);
 		String messageHash = this.discordHelper.getMessageHash(imageUrl);
