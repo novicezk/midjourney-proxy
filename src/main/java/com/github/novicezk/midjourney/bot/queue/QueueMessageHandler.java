@@ -33,49 +33,63 @@ public class QueueMessageHandler extends MessageHandler {
         Guild guild = AdamBotInitializer.getApiInstance().getGuildById(Config.getGuildId());
         String content = getMessageContent(message);
 
-        // check if there's some issue
-        String failReason = ErrorUtil.isError(
-                instance, messageType, message, getMessageContent(message), getReferenceMessageId(message));
-        if (failReason != null && guild != null) {
-            String userId = message.getObject("interaction_metadata").getString("user_id");
-            ErrorMessageHandler.sendMessage(
-                    guild, userId, "Critical fail! \uD83C\uDFB2\uD83E\uDD26 \nTry again or upload new image!", failReason);
-        }
+        handlePossibleError(instance, messageType, message, content);
+        handleCompletedTask(messageType, message, content, guild);
+    }
 
-        // do when task is completed
+    private void handlePossibleError(DiscordInstance instance, MessageType messageType, DataObject message, String content) {
+        String failReason = ErrorUtil.isError(instance, messageType, message, content, getReferenceMessageId(message));
+        if (failReason != null) {
+            handleCriticalFail(message, failReason);
+        }
+    }
+
+    private void handleCompletedTask(MessageType messageType, DataObject message, String content, Guild guild) {
         if (MessageType.CREATE.equals(messageType) && hasImage(message) && guild != null) {
             ContentParseData parseData = ConvertUtils.parseContent(content, CONTENT_REGEX);
-
-            TextChannel channel = guild.getTextChannelById(Config.getSendingChannel());
-            String userId = getAuthorId(message);
-            if (channel != null && userId != null) {
-                try {
-                    File imageFile = ImageDownloader.downloadImage(getImageUrl(message));
-                    FileUpload file = FileUpload.fromData(imageFile);
-
-                    if (parseData != null) {
-                        Pattern pattern = Pattern.compile(LINK_PATTERN);
-                        Matcher matcher = pattern.matcher(parseData.getPrompt());
-                        String prompt = matcher.replaceAll("$1");
-
-                        // remove from queue
-                        QueueEntry entry = QueueManager.removeFromQueue(prompt);
-                        if (entry != null) {
-                            log.debug("REMOVE from queue - {}", entry.getTaskId());
-                            // send the message
-                            channel.sendMessage("<@" + entry.getUserId() + ">\n\n" + entry.getMessage())
-                                    .addFiles(file)
-                                    .queue();
-                        } else {
-                            channel.sendMessage("<@" + userId + ">")
-                                    .addFiles(file)
-                                    .queue();
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if (parseData != null) {
+                handleTaskCompletion(message, guild, parseData);
             }
+        }
+    }
+
+    private void handleCriticalFail(DataObject message, String failReason) {
+        Guild guild = AdamBotInitializer.getApiInstance().getGuildById(Config.getGuildId());
+        if (guild != null) {
+            String userId = message.getObject("interaction_metadata").getString("user_id");
+            ErrorMessageHandler.sendMessage(guild, userId, "Critical fail! \uD83C\uDFB2\uD83E\uDD26 \nTry again or upload new image!", failReason);
+        }
+    }
+
+    private void handleTaskCompletion(DataObject message, Guild guild, ContentParseData parseData) {
+        TextChannel channel = guild.getTextChannelById(Config.getSendingChannel());
+        String userId = getAuthorId(message);
+        if (channel != null && userId != null) {
+            try {
+                File imageFile = ImageDownloader.downloadImage(getImageUrl(message));
+                FileUpload file = FileUpload.fromData(imageFile);
+                sendTaskCompletionMessage(channel, userId, parseData, file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void sendTaskCompletionMessage(TextChannel channel, String userId, ContentParseData parseData, FileUpload file) {
+        Pattern pattern = Pattern.compile(LINK_PATTERN);
+        Matcher matcher = pattern.matcher(parseData.getPrompt());
+        String prompt = matcher.replaceAll("$1");
+
+        QueueEntry entry = QueueManager.removeFromQueue(prompt);
+        if (entry != null) {
+            log.debug("REMOVE from queue - {}", entry.getTaskId());
+            channel.sendMessage("<@" + entry.getUserId() + ">\n\n" + entry.getMessage())
+                    .addFiles(file)
+                    .queue();
+        } else {
+            channel.sendMessage("<@" + userId + ">")
+                    .addFiles(file)
+                    .queue();
         }
     }
 }
