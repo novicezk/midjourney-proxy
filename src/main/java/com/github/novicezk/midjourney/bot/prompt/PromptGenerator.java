@@ -39,7 +39,7 @@ public class PromptGenerator {
         StringBuilder promptBuilder = new StringBuilder();
         promptBuilder.append(basePrompt)
                 .append(" ").append(character.getPrompt())
-                .append(" ").append("name: ").append("\"").append(user.getGlobalName()).append("\", ")
+                .append(" ").append("name: ").append("\"").append(user.getGlobalName()).append("\",")
                 .append(" ").append("character: ").append("\"").append(character.getDisplayName()).append("\", ");
 
         appendCharacterClass(characterStrength, characterClass, promptBuilder);

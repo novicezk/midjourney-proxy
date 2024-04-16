@@ -8,11 +8,11 @@
   "versions": [
     {
       "name": "Anime",
-      "value": "--niji 6"
+      "value": "--niji 6.0"
     },
     {
       "name": "Realistic",
-      "value": "--v 6"
+      "value": "--v 6.0"
     }
   ]
 }

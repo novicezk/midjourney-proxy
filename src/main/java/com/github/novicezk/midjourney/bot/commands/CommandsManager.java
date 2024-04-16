@@ -17,9 +17,7 @@ import com.github.novicezk.midjourney.controller.SubmitController;
 import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -174,10 +172,11 @@ public class CommandsManager extends ListenerAdapter {
             return;
         }
 
-        if (QueueManager.isUserInQueue(event.getUser().getId())) {
-            OnErrorAction.queueMessage(event);
-            return;
-        }
+        // TODO add the queue limits
+//        if (QueueManager.isUserInQueue(event.getUser().getId())) {
+//            OnErrorAction.queueMessage(event);
+//            return;
+//        }
 
         GeneratedPromptData promptData = new PromptGenerator().generatePrompt(imageUrls, event.getUser());
         processPromptData(promptData, title, event);
@@ -191,21 +190,27 @@ public class CommandsManager extends ListenerAdapter {
         imagineDTO.setPrompt(promptData.getPrompt());
         SubmitResultVO result = submitController.imagine(imagineDTO);
         if (result != null) {
-            handleCommandResponse(result, text, event);
+            handleCommandResponse(result, text, promptData.getPrompt(), event);
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }
     }
 
-    private void handleCommandResponse(SubmitResultVO result, String text, SlashCommandInteractionEvent event) {
+    private void handleCommandResponse(
+            SubmitResultVO result,
+            String text,
+            String prompt,
+            SlashCommandInteractionEvent event
+    ) {
         if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
-            QueueManager.addToQueue(event.getUser().getId(), result.getResult(), text);
+            QueueManager.addToQueue(prompt, event.getUser().getId(), result.getResult(), text);
+            log.debug("ADD to queue - {}", result.getResult());
             event.getHook().sendMessage("You're in the queue! \uD83E\uDD73").queue();
         } else {
             ErrorMessageHandler.sendMessage(
                     event.getGuild(),
                     event.getUser().getId(),
-                    "Critical fail! \uD83C\uDFB2\uD83E\uDD26 Try again or upload new image!",
+                    "Critical fail! \uD83C\uDFB2\uD83E\uDD26 \nTry again or upload new image!",
                     result.getCode() + " " + result.getDescription()
             );
             event.getHook().deleteOriginal().queue();

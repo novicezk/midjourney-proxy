@@ -4,11 +4,13 @@ public class QueueEntry {
     private String userId;
     private String taskId;
     private String message;
+    private String prompt;
 
-    public QueueEntry(String userId, String taskId, String message) {
+    public QueueEntry(String userId, String taskId, String message, String prompt) {
         this.userId = userId;
         this.taskId = taskId;
         this.message = message;
+        this.prompt = prompt;
     }
 
     public String getUserId() {
@@ -33,5 +35,13 @@ public class QueueEntry {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getPrompt() {
+        return prompt;
+    }
+
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
     }
 }

@@ -8,12 +8,12 @@ import java.util.Map;
 public class QueueManager {
     private static final Map<String, QueueEntry> queueMap = new HashMap<>();
 
-    public static void addToQueue(String userId, String taskId, String message) {
-        queueMap.put(userId, new QueueEntry(userId, taskId, message));
+    public static void addToQueue(String prompt, String userId, String taskId, String message) {
+        queueMap.put(cleanPrompt(prompt), new QueueEntry(userId, taskId, message, prompt));
     }
 
-    public static QueueEntry removeFromQueue(String userId) {
-        return queueMap.remove(userId);
+    public static QueueEntry removeFromQueue(String prompt) {
+        return queueMap.remove(cleanPrompt(prompt));
     }
 
     public static List<QueueEntry> getCurrentQueue() {
@@ -26,5 +26,15 @@ public class QueueManager {
 
     public static void clearQueue() {
         queueMap.clear();
+    }
+
+    private static String cleanPrompt(String prompt) {
+        // trim links part
+        int startIndex = prompt.indexOf("--sref");
+        if (startIndex != -1) {
+            return prompt.substring(0, startIndex);
+        }
+
+        return prompt;
     }
 }
