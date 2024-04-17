@@ -2,6 +2,10 @@ package com.github.novicezk.midjourney.bot.prompt;
 
 import com.github.novicezk.midjourney.bot.model.*;
 import com.github.novicezk.midjourney.bot.model.Character;
+import com.github.novicezk.midjourney.bot.providers.ArgumentsDataProvider;
+import com.github.novicezk.midjourney.bot.providers.CharacterDataProvider;
+import com.github.novicezk.midjourney.bot.providers.ClassDataProvider;
+import com.github.novicezk.midjourney.bot.providers.StyleDataProvider;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.User;
@@ -12,10 +16,16 @@ import java.util.Random;
 
 @Slf4j
 public class PromptGenerator {
-    private final DataProvider dataProvider;
+    private final StyleDataProvider styleDataProvider;
+    private final ArgumentsDataProvider argumentsDataProvider;
+    private final CharacterDataProvider characterDataProvider;
+    private final ClassDataProvider classDataProvider;
 
     public PromptGenerator() {
-        this.dataProvider = new DataProvider();
+        this.styleDataProvider = new StyleDataProvider();
+        this.argumentsDataProvider = new ArgumentsDataProvider();
+        this.characterDataProvider = new CharacterDataProvider();
+        this.classDataProvider = new ClassDataProvider();
     }
 
     /**
@@ -26,7 +36,7 @@ public class PromptGenerator {
     public GeneratedPromptData generatePrompt(List<String> imageUrls, User user) {
         CharacterStrength characterStrength = CharacterStrength.getRandomStrength();
         Character character = getRandomCharacter();
-        Style style = dataProvider.getStyleByStrength(characterStrength);
+        Style style = styleDataProvider.getStyleByStrength(characterStrength);
         CharacterClass characterClass = getRandomCharacterClass();
 
         String characterSref = formatListReferences(character.getSref());
@@ -47,7 +57,7 @@ public class PromptGenerator {
         promptBuilder.append("signature: ").append("\"AVIS s").append(SeasonTracker.getCurrentSeasonVersion())
                 .append(".").append(SeasonTracker.getCurrentGenerationCount()).append("\"")
                 .append(" ").append(getAspectRation(characterStrength, style.getAspectRatio()))
-                .append(" ").append(dataProvider.getDefaultVersion())
+                .append(" ").append(argumentsDataProvider.getDefaultVersion())
                 .append(" ").append("--sref")
                 .append(" ").append(styleSref).append(characterSref)
                 .append(" ").append("--cref")
@@ -74,15 +84,15 @@ public class PromptGenerator {
             return aspectRatio.get(new Random().nextInt(aspectRatio.size())).getValue();
         }
 
-        return dataProvider.getDefaultAspectRatio();
+        return argumentsDataProvider.getDefaultAspectRatio();
     }
 
     private Character getRandomCharacter() {
-        return dataProvider.getCharacters().get(new Random().nextInt(dataProvider.getCharacters().size()));
+        return characterDataProvider.getCharacters().get(new Random().nextInt(characterDataProvider.getCharacters().size()));
     }
 
     private CharacterClass getRandomCharacterClass() {
-        return dataProvider.getCharacterClasses().get(new Random().nextInt(dataProvider.getCharacterClasses().size()));
+        return classDataProvider.getCharacterClasses().get(new Random().nextInt(classDataProvider.getCharacterClasses().size()));
     }
 
     private String getBasePrompt(CharacterStrength characterStrength, CharacterClass characterClass, Style style) {

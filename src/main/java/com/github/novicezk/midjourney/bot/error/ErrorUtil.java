@@ -38,7 +38,7 @@ public class ErrorUtil {
 
         int color = embed.getInt("color", 0);
         if (color == 16711680) {
-            return "**title:** " + embed.getString("title", null) + " - **desc:** " + embed.getString("description", null);
+            return "**title:** " + embed.getString("title", null) + " **desc:** " + embed.getString("description", null);
         }
 
         String description = embed.getString("description", null);

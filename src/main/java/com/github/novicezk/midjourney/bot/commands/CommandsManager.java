@@ -210,7 +210,7 @@ public class CommandsManager extends ListenerAdapter {
             ErrorMessageHandler.sendMessage(
                     event.getGuild(),
                     event.getUser().getId(),
-                    "Critical fail! \uD83C\uDFB2\uD83E\uDD26 \nTry again or upload new image!",
+                    "Critical miss! \uD83C\uDFB2\uD83E\uDD26 \nTry again or upload new image!",
                     result.getCode() + " " + result.getDescription()
             );
             event.getHook().deleteOriginal().queue();

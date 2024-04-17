@@ -45,7 +45,7 @@ public class ErrorMessageStorage {
             while (resultSet.next()) {
                 String failReason = resultSet.getString("fail_reason");
                 Timestamp timestamp = resultSet.getTimestamp("timestamp");
-                errorMessages.add("Fail Reason: " + failReason + ", Timestamp: " + timestamp);
+                errorMessages.add("Fail Reason: " + failReason + " Timestamp: " + timestamp);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -64,7 +64,7 @@ public class ErrorMessageStorage {
                 String userId = resultSet.getString("user_id");
                 String failReason = resultSet.getString("fail_reason");
                 Timestamp timestamp = resultSet.getTimestamp("timestamp");
-                errorMessages.add("ID: " + id + ", User ID: " + userId + ", Fail Reason: " + failReason + ", Timestamp: " + timestamp);
+                errorMessages.add("ID: " + id + ", User ID: " + userId + ", Fail Reason: " + failReason + " Timestamp: " + timestamp);
             }
         } catch (SQLException e) {
             e.printStackTrace();
