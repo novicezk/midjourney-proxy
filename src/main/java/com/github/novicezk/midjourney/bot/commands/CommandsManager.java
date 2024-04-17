@@ -203,7 +203,7 @@ public class CommandsManager extends ListenerAdapter {
             SlashCommandInteractionEvent event
     ) {
         if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
-            QueueManager.addToQueue(prompt, event.getUser().getId(), result.getResult(), text);
+            QueueManager.addToQueue(event.getGuild(), prompt, event.getUser().getId(), result.getResult(), text);
             log.debug("ADD to queue - {}", result.getResult());
             event.getHook().sendMessage("You're in the queue! \uD83E\uDD73").queue();
         } else {

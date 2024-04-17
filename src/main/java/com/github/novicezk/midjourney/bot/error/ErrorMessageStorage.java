@@ -1,15 +1,11 @@
 package com.github.novicezk.midjourney.bot.error;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ErrorMessageStorage {
-    private static final String DATABASE_URL = "jdbc:sqlite:error_messages.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:error_messages:v2.db";
 
     static {
         initializeDatabase();
@@ -18,7 +14,7 @@ public class ErrorMessageStorage {
     private static void initializeDatabase() {
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement statement = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS error_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, fail_reason TEXT)"
+                     "CREATE TABLE IF NOT EXISTS error_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, fail_reason TEXT, timestamp DATETIME)"
              )) {
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -27,11 +23,12 @@ public class ErrorMessageStorage {
     }
 
     public static void saveErrorMessage(String userId, String failReason) {
-        String sql = "INSERT INTO error_messages (user_id, fail_reason) VALUES (?, ?)";
+        String sql = "INSERT INTO error_messages (user_id, fail_reason, timestamp) VALUES (?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, userId);
             statement.setString(2, failReason);
+            statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -40,13 +37,15 @@ public class ErrorMessageStorage {
 
     public static List<String> getErrorMessages(String userId) {
         List<String> errorMessages = new ArrayList<>();
-        String sql = "SELECT fail_reason FROM error_messages WHERE user_id = ?";
+        String sql = "SELECT fail_reason, timestamp FROM error_messages WHERE user_id = ?";
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, userId);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                errorMessages.add(resultSet.getString("fail_reason"));
+                String failReason = resultSet.getString("fail_reason");
+                Timestamp timestamp = resultSet.getTimestamp("timestamp");
+                errorMessages.add("Fail Reason: " + failReason + ", Timestamp: " + timestamp);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -56,7 +55,7 @@ public class ErrorMessageStorage {
 
     public static List<String> getErrorMessages() {
         List<String> errorMessages = new ArrayList<>();
-        String sql = "SELECT id, user_id, fail_reason FROM error_messages";
+        String sql = "SELECT id, user_id, fail_reason, timestamp FROM error_messages";
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
@@ -64,7 +63,8 @@ public class ErrorMessageStorage {
                 int id = resultSet.getInt("id");
                 String userId = resultSet.getString("user_id");
                 String failReason = resultSet.getString("fail_reason");
-                errorMessages.add("ID: " + id + ", User ID: " + userId + ", Fail Reason: " + failReason);
+                Timestamp timestamp = resultSet.getTimestamp("timestamp");
+                errorMessages.add("ID: " + id + ", User ID: " + userId + ", Fail Reason: " + failReason + ", Timestamp: " + timestamp);
             }
         } catch (SQLException e) {
             e.printStackTrace();
