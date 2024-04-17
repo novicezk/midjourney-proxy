@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.commands.handlers.*;
+import com.github.novicezk.midjourney.bot.queue.QueueManager;
 import com.github.novicezk.midjourney.controller.SubmitController;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -81,5 +82,8 @@ public class CommandsManager extends ListenerAdapter {
         commandData.add(Commands.slash("ping", "default ping command(?)"));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
+
+        // clear queue on start
+        QueueManager.clearQueue(event.getGuild());
     }
 }

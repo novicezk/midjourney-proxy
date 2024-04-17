@@ -82,7 +82,6 @@ public class QueueMessageHandler extends MessageHandler {
 
         QueueEntry entry = QueueManager.removeFromQueue(prompt);
         if (entry != null) {
-            log.debug("REMOVE from queue - {}", entry.getTaskId());
             channel.sendMessage("<@" + entry.getUserId() + ">\n\n" + entry.getMessage())
                     .addFiles(file)
                     .queue();

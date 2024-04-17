@@ -11,10 +11,12 @@ import java.util.Map;
 
 public class QueueManager {
     private static final Map<String, QueueEntry> queueMap = new HashMap<>();
+    private static final Map<String, QueueEntry> allQueueRecords = new HashMap<>();
 
     public static void addToQueue(Guild guild, String prompt, String userId, String taskId, String message) {
         queueMap.put(cleanPrompt(prompt), new QueueEntry(userId, taskId, message, prompt));
-        notifyQueueChannel(guild, userId);
+        allQueueRecords.put(cleanPrompt(prompt), new QueueEntry(userId, taskId, message, prompt));
+        notifyQueueChannel(guild, taskId, userId);
     }
 
     public static QueueEntry removeFromQueue(String prompt) {
@@ -34,10 +36,14 @@ public class QueueManager {
         notifyQueueClearedChannel(guild);
     }
 
-    private static void notifyQueueChannel(Guild guild, String userId) {
+    private static List<QueueEntry> getAllQueueRecords() {
+        return new ArrayList<>(allQueueRecords.values());
+    }
+
+    private static void notifyQueueChannel(Guild guild, String taskId, String userId) {
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
-            channel.sendMessage("<@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**")
+            channel.sendMessage(getAllQueueRecords().size() + ". <@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**\nTask ID: " + taskId)
                     .queue();
         }
     }
