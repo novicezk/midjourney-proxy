@@ -5,12 +5,14 @@ public class QueueEntry {
     private String taskId;
     private String message;
     private String prompt;
+    private int queueIndex;
 
-    public QueueEntry(String userId, String taskId, String message, String prompt) {
+    public QueueEntry(int queueIndex, String userId, String taskId, String message, String prompt) {
         this.userId = userId;
         this.taskId = taskId;
         this.message = message;
         this.prompt = prompt;
+        this.queueIndex = queueIndex;
     }
 
     public String getUserId() {
@@ -43,5 +45,13 @@ public class QueueEntry {
 
     public void setPrompt(String prompt) {
         this.prompt = prompt;
+    }
+
+    public int getQueueIndex() {
+        return queueIndex;
+    }
+
+    public void setQueueIndex(int queueIndex) {
+        this.queueIndex = queueIndex;
     }
 }

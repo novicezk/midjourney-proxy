@@ -14,8 +14,10 @@ public class QueueManager {
     private static final Map<String, QueueEntry> allQueueRecords = new HashMap<>();
 
     public static void addToQueue(Guild guild, String prompt, String userId, String taskId, String message) {
-        queueMap.put(cleanPrompt(prompt), new QueueEntry(userId, taskId, message, prompt));
-        allQueueRecords.put(cleanPrompt(prompt), new QueueEntry(userId, taskId, message, prompt));
+        int queueIndex = getAllQueueRecords().size() + 1;
+
+        queueMap.put(cleanPrompt(prompt), new QueueEntry(queueIndex, userId, taskId, message, prompt));
+        allQueueRecords.put(cleanPrompt(prompt), new QueueEntry(queueIndex, userId, taskId, message, prompt));
         notifyQueueChannel(guild, taskId, userId);
     }
 

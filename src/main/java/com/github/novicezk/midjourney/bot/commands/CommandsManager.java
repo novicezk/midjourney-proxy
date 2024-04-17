@@ -24,6 +24,7 @@ public class CommandsManager extends ListenerAdapter {
     private final GenerateCommandHandler generateCommandHandler;
     private final GetImagesCommandHandler imagesCommandHandler;
     private final PingCommandHandler pingCommandHandler;
+    private final QueueCommandHandler queueCommandHandler;
 
     public CommandsManager(SubmitController submitController) {
         generateCommandHandler = new GenerateCommandHandler(submitController);
@@ -31,6 +32,7 @@ public class CommandsManager extends ListenerAdapter {
         errorMessagesCommandHandler = new GetErrorMessagesCommandHandler();
         uploadImageCommandHandler = new UploadImageCommandHandler();
         imagesCommandHandler = new GetImagesCommandHandler();
+        queueCommandHandler = new QueueCommandHandler();
         pingCommandHandler = new PingCommandHandler();
     }
 
@@ -51,6 +53,10 @@ public class CommandsManager extends ListenerAdapter {
                 break;
             case "contract":
                 contractCommandHandler.handle(event);
+                break;
+            case "get-queue":
+            case "clear-queue":
+                queueCommandHandler.handle(event);
                 break;
 
             case "ping":
@@ -80,7 +86,9 @@ public class CommandsManager extends ListenerAdapter {
         commandData.add(Commands.slash("get-images", "Get your currently uploaded images."));
         commandData.add(Commands.slash("generate", "Need some inspiration? Use this command to generate random images!"));
         commandData.add(Commands.slash("get-log", "Logs file"));
-        commandData.add(Commands.slash("ping", "default ping command(?)"));
+        commandData.add(Commands.slash("ping", "default ping command(or?)"));
+        commandData.add(Commands.slash("get-queue", "Check the current queue status."));
+        commandData.add(Commands.slash("clear-queue", "admins only"));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
 
