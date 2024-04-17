@@ -13,6 +13,7 @@ import com.github.novicezk.midjourney.wss.handle.MessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
@@ -81,14 +82,15 @@ public class QueueMessageHandler extends MessageHandler {
         String prompt = matcher.replaceAll("$1");
 
         QueueEntry entry = QueueManager.removeFromQueue(prompt);
+        String postMessage = "<@" + userId + ">";
         if (entry != null) {
-            channel.sendMessage("<@" + entry.getUserId() + ">\n\n" + entry.getMessage())
-                    .addFiles(file)
-                    .queue();
-        } else {
-            channel.sendMessage("<@" + userId + ">")
-                    .addFiles(file)
-                    .queue();
+            postMessage = "<@" + entry.getUserId() + ">\n\n" + entry.getMessage();
         }
+
+        Button deleteButton = Button.danger("delete", "\uD83D\uDDD1\uFE0F");
+        channel.sendMessage(postMessage)
+                .addFiles(file)
+                .setActionRow(deleteButton)
+                .queue();
     }
 }

@@ -6,6 +6,7 @@ import com.github.novicezk.midjourney.controller.SubmitController;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -85,5 +86,21 @@ public class CommandsManager extends ListenerAdapter {
 
         // clear queue on start
         QueueManager.clearQueue(event.getGuild());
+    }
+
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        event.deferReply().setEphemeral(true).queue();
+        String buttonUserId = event.getUser().getId();
+
+        if (!event.getMessage().getContentRaw().contains(buttonUserId)) {
+            event.getHook().sendMessage("Only the original author can delete the request.").queue();
+            return;
+        }
+
+        if (event.getComponentId().equals("delete")) {
+            event.getChannel().deleteMessageById(event.getMessageId()).queue();
+            event.getHook().sendMessage("The request has been deleted.").queue();
+        }
     }
 }
