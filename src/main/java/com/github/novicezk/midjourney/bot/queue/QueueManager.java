@@ -29,14 +29,27 @@ public class QueueManager {
         return queueMap.containsKey(userId);
     }
 
-    public static void clearQueue() {
+    public static void clearQueue(Guild guild) {
         queueMap.clear();
+        notifyQueueClearedChannel(guild);
     }
 
     private static void notifyQueueChannel(Guild guild, String userId) {
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
             channel.sendMessage("<@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**")
+                    .queue();
+        }
+    }
+
+    private static void notifyQueueClearedChannel(Guild guild) {
+        if (guild == null) {
+            return;
+        }
+
+        TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
+        if (channel != null) {
+            channel.sendMessage("The queue has been cleared!")
                     .queue();
         }
     }

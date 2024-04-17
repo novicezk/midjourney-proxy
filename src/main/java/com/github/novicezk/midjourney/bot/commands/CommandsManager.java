@@ -18,12 +18,14 @@ import java.util.List;
 public class CommandsManager extends ListenerAdapter {
     private final GetErrorMessagesCommandHandler errorMessagesCommandHandler;
     private final UploadImageCommandHandler uploadImageCommandHandler;
+    private final ContractCommandHandler contractCommandHandler;
     private final GenerateCommandHandler generateCommandHandler;
     private final GetImagesCommandHandler imagesCommandHandler;
     private final PingCommandHandler pingCommandHandler;
 
     public CommandsManager(SubmitController submitController) {
         generateCommandHandler = new GenerateCommandHandler(submitController);
+        contractCommandHandler = new ContractCommandHandler(submitController);
         errorMessagesCommandHandler = new GetErrorMessagesCommandHandler();
         uploadImageCommandHandler = new UploadImageCommandHandler();
         imagesCommandHandler = new GetImagesCommandHandler();
@@ -45,6 +47,9 @@ public class CommandsManager extends ListenerAdapter {
             case "get-images":
                 imagesCommandHandler.handle(event);
                 break;
+            case "contract":
+                contractCommandHandler.handle(event);
+                break;
 
             case "ping":
             default:
@@ -57,12 +62,19 @@ public class CommandsManager extends ListenerAdapter {
     public void onGuildReady(GuildReadyEvent event) {
         List<CommandData> commandData = new ArrayList<>();
 
+        // upload-image command
         OptionData attachment = new OptionData(OptionType.ATTACHMENT, "main_image", "Choose your image", true);
         OptionData attachment2 = new OptionData(OptionType.ATTACHMENT, "image2", "Optional image", false);
         OptionData attachment3 = new OptionData(OptionType.ATTACHMENT, "image3", "Optional image", false);
         OptionData attachment4 = new OptionData(OptionType.ATTACHMENT, "image4", "Optional image", false);
         commandData.add(Commands.slash("upload-image", "Upload your image to generate something amazing!")
                 .addOptions(attachment, attachment2, attachment3, attachment4));
+
+        // contract command
+        OptionData promptContract = new OptionData(OptionType.STRING, "prompt", "Prompt to use the contract command", true);
+        commandData.add(Commands.slash("contract", "admins only").addOptions(promptContract));
+
+        // other commands
         commandData.add(Commands.slash("get-images", "Get your currently uploaded images."));
         commandData.add(Commands.slash("generate", "Need some inspiration? Use this command to generate random images!"));
         commandData.add(Commands.slash("get-log", "Logs file"));

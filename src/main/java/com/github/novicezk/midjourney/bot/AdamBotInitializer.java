@@ -36,7 +36,7 @@ public class AdamBotInitializer implements ApplicationRunner {
                             .build();
 
                     apiInstance.addEventListener(new CommandsManager(submitController));
-                    QueueManager.clearQueue();
+                    QueueManager.clearQueue(apiInstance.getGuildById(Config.getGuildId()));
                 }
             }
         }

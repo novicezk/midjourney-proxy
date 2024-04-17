@@ -12,6 +12,7 @@ public class Config {
     private static final String QUEUE_CHANNEL = "QUEUE_CHANNEL";
     private static final String GUILD_ID = "GUILD_ID";
     private static final String GODFATHER_ID = "GODFATHER_ID";
+    private static final String ADMINS_ROLE_ID = "ADMINS_ROLE_ID";
 
     private static final String CONFIG_FILE = "adam-ai/config.properties";
     private static final Properties properties = new Properties();
@@ -50,5 +51,9 @@ public class Config {
 
     public static String getGodfatherId() {
         return properties.getProperty(GODFATHER_ID);
+    }
+
+    public static String getAdminsRoleId() {
+        return properties.getProperty(ADMINS_ROLE_ID);
     }
 }
