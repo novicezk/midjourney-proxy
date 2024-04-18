@@ -11,8 +11,10 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UploadImageCommandHandler {
+public class UploadImageCommandHandler implements CommandHandler {
+    public static final String COMMAND_NAME = "upload-image";
 
+    @Override
     public void handle(SlashCommandInteractionEvent event) {
         // Defer reply to avoid timeout
         event.deferReply().setEphemeral(true).queue();
@@ -54,5 +56,10 @@ public class UploadImageCommandHandler {
             }
         }
         return imageUrls;
+    }
+
+    @Override
+    public boolean supports(String eventName) {
+        return COMMAND_NAME.equals(eventName);
     }
 }

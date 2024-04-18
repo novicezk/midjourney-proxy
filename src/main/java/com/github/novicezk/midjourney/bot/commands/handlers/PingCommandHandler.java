@@ -4,9 +4,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 import java.util.Random;
 
-public class PingCommandHandler {
+public class PingCommandHandler implements CommandHandler {
+    public static final String COMMAND_NAME = "ping";
     private static final Random random = new Random();
 
+    @Override
     public void handle(SlashCommandInteractionEvent event) {
         int probability = random.nextInt(100) + 1; // Generate random number from 1 to 100
 
@@ -19,5 +21,10 @@ public class PingCommandHandler {
         } else {
             event.reply("pong").setEphemeral(true).queue();
         }
+    }
+
+    @Override
+    public boolean supports(String eventName) {
+        return COMMAND_NAME.equals(eventName);
     }
 }

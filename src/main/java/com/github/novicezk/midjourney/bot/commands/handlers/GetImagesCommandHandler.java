@@ -6,8 +6,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 import java.util.List;
 
-public class GetImagesCommandHandler {
+public class GetImagesCommandHandler implements CommandHandler {
+    public static final String COMMAND_NAME = "get-images";
 
+    @Override
     public void handle(SlashCommandInteractionEvent event) {
         event.deferReply().setEphemeral(true).queue();
 
@@ -31,5 +33,10 @@ public class GetImagesCommandHandler {
             validImageUrls.append(url).append("\n");
         }
         return validImageUrls.toString();
+    }
+
+    @Override
+    public boolean supports(String eventName) {
+        return COMMAND_NAME.equals(eventName);
     }
 }

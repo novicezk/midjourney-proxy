@@ -7,8 +7,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 import java.util.List;
 
-public class GetErrorMessagesCommandHandler {
+public class GetErrorMessagesCommandHandler implements CommandHandler {
+    public static final String COMMAND_NAME = "get-log";
 
+    @Override
     public void handle(SlashCommandInteractionEvent event) {
         event.deferReply().setEphemeral(true).queue();
 
@@ -39,5 +41,10 @@ public class GetErrorMessagesCommandHandler {
             stringBuilder.append(i + 1).append(". ").append(list.get(i)).append("\n");
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public boolean supports(String eventName) {
+        return COMMAND_NAME.equals(eventName);
     }
 }

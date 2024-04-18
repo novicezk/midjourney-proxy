@@ -12,13 +12,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 @Slf4j
-public class ContractCommandHandler {
+public class ContractCommandHandler implements CommandHandler {
+    public static final String COMMAND_NAME = "contract";
+
     private final SubmitController submitController;
 
     public ContractCommandHandler(SubmitController submitController) {
         this.submitController = submitController;
     }
 
+    @Override
     public void handle(SlashCommandInteractionEvent event) {
         event.deferReply().setEphemeral(true).queue();
 
@@ -44,5 +47,10 @@ public class ContractCommandHandler {
         } else {
             OnErrorAction.onMissingRoleMessage(event);
         }
+    }
+
+    @Override
+    public boolean supports(String eventName) {
+        return COMMAND_NAME.equals(eventName);
     }
 }

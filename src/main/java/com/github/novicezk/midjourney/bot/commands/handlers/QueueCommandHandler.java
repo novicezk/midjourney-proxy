@@ -7,8 +7,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.util.Comparator;
 import java.util.List;
 
-public class QueueCommandHandler {
+public class QueueCommandHandler implements CommandHandler {
+    public static final String COMMAND_NAME_GET = "get-queue";
+    public static final String COMMAND_NAME_CLEAR = "clear-queue";
 
+    @Override
     public void handle(SlashCommandInteractionEvent event) {
         event.deferReply().setEphemeral(true).queue();
 
@@ -41,5 +44,10 @@ public class QueueCommandHandler {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean supports(String eventName) {
+        return COMMAND_NAME_GET.equals(eventName) || COMMAND_NAME_CLEAR.equals(eventName);
     }
 }
