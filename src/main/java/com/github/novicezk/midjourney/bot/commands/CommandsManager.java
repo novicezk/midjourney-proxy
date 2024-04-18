@@ -3,6 +3,7 @@ package com.github.novicezk.midjourney.bot.commands;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.bot.commands.handlers.*;
 import com.github.novicezk.midjourney.bot.error.ErrorMessageHandler;
+import com.github.novicezk.midjourney.bot.events.EventsManager;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
@@ -64,6 +65,7 @@ public class CommandsManager extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        EventsManager.onCommand(event);
         for (CommandHandler handler : commandHandlers) {
             if (handler.supports(event.getName())) {
                 handler.handle(event);
@@ -105,6 +107,8 @@ public class CommandsManager extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
+        EventsManager.onButtonClick(event);
+
         event.deferReply().setEphemeral(true).queue();
         String buttonUserId = event.getUser().getId();
 

@@ -16,6 +16,7 @@ public class Config {
     private static final String CONTACT_MANAGER_ID = "CONTACT_MANAGER_ID";
     private static final String FAQ_CHANNEL_URL = "FAQ_CHANNEL_URL";
     private static final String QUEUE_LIMIT_PER_PERSON = "QUEUE_LIMIT_PER_PERSON";
+    private static final String LOGS_CHANNEL = "LOGS_CHANNEL";
 
     private static final String CONFIG_FILE = "adam-ai/config.properties";
     private static final Properties properties = new Properties();
@@ -70,5 +71,9 @@ public class Config {
 
     public static int getQueueLimitPerPerson() {
         return Integer.parseInt(properties.getProperty(QUEUE_LIMIT_PER_PERSON, "3"));
+    }
+
+    public static String getLogsChannel() {
+        return properties.getProperty(LOGS_CHANNEL);
     }
 }
