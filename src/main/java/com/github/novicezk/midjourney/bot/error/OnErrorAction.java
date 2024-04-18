@@ -25,10 +25,18 @@ public class OnErrorAction {
     }
 
     public static void onQueueFullMessage(SlashCommandInteractionEvent event) {
-        sendMessage(event, "You're already in the queue so just sit back and relax \uD83D\uDE0E");
+        sendMessage(event, "Looks like you've reached the queue limit. Please wait while we work on your current requests!", false);
     }
 
     private static void sendMessage(GenericCommandInteractionEvent event, String message) {
         event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbedError(message))).queue();
+    }
+
+    private static void sendMessage(GenericCommandInteractionEvent event, String message, boolean error) {
+        if (error) {
+            event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbedError(message))).queue();
+        } else {
+            event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbed(message))).queue();
+        }
     }
 }

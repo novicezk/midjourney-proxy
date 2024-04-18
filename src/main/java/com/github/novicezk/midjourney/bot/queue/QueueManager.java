@@ -4,6 +4,7 @@ import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.ArrayList;
@@ -40,6 +41,14 @@ public class QueueManager {
         notifyQueueClearedChannel(guild);
     }
 
+    public static boolean reachLimitQueue(String userId) {
+        int limit = Config.getQueueLimitPerPerson();
+        long count = queueMap.values().stream()
+                .filter(entry -> entry.getUserId().equals(userId))
+                .count();
+        return count >= limit;
+    }
+
     private static List<QueueEntry> getAllQueueRecords() {
         return new ArrayList<>(allQueueRecords.values());
     }
@@ -48,7 +57,7 @@ public class QueueManager {
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
             channel.sendMessageEmbeds(List.of(EmbedUtil.createEmbedWithFooter(
-                            SeasonTracker.getCurrentGenerationCount() + ". <@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**",
+                            SeasonTracker.getCurrentGenerationCount() + ". <@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**\n`/get-queue` to check",
                             "Task ID: " + taskId
                     )))
                     .queue();
@@ -70,7 +79,8 @@ public class QueueManager {
         String queueClearedText = "Adam AI bot has been restarted. The queue is now clear!";
 
         channel.retrieveMessageById(channel.getLatestMessageId()).queue(lastMessage -> {
-            if (!lastMessage.getContentDisplay().equals(queueClearedText)) {
+            MessageEmbed embed = lastMessage.getEmbeds().get(0);
+            if (embed != null && !queueClearedText.equals(embed.getDescription())) {
                 channel.sendMessageEmbeds(List.of(EmbedUtil.createEmbed(queueClearedText)))
                         .queue();
             }

@@ -4,6 +4,7 @@ import com.github.novicezk.midjourney.bot.commands.CommandsUtil;
 import com.github.novicezk.midjourney.bot.error.OnErrorAction;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
+import com.github.novicezk.midjourney.bot.queue.QueueManager;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import com.github.novicezk.midjourney.controller.SubmitController;
 import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
@@ -42,11 +43,10 @@ public class GenerateCommandHandler implements CommandHandler {
             return;
         }
 
-        // TODO add the queue limits
-//        if (QueueManager.isUserInQueue(event.getUser().getId())) {
-//            OnErrorAction.queueMessage(event);
-//            return;
-//        }
+        if (QueueManager.reachLimitQueue(event.getUser().getId())) {
+            OnErrorAction.onQueueFullMessage(event);
+            return;
+        }
 
         GeneratedPromptData promptData = new PromptGenerator().generatePrompt(imageUrls, event.getUser());
         processPromptData(promptData, title, event);
