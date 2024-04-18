@@ -1,11 +1,22 @@
 package com.github.novicezk.midjourney.bot.commands;
 
+import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.bot.commands.handlers.*;
+import com.github.novicezk.midjourney.bot.error.ErrorMessageHandler;
+import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
+import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
+import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
+import com.github.novicezk.midjourney.bot.utils.WelcomeMessageTracker;
 import com.github.novicezk.midjourney.controller.SubmitController;
+import com.github.novicezk.midjourney.dto.SubmitImagineDTO;
+import com.github.novicezk.midjourney.result.SubmitResultVO;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -23,10 +34,12 @@ import java.util.List;
 public class CommandsManager extends ListenerAdapter {
     private final List<CommandHandler> commandHandlers;
     private final PrivateMessageSender privateMessageSender;
+    private final SubmitController submitController;
 
     public CommandsManager(SubmitController submitController) {
         this.commandHandlers = initializeCommandHandlers(submitController);
         this.privateMessageSender = new PrivateMessageSender();
+        this.submitController = submitController;
     }
 
     private List<CommandHandler> initializeCommandHandlers(SubmitController submitController) {
@@ -107,6 +120,56 @@ public class CommandsManager extends ListenerAdapter {
         if (event.getComponentId().equals("delete")) {
             event.getChannel().deleteMessageById(event.getMessageId()).queue();
             event.getHook().sendMessage("The post has been deleted.").queue();
+        }
+    }
+
+    @Override
+    public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        Member member = event.getMember();
+        User user = member.getUser();
+
+        log.debug("onGuildMemberJoin");
+        if (user.getAvatarUrl() != null && !WelcomeMessageTracker.hasBeenWelcomed(user.getId())) {
+            log.debug("onGuildMemberJoin hasBeenWelcomed");
+
+            String discordAvatarUrl = CommandsUtil.getImageUrlFromDiscordAvatar(event.getUser());
+            GeneratedPromptData promptData = new PromptGenerator().generatePrompt(discordAvatarUrl, event.getUser());
+
+            SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
+            imagineDTO.setPrompt(promptData.getPrompt());
+            processPromptData(promptData, event);
+        }
+    }
+
+    private void processPromptData(GeneratedPromptData promptData, GuildMemberJoinEvent event) {
+        String postText = promptData.getMessage();
+        SeasonTracker.incrementGenerationCount();
+        WelcomeMessageTracker.markAsWelcomed(event.getUser().getId());
+
+        SubmitImagineDTO imagineDTO = new SubmitImagineDTO();
+        imagineDTO.setPrompt(promptData.getPrompt());
+        SubmitResultVO result = submitController.imagine(imagineDTO);
+        if (result != null) {
+            handleCommandResponse(result, postText, promptData.getPrompt(), event);
+        }
+    }
+
+    private void handleCommandResponse(
+            SubmitResultVO result,
+            String postText,
+            String prompt,
+            GuildMemberJoinEvent event
+    ) {
+        if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
+            QueueManager.addToQueue(event.getGuild(), prompt, event.getUser().getId(), result.getResult(), postText);
+        } else {
+            ErrorMessageHandler.sendMessage(
+                    event.getGuild(),
+                    event.getUser().getId(),
+                    "Critical miss! \uD83C\uDFB2\uD83E\uDD26 \nTry again or upload new image!",
+                    result.getCode() + " " + result.getDescription()
+            );
+            log.error("{}: {}", result.getCode(), result.getDescription());
         }
     }
 }

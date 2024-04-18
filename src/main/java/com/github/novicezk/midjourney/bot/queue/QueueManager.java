@@ -62,7 +62,7 @@ public class QueueManager {
     }
 
     private static void sendQueueClearedMessage(TextChannel channel) {
-        String queueClearedText = "Queue has been cleared!";
+        String queueClearedText = "Adam AI bot has been restarted. The queue is now clear!";
 
         channel.retrieveMessageById(channel.getLatestMessageId()).queue(lastMessage -> {
             if (!lastMessage.getContentDisplay().equals(queueClearedText)) {

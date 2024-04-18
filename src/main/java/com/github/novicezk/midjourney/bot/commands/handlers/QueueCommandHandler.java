@@ -1,7 +1,10 @@
 package com.github.novicezk.midjourney.bot.commands.handlers;
 
+import com.github.novicezk.midjourney.bot.error.OnErrorAction;
 import com.github.novicezk.midjourney.bot.queue.QueueEntry;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
+import com.github.novicezk.midjourney.bot.utils.Config;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.util.Comparator;
@@ -23,8 +26,14 @@ public class QueueCommandHandler implements CommandHandler {
     }
 
     private void handleClear(SlashCommandInteractionEvent event) {
-        QueueManager.clearQueue(event.getGuild());
-        event.getHook().sendMessage("Queue has been cleared!").queue();
+        Member member = event.getMember();
+        if (member != null && member.getRoles().stream().anyMatch(role ->
+                role.getId().equals(Config.getAdminsRoleId()) || role.getId().equals(Config.getGodfatherId()))) {
+            QueueManager.clearQueue(event.getGuild());
+            event.getHook().sendMessage("Queue has been cleared!").queue();
+        } else {
+            OnErrorAction.onMissingRoleMessage(event);
+        }
     }
 
     private void handleGet(SlashCommandInteractionEvent event) {

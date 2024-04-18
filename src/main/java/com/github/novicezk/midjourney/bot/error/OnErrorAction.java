@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney.bot.error;
 
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class OnErrorAction {
@@ -24,7 +25,7 @@ public class OnErrorAction {
         sendMessage(event, "You're already in the queue so just sit back and relax \uD83D\uDE0E");
     }
 
-    private static void sendMessage(SlashCommandInteractionEvent event, String message) {
+    private static void sendMessage(GenericCommandInteractionEvent event, String message) {
         event.getHook().sendMessage(message).queue();
     }
 }

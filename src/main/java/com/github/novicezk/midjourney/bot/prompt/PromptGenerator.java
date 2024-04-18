@@ -28,6 +28,10 @@ public class PromptGenerator {
         this.classDataProvider = new ClassDataProvider();
     }
 
+    public GeneratedPromptData generatePrompt(String imageUrl, User user) {
+        return generatePrompt(List.of(imageUrl), user);
+    }
+
     /**
      * @param imageUrls
      * @param user is an optional, default is the Discord's name
