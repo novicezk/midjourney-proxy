@@ -88,9 +88,10 @@ public class QueueMessageHandler extends MessageHandler {
         }
 
         Button deleteButton = Button.danger("delete", "\uD83D\uDDD1\uFE0F");
+        Button downloadButton = Button.success("create", "Create Avatar");
         channel.sendMessage(postMessage)
                 .addFiles(file)
-                .setActionRow(deleteButton)
+                .setActionRow(downloadButton, deleteButton)
                 .queue();
     }
 }

@@ -57,7 +57,7 @@ public class QueueManager {
 
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
-            channel.sendMessage("The queue has been cleared!")
+            channel.sendMessage("Queue has been cleared!")
                     .queue();
         }
     }

@@ -2,17 +2,27 @@ package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.commands.handlers.*;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
+import com.github.novicezk.midjourney.bot.utils.Config;
+import com.github.novicezk.midjourney.bot.utils.ImageDownloader;
 import com.github.novicezk.midjourney.controller.SubmitController;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.utils.FileUpload;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +44,27 @@ public class CommandsManager extends ListenerAdapter {
         imagesCommandHandler = new GetImagesCommandHandler();
         queueCommandHandler = new QueueCommandHandler();
         pingCommandHandler = new PingCommandHandler();
+    }
+
+    @Override
+    public void onMessageReceived(MessageReceivedEvent event) {
+        User selfUser = event.getJDA().getSelfUser();
+        if (event.getChannelType().equals(ChannelType.PRIVATE) && !selfUser.getId().equals(event.getAuthor().getId())) {
+            User author = event.getAuthor();
+            event.getJDA().retrieveUserById(Config.getContactManagerId()).queue(contactManager -> {
+                if (contactManager != null) {
+                    contactManager.openPrivateChannel().queue(privateChannel -> {
+                        privateChannel.sendMessage("Recieved message from <@" + author.getId() + ">\n\ncontent:\n"
+                                        + event.getMessage().getContentRaw())
+                                .queue();
+
+                        event.getAuthor().openPrivateChannel().queue(channel -> {
+                            channel.sendMessage("Your message has been sent to the team!").queue();
+                        });
+                    });
+                }
+            });
+        }
     }
 
     @Override
@@ -84,7 +115,7 @@ public class CommandsManager extends ListenerAdapter {
 
         // other commands
         commandData.add(Commands.slash("get-images", "Get your currently uploaded images."));
-        commandData.add(Commands.slash("generate", "Need some inspiration? Use this command to generate random images!"));
+        commandData.add(Commands.slash("generate", "Need some inspiration? Use this command to generate images!"));
         commandData.add(Commands.slash("get-log", "Logs file"));
         commandData.add(Commands.slash("ping", "default ping command(or?)"));
         commandData.add(Commands.slash("get-queue", "Check the current queue status."));
@@ -101,6 +132,12 @@ public class CommandsManager extends ListenerAdapter {
         event.deferReply().setEphemeral(true).queue();
         String buttonUserId = event.getUser().getId();
 
+        if (event.getComponentId().equals("create")) {
+            sendPrivateMessage(event);
+            event.getHook().sendMessage("We've sent you a private message please check your DMs.").queue();
+            return;
+        }
+
         if (!event.getMessage().getContentRaw().contains(buttonUserId)) {
             event.getHook().sendMessage("Only the original author can delete the request.").queue();
             return;
@@ -108,7 +145,33 @@ public class CommandsManager extends ListenerAdapter {
 
         if (event.getComponentId().equals("delete")) {
             event.getChannel().deleteMessageById(event.getMessageId()).queue();
-            event.getHook().sendMessage("The request has been deleted.").queue();
+            event.getHook().sendMessage("The post has been deleted.").queue();
+        }
+    }
+
+    public void sendPrivateMessage(ButtonInteractionEvent event) {
+        Member member = event.getMember();
+        if (member != null) {
+            List<Message.Attachment> attachments = event.getMessage().getAttachments();
+
+
+            List<FileUpload> files = new ArrayList<>();
+            for (Message.Attachment attachment : attachments) {
+                try {
+                    File imageFile = ImageDownloader.downloadImage(attachment.getUrl());
+                    files.add(FileUpload.fromData(imageFile));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            User user = member.getUser();
+            user.openPrivateChannel().queue(privateChannel -> {
+                privateChannel.sendMessage("Hi there!\n\n" +
+                        "If you're looking for an avatar like the one in the picture just reach out to <@" + Config.getContactManagerId() + ">!")
+                        .addFiles(files)
+                        .queue();
+            });
         }
     }
 }

@@ -31,7 +31,12 @@ public class AdamBotInitializer implements ApplicationRunner {
                     String token = Config.getDiscordBotToken();
                     apiInstance = JDABuilder
                             .createDefault(token)
-                            .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
+                            .enableIntents(
+                                    GatewayIntent.MESSAGE_CONTENT,
+                                    GatewayIntent.GUILD_MEMBERS,
+                                    GatewayIntent.GUILD_MESSAGES,
+                                    GatewayIntent.DIRECT_MESSAGES
+                            )
                             .setActivity(Activity.listening("your commands"))
                             .build();
 
