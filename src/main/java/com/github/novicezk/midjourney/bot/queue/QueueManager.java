@@ -57,9 +57,19 @@ public class QueueManager {
 
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
-            channel.sendMessage("Queue has been cleared!")
-                    .queue();
+            sendQueueClearedMessage(channel);
         }
+    }
+
+    private static void sendQueueClearedMessage(TextChannel channel) {
+        String queueClearedText = "Queue has been cleared!";
+
+        channel.retrieveMessageById(channel.getLatestMessageId()).queue(lastMessage -> {
+            if (!lastMessage.getContentDisplay().equals(queueClearedText)) {
+                channel.sendMessage(queueClearedText)
+                        .queue();
+            }
+        });
     }
 
     private static String cleanPrompt(String prompt) {
