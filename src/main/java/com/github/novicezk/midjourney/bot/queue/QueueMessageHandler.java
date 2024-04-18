@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
@@ -87,11 +88,12 @@ public class QueueMessageHandler extends MessageHandler {
             postMessage = "<@" + entry.getUserId() + ">\n\n" + entry.getMessage();
         }
 
+        Button downloadButton = Button.success("create", "Create Avatar \uD83D\uDCAB");
+        Button faqButton = Button.of(ButtonStyle.LINK, Config.getFaqChannelUrl(), "What's that?");
         Button deleteButton = Button.danger("delete", "\uD83D\uDDD1\uFE0F");
-        Button downloadButton = Button.success("create", "Create Avatar");
         channel.sendMessage(postMessage)
                 .addFiles(file)
-                .setActionRow(downloadButton, deleteButton)
+                .setActionRow(downloadButton, faqButton, deleteButton)
                 .queue();
     }
 }

@@ -115,10 +115,6 @@ public class CommandsManager extends ListenerAdapter {
             return;
         }
 
-        if (event.getComponentId().equals("faq")) {
-            return;
-        }
-
         if (!event.getMessage().getContentRaw().contains(buttonUserId)) {
             event.getHook().sendMessageEmbeds(
                     EmbedUtil.createEmbedWarning("Only the original author can delete the request.")

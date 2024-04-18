@@ -2,7 +2,10 @@ package com.github.novicezk.midjourney.bot.commands.handlers;
 
 import com.github.novicezk.midjourney.bot.commands.CommandsUtil;
 import com.github.novicezk.midjourney.bot.error.OnErrorAction;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 
 import java.util.List;
 
@@ -14,14 +17,20 @@ public class GetImagesCommandHandler implements CommandHandler {
         event.deferReply().setEphemeral(true).queue();
 
         List<String> imageUrls = CommandsUtil.getUserUrls(event.getUser().getId());
-        String title = CommandsUtil.generateTitle(imageUrls.isEmpty(), "Your uploaded images:\n");
+        boolean noImageResponse = imageUrls.isEmpty();
 
         if (imageUrls.isEmpty() && CommandsUtil.getImageUrlFromDiscordAvatar(event.getUser()) != null) {
             imageUrls.add(CommandsUtil.getImageUrlFromDiscordAvatar(event.getUser()));
         }
 
         if (!imageUrls.isEmpty()) {
-            event.getHook().sendMessage(title + formatImageUrls(imageUrls)).setEphemeral(true).queue();
+            WebhookMessageCreateAction<Message> action = event.getHook().sendMessage(formatImageUrls(imageUrls)).setEphemeral(true);
+            if (noImageResponse) {
+                action.addEmbeds(EmbedUtil.createEmbed(
+                        "Oops! No image uploaded or link expired; we'll use your avatar instead. \nTo upload a new image try `/upload-image`."
+                ));
+            }
+            action.queue();
         } else {
             OnErrorAction.onImageErrorMessage(event);
         }

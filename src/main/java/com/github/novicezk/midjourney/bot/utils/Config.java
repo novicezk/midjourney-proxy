@@ -14,6 +14,7 @@ public class Config {
     private static final String GODFATHER_ID = "GODFATHER_ID";
     private static final String ADMINS_ROLE_ID = "ADMINS_ROLE_ID";
     private static final String CONTACT_MANAGER_ID = "CONTACT_MANAGER_ID";
+    private static final String FAQ_CHANNEL_URL = "FAQ_CHANNEL_URL";
 
     private static final String CONFIG_FILE = "adam-ai/config.properties";
     private static final Properties properties = new Properties();
@@ -60,5 +61,9 @@ public class Config {
 
     public static String getContactManagerId() {
         return properties.getProperty(CONTACT_MANAGER_ID);
+    }
+
+    public static String getFaqChannelUrl() {
+        return properties.getProperty(FAQ_CHANNEL_URL);
     }
 }
