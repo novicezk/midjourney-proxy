@@ -1,6 +1,8 @@
 package com.github.novicezk.midjourney.bot.queue;
 
 import com.github.novicezk.midjourney.bot.utils.Config;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
+import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
@@ -45,7 +47,10 @@ public class QueueManager {
     private static void notifyQueueChannel(Guild guild, String taskId, String userId) {
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
-            channel.sendMessage(getAllQueueRecords().size() + ". <@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**\nTask ID: " + taskId)
+            channel.sendMessageEmbeds(List.of(EmbedUtil.createEmbedWithFooter(
+                            SeasonTracker.getCurrentGenerationCount() + ". <@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**",
+                            "Task ID: " + taskId
+                    )))
                     .queue();
         }
     }
@@ -66,7 +71,7 @@ public class QueueManager {
 
         channel.retrieveMessageById(channel.getLatestMessageId()).queue(lastMessage -> {
             if (!lastMessage.getContentDisplay().equals(queueClearedText)) {
-                channel.sendMessage(queueClearedText)
+                channel.sendMessageEmbeds(List.of(EmbedUtil.createEmbed(queueClearedText)))
                         .queue();
             }
         });

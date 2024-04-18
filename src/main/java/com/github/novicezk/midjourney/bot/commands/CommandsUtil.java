@@ -5,6 +5,7 @@ import com.github.novicezk.midjourney.bot.error.ErrorMessageHandler;
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
 import com.github.novicezk.midjourney.bot.images.ImageValidator;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import com.github.novicezk.midjourney.result.SubmitResultVO;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.User;
@@ -51,7 +52,7 @@ public class CommandsUtil {
     ) {
         if (result.getCode() == ReturnCode.SUCCESS || result.getCode() == ReturnCode.IN_QUEUE) {
             QueueManager.addToQueue(event.getGuild(), prompt, event.getUser().getId(), result.getResult(), postText);
-            event.getHook().sendMessage("You're in the queue! \uD83E\uDD73").queue();
+            event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbed("You're in the queue! \uD83E\uDD73"))).queue();
         } else {
             ErrorMessageHandler.sendMessage(
                     event.getGuild(),

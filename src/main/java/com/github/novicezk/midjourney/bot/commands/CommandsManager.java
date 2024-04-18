@@ -6,6 +6,7 @@ import com.github.novicezk.midjourney.bot.error.ErrorMessageHandler;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import com.github.novicezk.midjourney.bot.utils.WelcomeMessageTracker;
 import com.github.novicezk.midjourney.controller.SubmitController;
@@ -108,18 +109,28 @@ public class CommandsManager extends ListenerAdapter {
 
         if (event.getComponentId().equals("create")) {
             privateMessageSender.sendToUser(event);
-            event.getHook().sendMessage("We've sent you a private message please check your DMs.").queue();
+            event.getHook().sendMessageEmbeds(
+                    EmbedUtil.createEmbed("We've sent you a private message please check your DMs.")
+            ).queue();
+            return;
+        }
+
+        if (event.getComponentId().equals("faq")) {
             return;
         }
 
         if (!event.getMessage().getContentRaw().contains(buttonUserId)) {
-            event.getHook().sendMessage("Only the original author can delete the request.").queue();
+            event.getHook().sendMessageEmbeds(
+                    EmbedUtil.createEmbedWarning("Only the original author can delete the request.")
+            ).queue();
             return;
         }
 
         if (event.getComponentId().equals("delete")) {
             event.getChannel().deleteMessageById(event.getMessageId()).queue();
-            event.getHook().sendMessage("The post has been deleted.").queue();
+            event.getHook().sendMessageEmbeds(
+                    EmbedUtil.createEmbed("The post has been deleted.")
+            ).queue();
         }
     }
 

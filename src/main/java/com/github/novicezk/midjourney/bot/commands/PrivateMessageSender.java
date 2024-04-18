@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.bot.commands;
 
 import com.github.novicezk.midjourney.bot.utils.Config;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import com.github.novicezk.midjourney.bot.utils.ImageDownloader;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -46,7 +47,7 @@ public class PrivateMessageSender {
                                     + event.getMessage().getContentRaw())
                             .queue();
                     event.getAuthor().openPrivateChannel().queue(channel -> {
-                        channel.sendMessage("Your message has been sent to the team!").queue();
+                        channel.sendMessageEmbeds(EmbedUtil.createEmbed("Your message has been sent to the team!")).queue();
                     });
                 });
             }

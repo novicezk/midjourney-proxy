@@ -1,7 +1,10 @@
 package com.github.novicezk.midjourney.bot.error;
 
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+
+import java.util.List;
 
 public class OnErrorAction {
 
@@ -26,6 +29,6 @@ public class OnErrorAction {
     }
 
     private static void sendMessage(GenericCommandInteractionEvent event, String message) {
-        event.getHook().sendMessage(message).queue();
+        event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbedError(message))).queue();
     }
 }

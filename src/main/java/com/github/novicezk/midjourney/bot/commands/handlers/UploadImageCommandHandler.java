@@ -4,6 +4,7 @@ import com.github.novicezk.midjourney.bot.error.OnErrorAction;
 import com.github.novicezk.midjourney.bot.images.ImageBBUploader;
 import com.github.novicezk.midjourney.bot.images.ImageStorage;
 import com.github.novicezk.midjourney.bot.model.images.ImageResponse;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -24,7 +25,8 @@ public class UploadImageCommandHandler implements CommandHandler {
             List<String> imageUrls = extractImageUrls(event);
             if (!imageUrls.isEmpty()) {
                 ImageStorage.addImageUrl(event.getUser().getId(), imageUrls);
-                event.getHook().sendMessage("Your images are in! Now you can use `/generate` to start generating characters or try `/get-images` to see what you've uploaded.")
+                event.getHook().sendMessageEmbeds(
+                                EmbedUtil.createEmbed("Your images are in! Now you can use `/generate` to start generating characters or try `/get-images` to see what you've uploaded."))
                         .setEphemeral(true)
                         .queue();
             } else {

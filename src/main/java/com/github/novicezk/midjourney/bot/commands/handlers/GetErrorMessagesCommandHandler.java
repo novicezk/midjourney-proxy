@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.bot.commands.handlers;
 
 import com.github.novicezk.midjourney.bot.error.ErrorMessageStorage;
 import com.github.novicezk.midjourney.bot.utils.Config;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
@@ -16,7 +17,8 @@ public class GetErrorMessagesCommandHandler implements CommandHandler {
 
         Member member = event.getMember();
         if (member != null && member.getRoles().stream().anyMatch(role -> role.getId().equals(Config.getGodfatherId()))) {
-            event.getHook().sendMessage("**Full logs:** \n\n" + listToString(ErrorMessageStorage.getErrorMessages()))
+            event.getHook().sendMessageEmbeds(
+                            EmbedUtil.createEmbed("**Full logs:** \n\n" + listToString(ErrorMessageStorage.getErrorMessages())))
                     .setEphemeral(true)
                     .queue();
         } else {
@@ -25,7 +27,8 @@ public class GetErrorMessagesCommandHandler implements CommandHandler {
             // We get a list of errors by user id
             List<String> userErrorMessages = ErrorMessageStorage.getErrorMessages(userId);
             // Convert the list of errors into a string and send it to the user
-            event.getHook().sendMessage(listToString(userErrorMessages))
+            event.getHook().sendMessageEmbeds(
+                            EmbedUtil.createEmbed(listToString(userErrorMessages)))
                     .setEphemeral(true)
                     .queue();
         }

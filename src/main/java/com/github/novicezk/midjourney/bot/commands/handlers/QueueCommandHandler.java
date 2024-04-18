@@ -4,6 +4,7 @@ import com.github.novicezk.midjourney.bot.error.OnErrorAction;
 import com.github.novicezk.midjourney.bot.queue.QueueEntry;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
 import com.github.novicezk.midjourney.bot.utils.Config;
+import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
@@ -30,14 +31,14 @@ public class QueueCommandHandler implements CommandHandler {
         if (member != null && member.getRoles().stream().anyMatch(role ->
                 role.getId().equals(Config.getAdminsRoleId()) || role.getId().equals(Config.getGodfatherId()))) {
             QueueManager.clearQueue(event.getGuild());
-            event.getHook().sendMessage("Queue has been cleared!").queue();
+            event.getHook().sendMessageEmbeds(EmbedUtil.createEmbed("Queue has been cleared!")).queue();
         } else {
             OnErrorAction.onMissingRoleMessage(event);
         }
     }
 
     private void handleGet(SlashCommandInteractionEvent event) {
-        event.getHook().sendMessage(listToString(QueueManager.getCurrentQueue())).queue();
+        event.getHook().sendMessageEmbeds(EmbedUtil.createEmbed(listToString(QueueManager.getCurrentQueue()))).queue();
     }
 
     private String listToString(List<QueueEntry> list) {
