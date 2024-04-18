@@ -12,9 +12,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -27,87 +25,89 @@ public class GetErrorMessagesCommandHandler implements CommandHandler {
 
         Member member = event.getMember();
         if (member != null && member.getRoles().stream().anyMatch(role -> role.getId().equals(Config.getGodfatherId()))) {
-            String logs = listToString(ErrorMessageStorage.getErrorMessages());
-            String stats = getEvents(EventsStorage.getStatistics());
-            String description = "";
-
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.setTitle("Grand logs");
-
-            if (logs.length() <= 1000) {
-                builder.addField("Full logs: ", "```" + logs + "```", false);
-            } else {
-                FileUpload logsFile = getFileFromString(logs, "logs");
-                if (logsFile != null) {
-                    description = "logs sent to <#" + Config.getLogsChannel() + ">\n";
-                    Guild guild = event.getGuild();
-                    if (guild != null) {
-                        TextChannel logsChannel = guild.getTextChannelById(Config.getLogsChannel());
-                        if (logsChannel != null) {
-                            logsChannel.sendFiles(logsFile).queue();
-                        }
-                    }
-                }
-            }
-
-            if (stats.length() <= 1000) {
-                builder.addField("Stats: ", "```" + stats + "```", false);
-            } else {
-                FileUpload statsFile = getFileFromString(stats, "stats");
-                if (statsFile != null) {
-                    description = description + "stats sent to <#" + Config.getLogsChannel() + ">";
-                    Guild guild = event.getGuild();
-                    if (guild != null) {
-                        TextChannel logsChannel = guild.getTextChannelById(Config.getLogsChannel());
-                        if (logsChannel != null) {
-                            logsChannel.sendFiles(statsFile).queue();
-                        }
-                    }
-                }
-            }
-
-            if (!description.isEmpty()) {
-                builder.setDescription(description);
-            }
-
-            event.getHook().sendMessageEmbeds(builder.build())
-                    .setEphemeral(true)
-                    .queue();
+            handleGodfatherEvent(event);
         } else {
-            // Getting the user id
-            String userId = event.getUser().getId();
-            // We get a list of errors by user id
-            List<String> userErrorMessages = ErrorMessageStorage.getErrorMessages(userId);
-            String logs = listToString(userErrorMessages);
-
-            String description = "";
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.setTitle("User logs");
-            if (logs.length() <= 1000) {
-                builder.addField("Collected for " + event.getUser().getGlobalName(), "```" + logs + "```", false);
-            } else {
-                FileUpload userLogs = getFileFromString(logs, "user_logs");
-                if (userLogs != null) {
-                    description = "The file have been sent to your private messages. Please check your DMs.";
-                    User user = event.getUser();
-
-                    user.openPrivateChannel().queue(privateChannel -> {
-                        privateChannel.sendMessage("Hello! Here's your log file.")
-                                .addFiles(userLogs)
-                                .queue();
-                    });
-                }
-            }
-
-            if (!description.isEmpty()) {
-                builder.setDescription(description);
-            }
-
-            // Convert the list of errors into a string and send it to the user
-            event.getHook().sendMessageEmbeds(builder.build())
-                    .setEphemeral(true)
-                    .queue();
+            handleUserEvent(event);
         }
+    }
+
+    private void handleGodfatherEvent(SlashCommandInteractionEvent event) {
+        String logs = listToString(ErrorMessageStorage.getErrorMessages());
+        String stats = getEvents(EventsStorage.getStatistics());
+        EmbedBuilder builder = new EmbedBuilder().setTitle("Grand logs");
+        String description = sendGrandContentIfNeeded(event.getGuild(), logs, stats, builder);
+        sendResponse(event, builder, description);
+    }
+
+    private void handleUserEvent(SlashCommandInteractionEvent event) {
+        String userId = event.getUser().getId();
+        List<String> userErrorMessages = ErrorMessageStorage.getErrorMessages(userId);
+        String logs = listToString(userErrorMessages);
+        EmbedBuilder builder = new EmbedBuilder();
+        String description = sendUserContentIfNeeded(event.getUser(), logs, builder);
+        sendResponse(event, builder, description);
+    }
+
+    private String sendGrandContentIfNeeded(Guild guild, String logs, String stats, EmbedBuilder builder) {
+        String description = "";
+        if (logs.length() <= 1000) {
+            builder.addField("Full logs: ", "```" + logs + "```", false);
+        } else {
+            FileUpload logsFile = getFileFromString(logs, "logs");
+            description = sendFileIfNeeded(guild, logsFile);
+        }
+
+        if (stats != null && stats.length() <= 1000) {
+            builder.addField("Stats: ", "```" + stats + "```", false);
+        } else if (stats != null) {
+            FileUpload statsFile = getFileFromString(stats, "stats");
+            description = sendFileIfNeeded(guild, statsFile);
+        }
+        return description;
+    }
+
+    private String sendUserContentIfNeeded(User user, String logs, EmbedBuilder builder) {
+        String description = "";
+        if (logs.length() <= 1000) {
+            builder.addField("User logs: ", "```" + logs + "```", false);
+        } else {
+            FileUpload logsFile = getFileFromString(logs, "user_logs");
+            description = sendPrivateFileIfNeeded(user, logsFile);
+        }
+
+        return description;
+    }
+
+    private String sendPrivateFileIfNeeded(User user, FileUpload file) {
+        if (file != null) {
+            user.openPrivateChannel().queue(privateChannel -> {
+                privateChannel.sendMessage("Hello! Here's your log file.")
+                        .addFiles(file)
+                        .queue();
+            });
+
+            return "The file have been sent to your private messages. Please check your DMs.";
+        }
+        return "";
+    }
+
+    private String sendFileIfNeeded(Guild guild, FileUpload file) {
+        if (file != null) {
+            String description = "logs sent to <#" + Config.getLogsChannel() + ">";
+            TextChannel logsChannel = guild.getTextChannelById(Config.getLogsChannel());
+            if (logsChannel != null) {
+                logsChannel.sendFiles(file).queue();
+            }
+            return description;
+        }
+        return "";
+    }
+
+    private void sendResponse(SlashCommandInteractionEvent event, EmbedBuilder builder, String description) {
+        if (!description.isEmpty()) {
+            builder.setDescription(description);
+        }
+        event.getHook().sendMessageEmbeds(builder.build()).queue();
     }
 
     private static FileUpload getFileFromString(String content, String filename) {
