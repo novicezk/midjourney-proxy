@@ -37,6 +37,10 @@ public class EmbedUtil {
         return createEmbed(null, description, null, Color.decode("#ED4337"));
     }
 
+    public static MessageEmbed createEmbedWithFooter(String title, String description, String footer) {
+        return createEmbed(title, description, footer, Color.white);
+    }
+
     public static MessageEmbed createEmbedWithFooter(String description, String footer) {
         return createEmbed(null, description, footer, Color.white);
     }

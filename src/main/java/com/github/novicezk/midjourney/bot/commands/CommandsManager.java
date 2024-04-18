@@ -85,8 +85,9 @@ public class CommandsManager extends ListenerAdapter {
                 .addOptions(attachment, attachment2, attachment3, attachment4));
 
         // contract command
-        OptionData promptContract = new OptionData(OptionType.STRING, "prompt", "Prompt to use the contract command", true);
-        commandData.add(Commands.slash(ContractCommandHandler.COMMAND_NAME, "admins only").addOptions(promptContract));
+        OptionData promptContract = new OptionData(OptionType.STRING, "prompt", "Prompt to use the contract command");
+        OptionData idContract = new OptionData(OptionType.STRING, "task", "Task id");
+        commandData.add(Commands.slash(ContractCommandHandler.COMMAND_NAME, "admins only").addOptions(promptContract, idContract));
 
         // other commands
         commandData.add(Commands.slash(GetImagesCommandHandler.COMMAND_NAME, "Get your currently uploaded images."));

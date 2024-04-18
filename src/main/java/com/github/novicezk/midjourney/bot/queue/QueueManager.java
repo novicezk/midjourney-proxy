@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +58,9 @@ public class QueueManager {
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
             channel.sendMessageEmbeds(List.of(EmbedUtil.createEmbedWithFooter(
-                            SeasonTracker.getCurrentGenerationCount() + ". <@" + userId + "> you're in the queue at number **" + getCurrentQueue().size() + "**\n`/get-queue` to check",
-                            "Task ID: " + taskId
+                            String.valueOf(SeasonTracker.getCurrentGenerationCount()),
+                            "Queue updated: <@" + userId + "> added, now **" + getCurrentQueue().size() + "** in line.\n\n`/get-queue` to check",
+                            "sum: " + taskId + " " + new Timestamp(System.currentTimeMillis())
                     )))
                     .queue();
         }
