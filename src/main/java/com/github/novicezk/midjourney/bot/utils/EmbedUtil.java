@@ -26,22 +26,22 @@ public class EmbedUtil {
     }
 
     public static MessageEmbed createEmbed(String description) {
-        return createEmbed(null, description, null, Color.white);
+        return createEmbed(null, description, null, ColorUtil.getDefaultColor());
     }
 
     public static MessageEmbed createEmbedWarning(String description) {
-        return createEmbed(null, description, null, Color.decode("#EF934D"));
+        return createEmbed(null, description, null, ColorUtil.getWarningColor());
     }
 
     public static MessageEmbed createEmbedError(String description) {
-        return createEmbed(null, description, null, Color.decode("#ED4337"));
+        return createEmbed(null, description, null, ColorUtil.getErrorColor());
     }
 
     public static MessageEmbed createEmbedWithFooter(String title, String description, String footer) {
-        return createEmbed(title, description, footer, Color.white);
+        return createEmbed(title, description, footer, ColorUtil.getDefaultColor());
     }
 
     public static MessageEmbed createEmbedWithFooter(String description, String footer) {
-        return createEmbed(null, description, footer, Color.white);
+        return createEmbed(null, description, footer, ColorUtil.getDefaultColor());
     }
 }

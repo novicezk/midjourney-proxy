@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.bot.commands.handlers;
 
 import com.github.novicezk.midjourney.bot.commands.CommandsUtil;
 import com.github.novicezk.midjourney.bot.error.OnErrorAction;
+import com.github.novicezk.midjourney.bot.utils.ColorUtil;
 import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import com.github.novicezk.midjourney.controller.SubmitController;
@@ -66,9 +67,31 @@ public class ContractCommandHandler implements CommandHandler {
     private void handleTask(SlashCommandInteractionEvent event, String task) {
         if ("test".equals(task)) {
             event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbed("test command"))).queue();
+        } else if ("faq".equals(task) && event.getGuild() != null) {
+            handleFaqCommand(event);
+            event.getHook().sendMessageEmbeds(EmbedUtil.createEmbed("done")).queue();
         } else {
             event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbed("Command not found"))).queue();
         }
+    }
+
+    private void handleFaqCommand(SlashCommandInteractionEvent event) {
+        event.getGuild().getTextChannelById(Config.getFaqChannel())
+                .sendMessageEmbeds(EmbedUtil.createEmbed(
+                        "FAQ: Discord Bot Commands",
+                        "1. What is the purpose of the \"generate\" command?\n\n" +
+                                "**・Command**: generate\n" +
+                                "**・Description**: Generate random images of your avatar for inspiration.\n" +
+                                "\n" +
+                                "2. What does the \"upload-image\" command do?\n\n" +
+                                "**・Command**: upload-image\n" +
+                                "**・Description**: Upload your images to use with the bot. If none are uploaded or the link expires, your avatar will be used instead.\n" +
+                                "\n" +
+                                "3. How do I contact artists?\n\n" +
+                                "Please contact <@" + Config.getContactManagerId() + ">",
+                        null,
+                        ColorUtil.getWarningColor()
+                )).queue();
     }
 
     @Override
