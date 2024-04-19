@@ -18,6 +18,7 @@ public class Config {
     private static final String QUEUE_LIMIT_PER_PERSON = "QUEUE_LIMIT_PER_PERSON";
     private static final String LOGS_CHANNEL = "LOGS_CHANNEL";
     private static final String FAQ_CHANNEL = "FAQ_CHANNEL";
+    private static final String MIXPANEL_PROJECT_TOKEN = "MIXPANEL_PROJECT_TOKEN";
 
     private static final String CONFIG_FILE = "adam-ai/config.properties";
     private static final Properties properties = new Properties();
@@ -80,5 +81,9 @@ public class Config {
 
     public static String getFaqChannel() {
         return properties.getProperty(FAQ_CHANNEL);
+    }
+
+    public static String getMixpanelProjectToken() {
+        return properties.getProperty(MIXPANEL_PROJECT_TOKEN);
     }
 }

@@ -115,7 +115,7 @@ public class CommandsManager extends ListenerAdapter {
     }
 
     @Override
-    public void onButtonInteraction(ButtonInteractionEvent event) {
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         EventsManager.onButtonClick(event);
 
         event.deferReply().setEphemeral(true).queue();
