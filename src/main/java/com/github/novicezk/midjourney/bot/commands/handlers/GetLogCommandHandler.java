@@ -14,9 +14,12 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class GetErrorMessagesCommandHandler implements CommandHandler {
+public class GetLogCommandHandler implements CommandHandler {
     public static final String COMMAND_NAME = "get-log";
 
     @Override
@@ -32,8 +35,9 @@ public class GetErrorMessagesCommandHandler implements CommandHandler {
     }
 
     private void handleGodfatherEvent(SlashCommandInteractionEvent event) {
-        String logs = listToString(ErrorMessageStorage.getErrorMessages());
-        String stats = getEvents(EventsStorage.getStatistics());
+        List<String> list = ErrorMessageStorage.getErrorMessages();
+        String logs = listToString(list);
+        String stats = getCommandsStat(EventsStorage.getStatistics()) + "\n\n" + getEvents(EventsStorage.getStatistics());
         EmbedBuilder builder = new EmbedBuilder().setTitle("Grand logs");
         String description = sendGrandContentIfNeeded(event.getGuild(), logs, stats, builder);
         sendResponse(event, builder, description);
@@ -133,15 +137,43 @@ public class GetErrorMessagesCommandHandler implements CommandHandler {
         }
 
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("log:\n\n");
         for (EventData eventData : events) {
             stringBuilder.append(String.format(
-                    "id: %-4d %-10s user-id: %-20s %s%n",
+                    "id: %-4d %-12s user-id: %-20s %s%n",
                     eventData.getId(),
                     eventData.getAction(),
                     eventData.getUserId(),
                     eventData.getTimestamp()
             ));
         }
+        return stringBuilder.toString();
+    }
+
+    private static String getCommandsStat(List<EventData> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+
+        Map<String, Integer> commandCountMap = new HashMap<>();
+
+        // Count commands
+        for (EventData item : list) {
+            String action = item.getAction();
+            commandCountMap.put(action, commandCountMap.getOrDefault(action, 0) + 1);
+        }
+
+        // Sort list
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(commandCountMap.entrySet());
+        entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+
+        // Format string
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Commands stats:\n\n");
+        for (Map.Entry<String, Integer> entry : entryList) {
+            stringBuilder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+
         return stringBuilder.toString();
     }
 

@@ -46,7 +46,7 @@ public class CommandsManager extends ListenerAdapter {
 
     private List<CommandHandler> initializeCommandHandlers(SubmitController submitController) {
         List<CommandHandler> handlers = new ArrayList<>();
-        handlers.add(new GetErrorMessagesCommandHandler());
+        handlers.add(new GetLogCommandHandler());
         handlers.add(new UploadImageCommandHandler());
         handlers.add(new ContractCommandHandler(submitController));
         handlers.add(new GenerateCommandHandler(submitController));
@@ -95,7 +95,7 @@ public class CommandsManager extends ListenerAdapter {
         // other commands
         commandData.add(Commands.slash(GetImagesCommandHandler.COMMAND_NAME, "Get your currently uploaded images."));
         commandData.add(Commands.slash(GenerateCommandHandler.COMMAND_NAME, "Need some inspiration? Use this command to generate images!"));
-        commandData.add(Commands.slash(GetErrorMessagesCommandHandler.COMMAND_NAME, "Logs file"));
+        commandData.add(Commands.slash(GetLogCommandHandler.COMMAND_NAME, "Logs file"));
         commandData.add(Commands.slash(PingCommandHandler.COMMAND_NAME, "default ping command(or?)"));
         commandData.add(Commands.slash(QueueCommandHandler.COMMAND_NAME_GET, "Check the current queue status."));
         commandData.add(Commands.slash(QueueCommandHandler.COMMAND_NAME_CLEAR, "admins only"));
