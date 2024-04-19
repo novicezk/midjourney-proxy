@@ -133,11 +133,14 @@ public class GetErrorMessagesCommandHandler implements CommandHandler {
         }
 
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < events.size(); i++) {
-            EventData eventData = events.get(i);
-            stringBuilder.append(
-                    "id: " + eventData.getId() + ". " + eventData.getAction() + " user-id: " + eventData.getUserId() + " " + eventData.getTimestamp()
-            ).append("\n");
+        for (EventData eventData : events) {
+            stringBuilder.append(String.format(
+                    "id: %-4d %-10s user-id: %-20s %s%n",
+                    eventData.getId(),
+                    eventData.getAction(),
+                    eventData.getUserId(),
+                    eventData.getTimestamp()
+            ));
         }
         return stringBuilder.toString();
     }

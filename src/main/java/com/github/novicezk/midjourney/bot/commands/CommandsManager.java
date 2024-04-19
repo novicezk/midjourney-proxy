@@ -53,6 +53,7 @@ public class CommandsManager extends ListenerAdapter {
         handlers.add(new GetImagesCommandHandler());
         handlers.add(new PingCommandHandler());
         handlers.add(new QueueCommandHandler());
+        handlers.add(new EmbedCommandHandler());
         return handlers;
     }
 
@@ -98,6 +99,14 @@ public class CommandsManager extends ListenerAdapter {
         commandData.add(Commands.slash(PingCommandHandler.COMMAND_NAME, "default ping command(or?)"));
         commandData.add(Commands.slash(QueueCommandHandler.COMMAND_NAME_GET, "Check the current queue status."));
         commandData.add(Commands.slash(QueueCommandHandler.COMMAND_NAME_CLEAR, "admins only"));
+
+        OptionData embedDescription = new OptionData(OptionType.STRING, "description", "String", true);
+        OptionData embedChannel = new OptionData(OptionType.CHANNEL, "channel", "Name", true);
+        OptionData embedTitle = new OptionData(OptionType.STRING, "title", "String");
+        OptionData embedFooter = new OptionData(OptionType.STRING, "footer", "String");
+        OptionData embedColor = new OptionData(OptionType.STRING, "color", "hex #000000");
+        commandData.add(Commands.slash(EmbedCommandHandler.COMMAND_NAME, "admins only")
+                .addOptions(embedChannel, embedDescription, embedTitle, embedFooter, embedColor));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
 

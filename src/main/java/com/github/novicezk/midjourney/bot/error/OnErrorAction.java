@@ -28,7 +28,7 @@ public class OnErrorAction {
         sendMessage(event, "Looks like you've reached the queue limit. Please wait while we work on your current requests!", false);
     }
 
-    private static void sendMessage(GenericCommandInteractionEvent event, String message, boolean error) {
+    public static void sendMessage(GenericCommandInteractionEvent event, String message, boolean error) {
         if (error) {
             event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbedError(message))).queue();
         } else {
