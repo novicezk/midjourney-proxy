@@ -1,5 +1,7 @@
 package com.github.novicezk.midjourney.bot.error;
 
+import com.github.novicezk.midjourney.bot.error.model.ErrorLogData;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +37,8 @@ public class ErrorMessageStorage {
         }
     }
 
-    public static List<String> getErrorMessages(String userId) {
-        List<String> errorMessages = new ArrayList<>();
+    public static List<ErrorLogData> getErrorMessages(String userId) {
+        List<ErrorLogData> errorMessages = new ArrayList<>();
         String sql = "SELECT fail_reason, timestamp FROM error_messages WHERE user_id = ?";
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -45,7 +47,11 @@ public class ErrorMessageStorage {
             while (resultSet.next()) {
                 String failReason = resultSet.getString("fail_reason");
                 Timestamp timestamp = resultSet.getTimestamp("timestamp");
-                errorMessages.add("Fail Reason: " + failReason + " Timestamp: " + timestamp);
+
+                ErrorLogData data = new ErrorLogData();
+                data.setUserId(userId);
+                data.setErrorMessage("Fail Reason: " + failReason + " Timestamp: " + timestamp);
+                errorMessages.add(data);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -53,8 +59,8 @@ public class ErrorMessageStorage {
         return errorMessages;
     }
 
-    public static List<String> getErrorMessages() {
-        List<String> errorMessages = new ArrayList<>();
+    public static List<ErrorLogData> getErrorMessages() {
+        List<ErrorLogData> errorMessages = new ArrayList<>();
         String sql = "SELECT id, user_id, fail_reason, timestamp FROM error_messages";
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -64,7 +70,11 @@ public class ErrorMessageStorage {
                 String userId = resultSet.getString("user_id");
                 String failReason = resultSet.getString("fail_reason");
                 Timestamp timestamp = resultSet.getTimestamp("timestamp");
-                errorMessages.add("ID: " + id + ", User ID: " + userId + ", Fail Reason: " + failReason + " Timestamp: " + timestamp);
+
+                ErrorLogData data = new ErrorLogData();
+                data.setErrorMessage("ID: " + id + ", User ID: " + userId + ", Fail Reason: " + failReason + " Timestamp: " + timestamp);
+                data.setUserId(userId);
+                errorMessages.add(data);
             }
         } catch (SQLException e) {
             e.printStackTrace();

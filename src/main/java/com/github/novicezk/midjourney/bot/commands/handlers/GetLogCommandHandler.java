@@ -1,6 +1,7 @@
 package com.github.novicezk.midjourney.bot.commands.handlers;
 
 import com.github.novicezk.midjourney.bot.error.ErrorMessageStorage;
+import com.github.novicezk.midjourney.bot.error.model.ErrorLogData;
 import com.github.novicezk.midjourney.bot.events.EventsStorage;
 import com.github.novicezk.midjourney.bot.events.model.EventData;
 import com.github.novicezk.midjourney.bot.utils.Config;
@@ -14,10 +15,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GetLogCommandHandler implements CommandHandler {
     public static final String COMMAND_NAME = "get-log";
@@ -35,8 +33,8 @@ public class GetLogCommandHandler implements CommandHandler {
     }
 
     private void handleGodfatherEvent(SlashCommandInteractionEvent event) {
-        List<String> list = ErrorMessageStorage.getErrorMessages();
-        String logs = listToString(list);
+        List<ErrorLogData> list = ErrorMessageStorage.getErrorMessages();
+        String logs = "Error Logs\n\n" + getLogsStat(list) + "\n\n" + listToString(list);
         String stats = getCommandsStat(EventsStorage.getStatistics()) + "\n\n" + getEvents(EventsStorage.getStatistics());
         EmbedBuilder builder = new EmbedBuilder().setTitle("Grand logs");
         String description = sendGrandContentIfNeeded(event.getGuild(), logs, stats, builder);
@@ -45,7 +43,7 @@ public class GetLogCommandHandler implements CommandHandler {
 
     private void handleUserEvent(SlashCommandInteractionEvent event) {
         String userId = event.getUser().getId();
-        List<String> userErrorMessages = ErrorMessageStorage.getErrorMessages(userId);
+        List<ErrorLogData> userErrorMessages = ErrorMessageStorage.getErrorMessages(userId);
         String logs = listToString(userErrorMessages);
         EmbedBuilder builder = new EmbedBuilder();
         String description = sendUserContentIfNeeded(event.getUser(), logs, builder);
@@ -156,11 +154,15 @@ public class GetLogCommandHandler implements CommandHandler {
         }
 
         Map<String, Integer> commandCountMap = new HashMap<>();
+        Map<String, Integer> userIdCountMap = new HashMap<>();
 
         // Count commands
         for (EventData item : list) {
             String action = item.getAction();
             commandCountMap.put(action, commandCountMap.getOrDefault(action, 0) + 1);
+
+            String userId = item.getUserId();
+            userIdCountMap.put(userId, userIdCountMap.getOrDefault(userId, 0) + 1);
         }
 
         // Sort list
@@ -169,22 +171,38 @@ public class GetLogCommandHandler implements CommandHandler {
 
         // Format string
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Commands stats:\n\n");
+        stringBuilder.append("Commands stat\n\n");
+        stringBuilder.append("Unique users: ").append(userIdCountMap.size()).append("\n");
         for (Map.Entry<String, Integer> entry : entryList) {
             stringBuilder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
         }
 
+
         return stringBuilder.toString();
     }
 
-    private static String listToString(List<String> list) {
+    private static String getLogsStat(List<ErrorLogData> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+
+        Map<String, Integer> userIdCountMap = new HashMap<>();
+        for (ErrorLogData item : list) {
+            String userId = item.getUserId();
+            userIdCountMap.put(userId, userIdCountMap.getOrDefault(userId, 0) + 1);
+        }
+
+        return "Unique users: " + userIdCountMap.size() + "\n";
+    }
+
+    private static String listToString(List<ErrorLogData> list) {
         if (list == null || list.isEmpty()) {
             return "No records";
         }
 
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < list.size(); i++) {
-            stringBuilder.append(i + 1).append(". ").append(list.get(i)).append("\n");
+            stringBuilder.append(list.get(i).getErrorMessage()).append("\n");
         }
         return stringBuilder.toString();
     }
