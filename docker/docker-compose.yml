@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  midjourney-proxy:
+    image: novicezk/midjourney-proxy:2.6.1
+    container_name: midjourney-proxy
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    volumes:
+      - ./config:/home/spring/config
