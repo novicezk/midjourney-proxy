@@ -1,4 +1,4 @@
-FROM maven:3.8.5-openjdk-17
+FROM maven:3.9-eclipse-temurin-17-alpine AS builder
 
 ARG user=spring
 ARG group=spring
@@ -23,6 +23,8 @@ RUN mvn clean package \
     && mv target/midjourney-proxy-*.jar ./app.jar \
     && rm -rf target
 
+FROM amazoncorretto:17-alpine
+COPY --from=builder /home/spring/app.jar /home/spring/app.jar
 EXPOSE 8080 9876
 
 ENV JAVA_OPTS -XX:MaxRAMPercentage=85 -Djava.awt.headless=true -XX:+HeapDumpOnOutOfMemoryError \
