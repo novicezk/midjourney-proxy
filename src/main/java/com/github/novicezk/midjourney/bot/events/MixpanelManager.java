@@ -13,7 +13,6 @@ public class MixpanelManager {
 
     public static void trackEvent(MixpanelEventData data) {
         MessageBuilder messageBuilder = new MessageBuilder(Config.getMixpanelProjectToken());
-
         JSONObject event = messageBuilder.event(data.getDistinctId(), data.getEventName(), data.getData());
         try {
             mixpanel.sendMessage(event);

@@ -38,7 +38,7 @@ public class ButtonEventData implements MixpanelEventData {
 
     @Override
     public String getDistinctId() {
-        return DistinctId.ACTION.getName();
+        return DistinctId.APP_NAME.getName();
     }
 
     @Override

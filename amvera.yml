@@ -1,0 +1,10 @@
+meta:
+  environment: docker
+  toolchain: docker
+build:
+  dockerfile: Dockerfile
+  skip: false
+run:
+  persistenceMount: /data
+  containerPort: "80"
+  image: adam-ai-image

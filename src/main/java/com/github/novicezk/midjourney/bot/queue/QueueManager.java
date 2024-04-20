@@ -58,7 +58,7 @@ public class QueueManager {
         TextChannel channel = guild.getTextChannelById(Config.getQueueChannel());
         if (channel != null) {
             channel.sendMessageEmbeds(List.of(EmbedUtil.createEmbedWithFooter(
-                            String.valueOf(SeasonTracker.getCurrentGenerationCount()),
+                            String.valueOf(SeasonTracker.getCurrentGenerationCount() - 1),
                             "Queue updated: <@" + userId + "> added, now **" + getCurrentQueue().size() + "** in line.\n\n`/get-queue` to check",
                             "sum: " + taskId + " " + new Timestamp(System.currentTimeMillis())
                     )))

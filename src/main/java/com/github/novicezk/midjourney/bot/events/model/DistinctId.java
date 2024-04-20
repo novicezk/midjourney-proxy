@@ -1,7 +1,7 @@
 package com.github.novicezk.midjourney.bot.events.model;
 
 public enum DistinctId {
-    ACTION("action");
+    APP_NAME("DSBot API");
 
     private final String action;
 
