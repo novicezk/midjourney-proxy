@@ -5,9 +5,7 @@ ARG group=spring
 
 ENV SPRING_HOME=/home/spring
 
-RUN groupadd -g 1000 ${group} \
-	&& useradd -d "$SPRING_HOME" -u 1000 -g 1000 -m -s /bin/bash ${user} \
-	&& mkdir -p $SPRING_HOME/config \
+RUN mkdir -p $SPRING_HOME/config \
 	&& mkdir -p $SPRING_HOME/logs \
 	&& chown -R ${user}:${group} $SPRING_HOME/config $SPRING_HOME/logs
 
