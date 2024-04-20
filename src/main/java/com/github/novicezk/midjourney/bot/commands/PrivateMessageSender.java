@@ -43,7 +43,7 @@ public class PrivateMessageSender {
         event.getJDA().retrieveUserById(Config.getContactManagerId()).queue(contactManager -> {
             if (contactManager != null) {
                 contactManager.openPrivateChannel().queue(privateChannel -> {
-                    privateChannel.sendMessage("Received private message from <@" + event.getAuthor().getId() + ":\n\n"
+                    privateChannel.sendMessage("Received private message from <@" + event.getAuthor().getId() + ">\n\n"
                                     + event.getMessage().getContentRaw())
                             .queue();
                     event.getAuthor().openPrivateChannel().queue(channel -> {

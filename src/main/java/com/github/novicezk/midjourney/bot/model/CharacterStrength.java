@@ -3,18 +3,20 @@ package com.github.novicezk.midjourney.bot.model;
 import java.util.Random;
 
 public enum CharacterStrength {
-    COMMON("Common", "1225826423311437824"),
-    RARE("Rare", "1225826457981423748"),
-    STRANGE("Strange", "1225826281153761362"),
-    UNIQUE("Unique", "1225826496824742070"),
-    EPIC("Epic", "1225826560997851216");
+    COMMON("Common", "1225826423311437824", 40),
+    RARE("Rare", "1225826457981423748", 27),
+    STRANGE("Strange", "1225826281153761362", 18),
+    UNIQUE("Unique", "1225826496824742070", 10),
+    EPIC("Epic", "1225826560997851216", 5);
 
     private final String strengthName;
     private final String roleId;
+    private final int probability;
 
-    CharacterStrength(String strengthName, String roleId) {
+    CharacterStrength(String strengthName, String roleId, int probability) {
         this.strengthName = strengthName;
         this.roleId = roleId;
+        this.probability = probability;
     }
 
     public String getStrengthName() {
@@ -29,17 +31,14 @@ public enum CharacterStrength {
         Random random = new Random();
         int randomNumber = random.nextInt(100) + 1; // Generate random number from 1 to 100
 
-        if (randomNumber <= 50) {
-            return COMMON;
-        } else if (randomNumber <= 73) {
-            return RARE;
-        } else if (randomNumber <= 88) {
-            return STRANGE;
-        } else if (randomNumber <= 96) {
-            return UNIQUE;
-        } else {
-            return EPIC;
+        int cumulativeProbability = 0;
+        for (CharacterStrength strength : values()) {
+            cumulativeProbability += strength.probability;
+            if (randomNumber <= cumulativeProbability) {
+                return strength;
+            }
         }
+        return COMMON; // Fallback if probabilities do not sum up to 100
     }
 
     public int getCW() {

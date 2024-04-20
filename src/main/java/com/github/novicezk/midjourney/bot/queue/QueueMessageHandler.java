@@ -89,7 +89,7 @@ public class QueueMessageHandler extends MessageHandler {
         }
 
         Button downloadButton = Button.success("create", "Create Avatar \uD83D\uDCAB");
-        Button faqButton = Button.of(ButtonStyle.LINK, Config.getFaqChannelUrl(), "What's that?");
+        Button faqButton = Button.of(ButtonStyle.LINK, Config.getFaqChannelUrl(), "Huh?");
         Button deleteButton = Button.danger("delete", "\uD83D\uDDD1\uFE0F");
         channel.sendMessage(postMessage)
                 .addFiles(file)

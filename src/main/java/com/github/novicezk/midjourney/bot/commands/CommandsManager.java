@@ -7,6 +7,7 @@ import com.github.novicezk.midjourney.bot.events.EventsManager;
 import com.github.novicezk.midjourney.bot.model.GeneratedPromptData;
 import com.github.novicezk.midjourney.bot.prompt.PromptGenerator;
 import com.github.novicezk.midjourney.bot.queue.QueueManager;
+import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
 import com.github.novicezk.midjourney.bot.utils.SeasonTracker;
 import com.github.novicezk.midjourney.bot.utils.WelcomeMessageTracker;
@@ -120,6 +121,8 @@ public class CommandsManager extends ListenerAdapter {
 
         event.deferReply().setEphemeral(true).queue();
         String buttonUserId = event.getUser().getId();
+        Member member = event.getMember();
+        boolean isGodfather = member != null && member.getRoles().stream().anyMatch(role -> role.getId().equals(Config.getGodfatherId()));
 
         if (event.getComponentId().equals("create")) {
             privateMessageSender.sendToUser(event);
@@ -129,7 +132,7 @@ public class CommandsManager extends ListenerAdapter {
             return;
         }
 
-        if (!event.getMessage().getContentRaw().contains(buttonUserId)) {
+        if (!event.getMessage().getContentRaw().contains(buttonUserId) && !isGodfather) {
             event.getHook().sendMessageEmbeds(
                     EmbedUtil.createEmbedWarning("Only the original author can delete the request.")
             ).queue();

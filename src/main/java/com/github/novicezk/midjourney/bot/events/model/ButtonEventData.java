@@ -23,6 +23,7 @@ public class ButtonEventData implements MixpanelEventData {
         data.put("event-id", event.getId());
         data.put("channel", event.getChannel().getName());
         data.put("version", SeasonTracker.getCurrentSeasonVersion() + "." + SeasonTracker.getCurrentGenerationCount());
+        data.put("season", SeasonTracker.getCurrentSeasonVersion());
 
         Member member = event.getMember();
         if (member != null) {
@@ -32,7 +33,7 @@ public class ButtonEventData implements MixpanelEventData {
 
     @Override
     public String getEventName() {
-        return eventName;
+        return EVENT_NAME + "-" + eventName;
     }
 
     @Override

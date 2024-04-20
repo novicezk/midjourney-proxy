@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.bot.commands.handlers;
 
 import com.github.novicezk.midjourney.bot.commands.CommandsUtil;
 import com.github.novicezk.midjourney.bot.error.OnErrorAction;
+import com.github.novicezk.midjourney.bot.model.CharacterStrength;
 import com.github.novicezk.midjourney.bot.utils.ColorUtil;
 import com.github.novicezk.midjourney.bot.utils.Config;
 import com.github.novicezk.midjourney.bot.utils.EmbedUtil;
@@ -70,6 +71,20 @@ public class ContractCommandHandler implements CommandHandler {
         } else if ("faq".equals(task) && event.getGuild() != null) {
             handleFaqCommand(event);
             event.getHook().sendMessageEmbeds(EmbedUtil.createEmbed("done")).queue();
+        } else if ("rare".equals(task)) {
+            int[] counts = new int[CharacterStrength.values().length];
+
+            for (int i = 0; i < 100; i++) {
+                CharacterStrength strength = CharacterStrength.getRandomStrength();
+                counts[strength.ordinal()]++;
+            }
+
+            StringBuilder stringBuilder = new StringBuilder();
+            for (CharacterStrength strength : CharacterStrength.values()) {
+                stringBuilder.append(strength.getStrengthName()).append(": ").append(counts[strength.ordinal()]).append(", ");
+            }
+            stringBuilder.setLength(stringBuilder.length() - 2);
+            event.getHook().sendMessageEmbeds(EmbedUtil.createEmbed("Character Strength Counts", stringBuilder.toString())).queue();
         } else {
             event.getHook().sendMessageEmbeds(List.of(EmbedUtil.createEmbed("Command not found"))).queue();
         }

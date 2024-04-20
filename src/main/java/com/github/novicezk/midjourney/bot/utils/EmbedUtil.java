@@ -29,6 +29,10 @@ public class EmbedUtil {
         return createEmbed(null, description, null, ColorUtil.getDefaultColor());
     }
 
+    public static MessageEmbed createEmbed(String title, String description) {
+        return createEmbed(title, description, null, ColorUtil.getDefaultColor());
+    }
+
     public static MessageEmbed createEmbedWarning(String description) {
         return createEmbed(null, description, null, ColorUtil.getWarningColor());
     }
