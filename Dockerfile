@@ -1,8 +1,5 @@
 FROM maven:3.9-eclipse-temurin-17-alpine AS builder
 
-ARG user=spring
-ARG group=spring
-
 ENV SPRING_HOME=/home/spring
 
 RUN mkdir -p $SPRING_HOME/config \
@@ -11,7 +8,6 @@ RUN mkdir -p $SPRING_HOME/config \
 # Railway 不支持使用 VOLUME, 本地需要构建时，取消下一行的注释
 # VOLUME ["$SPRING_HOME/config", "$SPRING_HOME/logs"]
 
-USER ${user}
 WORKDIR $SPRING_HOME
 
 COPY . .
