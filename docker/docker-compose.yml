@@ -2,7 +2,7 @@ version: "3"
 
 services:
   midjourney-proxy:
-    image: novicezk/midjourney-proxy:2.6.1
+    image: ghcr.io/novicezk/midjourney-proxy:latest
     container_name: midjourney-proxy
     restart: unless-stopped
     ports:
