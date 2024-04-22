@@ -41,6 +41,10 @@ public class EmbedUtil {
         return createEmbed(null, description, null, ColorUtil.getErrorColor());
     }
 
+    public static MessageEmbed createEmbedSuccess(String description) {
+        return createEmbed(null, description, null, ColorUtil.getSuccessColor());
+    }
+
     public static MessageEmbed createEmbedWithFooter(String title, String description, String footer) {
         return createEmbed(title, description, footer, ColorUtil.getDefaultColor());
     }

@@ -28,7 +28,7 @@ public class CommandsUtil {
 
     public static String generateTitle(boolean isImagesEmpty, String defaultTitle) {
         if (isImagesEmpty) {
-            return "Oops! No image uploaded or link expired; we'll use your avatar instead. \nTo upload a new image try `/upload-image`.\n\n";
+            return "_No image uploaded or link expired; we'll use your avatar instead._ \n_To upload a new image try `/upload-image`_\n\n";
         } else {
             return defaultTitle;
         }

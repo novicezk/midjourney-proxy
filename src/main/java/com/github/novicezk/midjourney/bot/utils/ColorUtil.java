@@ -14,4 +14,8 @@ public class ColorUtil {
     public static Color getErrorColor() {
         return Color.decode("#ED4337");
     }
+
+    public static Color getSuccessColor() {
+        return Color.decode("#6CC070");
+    }
 }

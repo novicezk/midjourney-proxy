@@ -26,7 +26,7 @@ public class UploadImageCommandHandler implements CommandHandler {
             if (!imageUrls.isEmpty()) {
                 ImageStorage.addImageUrl(event.getUser().getId(), imageUrls);
                 event.getHook().sendMessageEmbeds(
-                                EmbedUtil.createEmbed("Your images are in! Now you can use `/generate` to start generating characters or try `/get-images` to see what you've uploaded."))
+                                EmbedUtil.createEmbedSuccess("Your images are in! Now you can use `/generate` to start generating characters or try `/get-images` to see what you've uploaded."))
                         .setEphemeral(true)
                         .queue();
             } else {
