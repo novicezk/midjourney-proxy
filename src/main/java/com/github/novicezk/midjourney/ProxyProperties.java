@@ -147,7 +147,7 @@ public class ProxyProperties {
 		/**
 		 * 任务存储方式: redis(默认)、in_memory.
 		 */
-		private Type type = Type.IN_MEMORY;
+		private Type type = Type.MONGODB;
 
 		public enum Type {
 			/**
@@ -157,7 +157,11 @@ public class ProxyProperties {
 			/**
 			 * in_memory.
 			 */
-			IN_MEMORY
+			IN_MEMORY,
+			/**
+			 * mongodb
+			 */
+			MONGODB
 		}
 	}
 

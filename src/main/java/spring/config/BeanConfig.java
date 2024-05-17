@@ -3,11 +3,13 @@ package spring.config;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.github.novicezk.midjourney.ProxyProperties;
+import com.github.novicezk.midjourney.codecs.ObjectCodec;
 import com.github.novicezk.midjourney.loadbalancer.rule.IRule;
 import com.github.novicezk.midjourney.service.NotifyService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.service.store.InMemoryTaskStoreServiceImpl;
+import com.github.novicezk.midjourney.service.store.MongoTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.store.RedisTaskStoreServiceImpl;
 import com.github.novicezk.midjourney.service.translate.BaiduTranslateServiceImpl;
 import com.github.novicezk.midjourney.service.translate.GPTTranslateServiceImpl;
@@ -16,10 +18,20 @@ import com.github.novicezk.midjourney.support.DiscordAccountHelper;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.wss.handle.MessageHandler;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.internal.MongoClientImpl;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -39,6 +51,10 @@ public class BeanConfig {
 	@Autowired
 	private ProxyProperties properties;
 
+
+	@Value("${spring.data.mongodb.uri}")
+	String monogDBConnectionString;
+
 	@Bean
 	TranslateService translateService() {
 		return switch (this.properties.getTranslateWay()) {
@@ -48,13 +64,35 @@ public class BeanConfig {
 		};
 	}
 
+	public MongoClient mongoClient() {
+		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+				MongoClientSettings.getDefaultCodecRegistry(),
+				CodecRegistries.fromCodecs(new ObjectCodec())
+		);
+
+		MongoClientSettings settings = MongoClientSettings.builder()
+				.applyConnectionString(new ConnectionString(monogDBConnectionString))
+				.codecRegistry(codecRegistry)
+				.build();
+		return MongoClients.create(settings);
+	}
+
+	public MongoTemplate mongoTemplate() {
+		return new MongoTemplate(mongoClient(),"minis-content-generation");
+	}
 	@Bean
 	TaskStoreService taskStoreService(RedisConnectionFactory redisConnectionFactory) {
 		ProxyProperties.TaskStore.Type type = this.properties.getTaskStore().getType();
 		Duration timeout = this.properties.getTaskStore().getTimeout();
+		CodecRegistry registry = CodecRegistries.fromRegistries(
+				CodecRegistries.fromCodecs(new ObjectCodec()), // the codec you need to implement
+				MongoClientSettings.getDefaultCodecRegistry());
+
 		return switch (type) {
 			case IN_MEMORY -> new InMemoryTaskStoreServiceImpl(timeout);
 			case REDIS -> new RedisTaskStoreServiceImpl(timeout, taskRedisTemplate(redisConnectionFactory));
+			case MONGODB ->
+					new MongoTaskStoreServiceImpl(mongoTemplate());
 		};
 	}
 
