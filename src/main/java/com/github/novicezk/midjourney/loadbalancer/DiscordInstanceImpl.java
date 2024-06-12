@@ -1,7 +1,6 @@
 package com.github.novicezk.midjourney.loadbalancer;
 
 
-import cn.hutool.core.thread.ThreadUtil;
 import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.ReturnCode;
 import com.github.novicezk.midjourney.domain.DiscordAccount;
@@ -14,10 +13,10 @@ import com.github.novicezk.midjourney.service.DiscordServiceImpl;
 import com.github.novicezk.midjourney.service.NotifyService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.util.ThreadPoolUtils;
 import com.github.novicezk.midjourney.wss.WebSocketStarter;
 import eu.maxschuster.dataurl.DataUrl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -28,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 public class DiscordInstanceImpl implements DiscordInstance {
@@ -37,7 +37,8 @@ public class DiscordInstanceImpl implements DiscordInstance {
 	private final TaskStoreService taskStoreService;
 	private final NotifyService notifyService;
 
-	private final ThreadPoolTaskExecutor taskExecutor;
+	private final ThreadPoolExecutor taskExecutor;
+	private final ThreadPoolExecutor asyncSaveExecutor;
 	private final List<Task> runningTasks;
 	private final List<Task> queueTasks;
 	private final Map<String, Future<?>> taskFutureMap = Collections.synchronizedMap(new HashMap<>());
@@ -51,12 +52,8 @@ public class DiscordInstanceImpl implements DiscordInstance {
 		this.service = new DiscordServiceImpl(account, restTemplate, paramsMap);
 		this.runningTasks = new CopyOnWriteArrayList<>();
 		this.queueTasks = new CopyOnWriteArrayList<>();
-		this.taskExecutor = new ThreadPoolTaskExecutor();
-		this.taskExecutor.setCorePoolSize(account.getCoreSize());
-		this.taskExecutor.setMaxPoolSize(account.getCoreSize());
-		this.taskExecutor.setQueueCapacity(account.getQueueSize());
-		this.taskExecutor.setThreadNamePrefix("TaskQueue-" + account.getDisplay() + "-");
-		this.taskExecutor.initialize();
+		this.taskExecutor = ThreadPoolUtils.newThreadPoolExecutor("TaskQueue-", account.getCoreSize(), account.getCoreSize(), account.getQueueSize());
+		this.asyncSaveExecutor = ThreadPoolUtils.newFixedThreadPool("AsyncSaveTask-", account.getCoreSize() * 4);
 	}
 
 	@Override
@@ -114,7 +111,7 @@ public class DiscordInstanceImpl implements DiscordInstance {
 		this.taskStoreService.save(task);
 		int currentWaitNumbers;
 		try {
-			currentWaitNumbers = this.taskExecutor.getThreadPoolExecutor().getQueue().size();
+			currentWaitNumbers = this.taskExecutor.getQueue().size();
 			Future<?> future = this.taskExecutor.submit(() -> executeTask(task, discordSubmit));
 			this.taskFutureMap.put(task.getId(), future);
 			this.queueTasks.add(task);
@@ -145,7 +142,7 @@ public class DiscordInstanceImpl implements DiscordInstance {
 			if (result.getCode() != ReturnCode.SUCCESS) {
 				task.fail(result.getDescription());
 				saveAndNotify(task);
-				log.debug("task finished, id: {}, status: {}", task.getId(), task.getStatus());
+				log.debug("[{}] task finished, id: {}, status: {}", this.account.getDisplay(), task.getId(), task.getStatus());
 				return;
 			}
 			task.setStatus(TaskStatus.SUBMITTED);
@@ -155,12 +152,12 @@ public class DiscordInstanceImpl implements DiscordInstance {
 				task.sleep();
 				asyncSaveAndNotify(task);
 			} while (task.getStatus() == TaskStatus.IN_PROGRESS);
-			log.debug("task finished, id: {}, status: {}", task.getId(), task.getStatus());
+			log.debug("[{}] task finished, id: {}, status: {}", this.account.getDisplay(), task.getId(), task.getStatus());
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} catch (Exception e) {
-			log.error("task execute error", e);
-			task.fail("执行错误，系统异常");
+			log.error("[{}] task execute error, id: {}", this.account.getDisplay(), task.getId(), e);
+			task.fail("[Internal Server Error] " + e.getMessage());
 			saveAndNotify(task);
 		} finally {
 			this.runningTasks.remove(task);
@@ -170,7 +167,7 @@ public class DiscordInstanceImpl implements DiscordInstance {
 	}
 
 	private void asyncSaveAndNotify(Task task) {
-		ThreadUtil.execute(() -> saveAndNotify(task));
+		this.asyncSaveExecutor.execute(() -> saveAndNotify(task));
 	}
 
 	private void saveAndNotify(Task task) {

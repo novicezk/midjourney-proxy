@@ -10,29 +10,27 @@ import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.ProxyProperties;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.support.Task;
+import com.github.novicezk.midjourney.util.ThreadPoolUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 @Service
 public class NotifyServiceImpl implements NotifyService {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-	private final ThreadPoolTaskExecutor executor;
+	private final ThreadPoolExecutor executor;
 	private final TimedCache<String, String> taskStatusMap = CacheUtil.newTimedCache(Duration.ofHours(1).toMillis());
 
 	public NotifyServiceImpl(ProxyProperties properties) {
-		this.executor = new ThreadPoolTaskExecutor();
-		this.executor.setCorePoolSize(properties.getNotifyPoolSize());
-		this.executor.setThreadNamePrefix("TaskNotify-");
-		this.executor.initialize();
+		this.executor = ThreadPoolUtils.newFixedThreadPool("TaskNotify-", properties.getNotifyPoolSize());
 	}
 
 	@Override

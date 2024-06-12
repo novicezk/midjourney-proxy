@@ -4,6 +4,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.github.novicezk.midjourney.domain.DiscordAccount;
+import com.github.novicezk.midjourney.util.ThreadPoolUtils;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -53,6 +55,8 @@ public class SpringWebSocketHandler implements WebSocketHandler {
 	private boolean heartbeatAck = false;
 
 	private Future<?> heartbeatInterval;
+
+	private final ThreadPoolExecutor heartbeatTimeoutExecutor = ThreadPoolUtils.newFixedThreadPool("HeartbeatTimeout-", 1);
 	private Future<?> heartbeatTimeout;
 
 	private final Decompressor decompressor = new ZlibDecompressor(2048);
@@ -68,11 +72,15 @@ public class SpringWebSocketHandler implements WebSocketHandler {
 
 	@Override
 	public void afterConnectionEstablished(@NotNull WebSocketSession session) throws Exception {
-		// do nothing
+		Thread.sleep(1000L);
 	}
 
 	@Override
 	public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws Exception {
+		if ("The current thread was interrupted while waiting for a blocking send to complete".equals(e.getMessage())) {
+			// close session
+			return;
+		}
 		log.error("[wss-{}] Transport error", this.account.getDisplay(), e);
 		onFailure(CLOSE_CODE_EXCEPTION, "transport error");
 	}
@@ -139,7 +147,7 @@ public class SpringWebSocketHandler implements WebSocketHandler {
 
 	private void handleHeartbeat(WebSocketSession session) {
 		sendMessage(session, WebSocketCode.HEARTBEAT, this.sequence);
-		this.heartbeatTimeout = ThreadUtil.execAsync(() -> {
+		this.heartbeatTimeout = this.heartbeatTimeoutExecutor.submit(() -> {
 			ThreadUtil.sleep(this.interval);
 			onFailure(CLOSE_CODE_RECONNECT, "heartbeat has not ack");
 		});
