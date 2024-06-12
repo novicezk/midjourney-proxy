@@ -22,7 +22,7 @@ public class TaskTimeoutSchedule {
 		this.discordLoadBalancer.getAliveInstances().forEach(instance -> {
 			long timeout = TimeUnit.MINUTES.toMillis(instance.account().getTimeoutMinutes());
 			List<Task> tasks = instance.getRunningTasks().stream()
-					.filter(t -> System.currentTimeMillis() - t.getStartTime() > timeout)
+					.filter(t -> t.getStartTime() != null && System.currentTimeMillis() - t.getStartTime() > timeout)
 					.toList();
 			for (Task task : tasks) {
 				if (Set.of(TaskStatus.FAILURE, TaskStatus.SUCCESS).contains(task.getStatus())) {

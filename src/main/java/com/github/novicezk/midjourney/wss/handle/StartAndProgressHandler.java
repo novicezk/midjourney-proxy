@@ -49,7 +49,7 @@ public class StartAndProgressHandler extends MessageHandler {
 			if ("Stopped".equals(parseData.getStatus())) {
 				return;
 			}
-			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS))
+			TaskCondition condition = new TaskCondition().setStatusSet(Set.of(TaskStatus.IN_PROGRESS, TaskStatus.SUBMITTED))
 					.setProgressMessageId(message.getString("id"));
 			Task task = instance.findRunningTask(condition).findFirst().orElse(null);
 			if (task == null) {

@@ -3,17 +3,21 @@ package com.github.novicezk.midjourney.wss.handle;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.Constants;
 import com.github.novicezk.midjourney.enums.MessageType;
+import com.github.novicezk.midjourney.enums.TaskAction;
+import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.loadbalancer.DiscordInstance;
 import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
+import com.github.novicezk.midjourney.util.ConvertUtils;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.Set;
 
 public abstract class MessageHandler {
 	@Resource
@@ -45,21 +49,30 @@ public abstract class MessageHandler {
 		return reference.map(dataObject -> dataObject.getString("message_id", "")).orElse("");
 	}
 
-	protected void findAndFinishImageTask(DiscordInstance instance, TaskCondition condition, String finalPrompt, DataObject message) {
+	protected void findAndFinishImageTask(DiscordInstance instance, TaskAction action, String finalPrompt, DataObject message) {
+		if (CharSequenceUtil.isBlank(finalPrompt)) {
+			return;
+		}
 		String imageUrl = getImageUrl(message);
 		String messageHash = this.discordHelper.getMessageHash(imageUrl);
+		TaskCondition condition = new TaskCondition().setActionSet(Set.of(action)).setFinalPrompt(finalPrompt).setStatusSet(Set.of(TaskStatus.IN_PROGRESS));
 		condition.setMessageHash(messageHash);
-		Task task = instance.findRunningTask(condition)
-				.findFirst().orElseGet(() -> {
-					condition.setMessageHash(null);
-					return instance.findRunningTask(condition)
-							.filter(t -> t.getStartTime() != null)
-							.min(Comparator.comparing(Task::getStartTime))
-							.orElse(null);
-				});
+		Task task = instance.findRunningTask(condition).findFirst().orElse(null);
+		if (task == null) {
+			condition.setMessageHash(null);
+			task = instance.findRunningTask(condition).min(Comparator.comparing(Task::getStartTime)).orElse(null);
+		}
+		if (task == null && !TaskAction.BLEND.equals(action)) {
+			condition.setFinalPrompt(null);
+			condition.setStatusSet(Set.of(TaskStatus.SUBMITTED));
+			String matchPrompt = ConvertUtils.getPrimaryPrompt(finalPrompt).replaceAll("\\s+", "");
+			task = instance.findRunningTask(condition).filter(t -> matchPrompt.equals(ConvertUtils.getPrimaryPrompt(t.getPromptEn()).replaceAll("\\s+", "")))
+					.min(Comparator.comparing(Task::getStartTime)).orElse(null);
+		}
 		if (task == null) {
 			return;
 		}
+		message.put(Constants.MJ_MESSAGE_HANDLED, true);
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, messageHash);
 		task.setImageUrl(imageUrl);

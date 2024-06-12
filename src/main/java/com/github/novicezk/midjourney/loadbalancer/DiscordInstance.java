@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public interface DiscordInstance extends DiscordService {
@@ -35,7 +36,7 @@ public interface DiscordInstance extends DiscordService {
 
 	SubmitResultVO submitTask(Task task, Callable<Message<Void>> discordSubmit);
 
-	default Stream<Task> findRunningTask(TaskCondition condition) {
+	default Stream<Task> findRunningTask(Predicate<Task> condition) {
 		return getRunningTasks().stream().filter(condition);
 	}
 

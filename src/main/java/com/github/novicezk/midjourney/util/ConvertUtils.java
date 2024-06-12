@@ -19,7 +19,7 @@ public class ConvertUtils {
 	/**
 	 * content正则匹配prompt和进度.
 	 */
-	public static final String CONTENT_REGEX = ".*?\\*\\*(.*?)\\*\\*.+<@\\d+> \\((.*?)\\)";
+	public static final String CONTENT_REGEX = ".*?\\*\\*(.*)\\*\\*.+<@\\d+> \\((.*?)\\)";
 
 	public static ContentParseData parseContent(String content) {
 		return parseContent(content, CONTENT_REGEX);
@@ -50,6 +50,14 @@ public class ConvertUtils {
 			dataUrlList.add(dataUrl);
 		}
 		return dataUrlList;
+	}
+
+	public static String getPrimaryPrompt(String prompt) {
+		Matcher matcher = Pattern.compile("\\x20+--[a-z]+.*$", Pattern.CASE_INSENSITIVE).matcher(prompt);
+		prompt = matcher.replaceAll("");
+		String regex = "https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+		matcher = Pattern.compile(regex).matcher(prompt);
+		return matcher.replaceAll("<link>").replace("<<link>>", "<link>");
 	}
 
 	public static TaskChangeParams convertChangeParams(String content) {
