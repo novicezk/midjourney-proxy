@@ -4,13 +4,10 @@ package com.github.novicezk.midjourney.wss.handle;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.loadbalancer.DiscordInstance;
-import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.ContentParseData;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 /**
  * reroll 消息处理.
@@ -20,19 +17,16 @@ import java.util.Set;
  */
 @Component
 public class RerollSuccessHandler extends MessageHandler {
-	private static final String CONTENT_REGEX_1 = "\\*\\*(.*?)\\*\\* - <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX_2 = "\\*\\*(.*?)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
-	private static final String CONTENT_REGEX_3 = "\\*\\*(.*?)\\*\\* - Variations \\(.*?\\) by <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX_1 = "\\*\\*(.*)\\*\\* - <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX_2 = "\\*\\*(.*)\\*\\* - Variations by <@\\d+> \\((.*?)\\)";
+	private static final String CONTENT_REGEX_3 = "\\*\\*(.*)\\*\\* - Variations \\(.*?\\) by <@\\d+> \\((.*?)\\)";
 
 	@Override
 	public void handle(DiscordInstance instance, MessageType messageType, DataObject message) {
 		String content = getMessageContent(message);
 		ContentParseData parseData = getParseData(content);
 		if (MessageType.CREATE.equals(messageType) && parseData != null && hasImage(message)) {
-			TaskCondition condition = new TaskCondition()
-					.setActionSet(Set.of(TaskAction.REROLL))
-					.setFinalPromptEn(parseData.getPrompt());
-			findAndFinishImageTask(instance, condition, parseData.getPrompt(), message);
+			findAndFinishImageTask(instance, TaskAction.REROLL, parseData.getPrompt(), message);
 		}
 	}
 

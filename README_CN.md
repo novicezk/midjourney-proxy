@@ -6,7 +6,7 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.6.2&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.6.3&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 </div>

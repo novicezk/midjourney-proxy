@@ -6,7 +6,7 @@
 docker run -d --name midjourney-proxy \
  -p 8080:8080 \
  -v /xxx/xxx/config:/home/spring/config \
- novicezk/midjourney-proxy:2.6.2
+ novicezk/midjourney-proxy:2.6.3
 ```
 3. 访问 `http://ip:port/mj` 查看API文档
 
@@ -17,5 +17,5 @@ docker run -d --name midjourney-proxy \
  -e mj.discord.guild-id=xxx \
  -e mj.discord.channel-id=xxx \
  -e mj.discord.user-token=xxx \
- novicezk/midjourney-proxy:2.6.2
+ novicezk/midjourney-proxy:2.6.3
 ```

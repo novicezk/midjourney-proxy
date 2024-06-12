@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.websocket.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.concurrent.ListenableFutureCallback;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -74,7 +73,12 @@ public class SpringUserWebSocketStarter implements WebSocketStarter {
 		socketSessionFuture.addCallback(new ListenableFutureCallback<>() {
 			@Override
 			public void onFailure(@NotNull Throwable e) {
-				onSocketFailure(SpringWebSocketHandler.CLOSE_CODE_EXCEPTION, e.getMessage());
+				log.trace(e.getMessage(), e);
+				String reason = e.getMessage();
+				if (CharSequenceUtil.isBlank(reason)) {
+					reason = e.getClass().getName();
+				}
+				onSocketFailure(SpringWebSocketHandler.CLOSE_CODE_EXCEPTION, reason);
 			}
 
 			@Override
@@ -135,6 +139,7 @@ public class SpringUserWebSocketStarter implements WebSocketStarter {
 				if (e instanceof TimeoutException) {
 					closeSocketSessionWhenIsOpen();
 				}
+				log.trace(e.getMessage(), e);
 				log.warn("[wss-{}] New connect fail ({}): {}", this.account.getDisplay(), i, e.getMessage());
 				ThreadUtil.sleep(5000);
 			}

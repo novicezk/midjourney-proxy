@@ -5,13 +5,10 @@ import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.loadbalancer.DiscordInstance;
 import com.github.novicezk.midjourney.support.Task;
-import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.ContentParseData;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 /**
  * blend消息处理.
@@ -42,10 +39,7 @@ public class BlendSuccessHandler extends MessageHandler {
 			}
 		}
 		if (hasImage(message)) {
-			TaskCondition condition = new TaskCondition()
-					.setActionSet(Set.of(TaskAction.BLEND))
-					.setFinalPromptEn(parseData.getPrompt());
-			findAndFinishImageTask(instance, condition, parseData.getPrompt(), message);
+			findAndFinishImageTask(instance, TaskAction.BLEND, parseData.getPrompt(), message);
 		}
 	}
 }
