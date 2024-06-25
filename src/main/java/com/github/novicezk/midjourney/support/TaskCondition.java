@@ -19,15 +19,14 @@ public class TaskCondition implements Predicate<Task> {
 	private Set<TaskStatus> statusSet;
 	private Set<TaskAction> actionSet;
 
-	private String prompt;
-	private String promptEn;
-	private String description;
-
-	private String finalPromptEn;
+	// 精确匹配
+	private String state;
+	private String finalPrompt;
 	private String messageId;
 	private String messageHash;
 	private String progressMessageId;
 	private String nonce;
+	private String instanceId;
 
 	@Override
 	public boolean test(Task task) {
@@ -43,17 +42,11 @@ public class TaskCondition implements Predicate<Task> {
 		if (this.actionSet != null && !this.actionSet.isEmpty() && !this.actionSet.contains(task.getAction())) {
 			return false;
 		}
-		if (CharSequenceUtil.isNotBlank(this.prompt) && !this.prompt.equals(task.getPrompt())) {
-			return false;
-		}
-		if (CharSequenceUtil.isNotBlank(this.promptEn) && !this.promptEn.equals(task.getPromptEn())) {
-			return false;
-		}
-		if (CharSequenceUtil.isNotBlank(this.description) && !CharSequenceUtil.contains(task.getDescription(), this.description)) {
+		if (CharSequenceUtil.isNotBlank(this.state) && !this.state.equals(task.getState())) {
 			return false;
 		}
 
-		if (CharSequenceUtil.isNotBlank(this.finalPromptEn) && !this.finalPromptEn.equals(task.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT))) {
+		if (CharSequenceUtil.isNotBlank(this.finalPrompt) && !this.finalPrompt.equals(task.getProperty(Constants.TASK_PROPERTY_FINAL_PROMPT))) {
 			return false;
 		}
 		if (CharSequenceUtil.isNotBlank(this.messageId) && !this.messageId.equals(task.getProperty(Constants.TASK_PROPERTY_MESSAGE_ID))) {
@@ -66,6 +59,9 @@ public class TaskCondition implements Predicate<Task> {
 			return false;
 		}
 		if (CharSequenceUtil.isNotBlank(this.nonce) && !this.nonce.equals(task.getProperty(Constants.TASK_PROPERTY_NONCE))) {
+			return false;
+		}
+		if (CharSequenceUtil.isNotBlank(this.instanceId) && !this.instanceId.equals(task.getProperty(Constants.TASK_PROPERTY_DISCORD_INSTANCE_ID))) {
 			return false;
 		}
 		return true;
