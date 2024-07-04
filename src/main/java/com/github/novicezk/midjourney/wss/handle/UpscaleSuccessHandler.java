@@ -12,7 +12,9 @@ import com.github.novicezk.midjourney.util.ContentParseData;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import lombok.Data;
 import net.dv8tion.jda.api.utils.data.DataObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -68,6 +70,9 @@ public class UpscaleSuccessHandler extends MessageHandler {
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, messageHash);
 		task.setImageUrl(imageUrl);
+		if (StringUtils.hasText(imageUrl) && !StringUtils.hasText(task.getOssImageUrl())) {
+			task.setOssImageUrl(extImageSaveHandler.uploadToOSSAndGetUrl(imageUrl));
+		}
 		finishTask(task, message);
 		task.awake();
 	}

@@ -2,6 +2,7 @@ package com.github.novicezk.midjourney.wss.handle;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.Constants;
+import com.github.novicezk.midjourney.OssProperties;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
@@ -13,6 +14,8 @@ import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
@@ -24,6 +27,10 @@ public abstract class MessageHandler {
 	protected DiscordLoadBalancer discordLoadBalancer;
 	@Resource
 	protected DiscordHelper discordHelper;
+
+	@Autowired
+	protected ExtImageSaveHandler extImageSaveHandler;
+
 
 	public abstract void handle(DiscordInstance instance, MessageType messageType, DataObject message);
 
@@ -76,6 +83,10 @@ public abstract class MessageHandler {
 		task.setProperty(Constants.TASK_PROPERTY_FINAL_PROMPT, finalPrompt);
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, messageHash);
 		task.setImageUrl(imageUrl);
+		if (StringUtils.hasText(imageUrl) && !StringUtils.hasText(task.getOssImageUrl())) {
+			task.setOssImageUrl(extImageSaveHandler.uploadToOSSAndGetUrl(imageUrl));
+		}
+
 		finishTask(task, message);
 		task.awake();
 	}

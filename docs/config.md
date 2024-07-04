@@ -32,6 +32,7 @@
 | mj.openai.max-tokens          | 否  | 返回结果的最大分词数，默认2048                             |
 | mj.openai.temperature         | 否  | 相似度(0-2.0)，默认0                                |
 | spring.redis                  | 否  | 任务存储方式设置为redis，需配置redis相关属性                   |
+| oss.config | 否 | 将图片上传至阿里云oss存储桶，存储桶访问凭证配置 |
 
 ### 账号池配置参考
 ```yaml
@@ -68,3 +69,32 @@ spring:
     port: 6379
     password: xxx
 ```
+
+### 阿里云oss配置参考
+
+```
+oss:
+  config:
+    oss-save: false
+    access-key-id: LTAI5tAzZJnSy3P8t75dGCc
+    access-key-secret: Hmjs1mNo9qBe3E0TIyY2nsPoD0o5hc
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
+    bucket-name: midjoureny-images
+    to-sign: true
+    prefix-path: mj
+    expiration-seconds: 3600
+```
+
+账号字段说明
+
+| 名称               | 非空 | 描述                                                         |
+| :----------------- | :--: | :----------------------------------------------------------- |
+| oss-save           |  否  | 是否保存到阿里云oss，默认false                               |
+| access-key-id      |  是  | 阿里云存储 AccessKeyID                                       |
+| access-key-secret  |  是  | 阿里云存储 AccessKeySecret                                   |
+| endpoint           |  是  | 阿里云oss节点地址                                            |
+| bucket-name        |  是  | 存储桶名称                                                   |
+| to-sign            |  否  | 是否使用预签名图片地址，默认false                            |
+| prefix-path        |  否  | 存储路径                                                     |
+| expiration-seconds |  否  | 签名oss图片地址的过期时间，默认3000秒,当使用预签名图片地址时生效 |
+

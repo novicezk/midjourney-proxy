@@ -41,6 +41,8 @@ public class Task extends DomainObject {
 
 	@ApiModelProperty("图片url")
 	private String imageUrl;
+	@ApiModelProperty("oss图片url")
+	private String ossImageUrl;
 
 	@ApiModelProperty("任务进度")
 	private String progress;
