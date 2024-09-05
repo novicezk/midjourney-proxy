@@ -33,24 +33,37 @@ public class ExtImageSaveHandler {
 
     public String uploadToOSSAndGetUrl(String imageUrl) {
         String bucketName = ossProperties.getBucketName();
-        if (!ossProperties.getOssSave() || bucketName == null){
+        if (!ossProperties.getOssSave() || bucketName == null) {
             return null;
         }
-        File file = downloadImage(imageUrl);
-        if (file != null && file.exists()) {
-            String objectKey = ossProperties.getPrefixPath() + "/" + UUID.randomUUID() + getFileExtension(imageUrl);
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, objectKey, file);
-            ossClient.putObject(putObjectRequest);
+        File file = null;
+        try {
+            file = downloadImage(imageUrl);
+            if (file != null && file.exists()) {
+                String objectKey = ossProperties.getPrefixPath() + "/" + UUID.randomUUID() + getFileExtension(imageUrl);
+                PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, objectKey, file);
+                ossClient.putObject(putObjectRequest);
 
-            if (ossProperties.getToSign()) {
-                GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                        new GeneratePresignedUrlRequest(bucketName, objectKey);
-                generatePresignedUrlRequest.setExpiration(new Date(System.currentTimeMillis() + ossProperties.getExpirationSeconds() * 1000));
-                URL url = ossClient.generatePresignedUrl(generatePresignedUrlRequest);
-                return url.toString();
-            } else {
-                String endpoint = ossProperties.getEndpoint().split("https://")[1];
-                return "https://" + bucketName + "." + endpoint + "/" + objectKey;
+                if (ossProperties.getToSign()) {
+                    GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                            new GeneratePresignedUrlRequest(bucketName, objectKey);
+                    generatePresignedUrlRequest.setExpiration(new Date(System.currentTimeMillis() + ossProperties.getExpirationSeconds() * 1000));
+                    URL url = ossClient.generatePresignedUrl(generatePresignedUrlRequest);
+
+                    return url.toString();
+                } else {
+                    String endpoint = ossProperties.getEndpoint().split("https://")[1];
+                    return "https://" + bucketName + "." + endpoint + "/" + objectKey;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (file != null) {
+                boolean deleted = file.delete();
+                if (!deleted) {
+                    System.err.println("Failed to delete the temporary file: " + file.getAbsolutePath());
+                }
             }
         }
         return null;
