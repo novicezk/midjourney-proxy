@@ -1,5 +1,6 @@
 package com.github.novicezk.midjourney.wss.handle;
 
+import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.GeneratePresignedUrlRequest;
@@ -52,8 +53,23 @@ public class ExtImageSaveHandler {
 
                     return url.toString();
                 } else {
-                    String endpoint = ossProperties.getEndpoint().split("https://")[1];
-                    return "https://" + bucketName + "." + endpoint + "/" + objectKey;
+                    String protocol = "https://";
+                    String endpoint = ossProperties.getEndpoint();
+
+                    if (endpoint.contains("://")) {
+                        String[] parts = endpoint.split("://", 2);
+                        protocol = parts[0] + "://";
+                        endpoint = parts[1];
+                    }
+
+                    String fileUrl;
+                    if (ossProperties.getIsCname()) {
+                        fileUrl = protocol + endpoint + "/" + objectKey;
+                    } else {
+                        fileUrl = protocol + bucketName + "." + endpoint + "/" + objectKey;
+
+                    }
+                    return fileUrl;
                 }
             }
         } catch (Exception e) {
@@ -70,10 +86,13 @@ public class ExtImageSaveHandler {
     }
 
     private OSS createOssClient() {
+        ClientBuilderConfiguration config = new ClientBuilderConfiguration();
+        config.setSupportCname(ossProperties.getIsCname());
         return new OSSClientBuilder().build(
                 ossProperties.getEndpoint(),
                 ossProperties.getAccessKeyId(),
-                ossProperties.getAccessKeySecret()
+                ossProperties.getAccessKeySecret(),
+                config
         );
     }
 

@@ -40,4 +40,8 @@ public class OssProperties {
      * 预签名访问链接过期时间，默认过期时间3000秒
      */
     private Integer expirationSeconds = 3000;
+    /**
+     * 是否使用自定义cdn加速域名
+     */
+    private Boolean isCname = false;
 }
