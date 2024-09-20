@@ -6,7 +6,7 @@
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
-[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.5.5&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
+[![GitHub release](https://img.shields.io/static/v1?label=release&message=v2.6.3&color=blue)](https://www.github.com/novicezk/midjourney-proxy)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 </div>
@@ -74,6 +74,8 @@
 依赖此项目且开源的，欢迎联系作者，加到此处展示
 - [wechat-midjourney](https://github.com/novicezk/wechat-midjourney) : 代理微信客户端，接入MidJourney，仅示例应用场景，不再更新
 - [chatgpt-web-midjourney-proxy](https://github.com/Dooy/chatgpt-web-midjourney-proxy) : chatgpt web, midjourney, gpts,tts, whisper 一套ui全搞定
+- [chatnio](https://github.com/Deeptrain-Community/chatnio) : 下一代 AI 一站式 B/C 端解决方案, 集成精美 UI 和强大功能的聚合模型平台
+- [new-api](https://github.com/Calcium-Ion/new-api) : 接入Midjourney Proxy的接口管理 & 分发系统
 - [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI，基于本接口和SD，可一键打包生成H5和小程序
 - [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
 

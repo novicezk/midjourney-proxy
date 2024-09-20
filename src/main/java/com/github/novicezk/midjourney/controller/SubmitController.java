@@ -20,7 +20,6 @@ import com.github.novicezk.midjourney.service.TaskService;
 import com.github.novicezk.midjourney.service.TaskStoreService;
 import com.github.novicezk.midjourney.service.TranslateService;
 import com.github.novicezk.midjourney.support.Task;
-import com.github.novicezk.midjourney.support.TaskCondition;
 import com.github.novicezk.midjourney.util.BannedPromptUtils;
 import com.github.novicezk.midjourney.util.ConvertUtils;
 import com.github.novicezk.midjourney.util.MimeTypeUtils;
@@ -119,15 +118,6 @@ public class SubmitController {
 		} else {
 			description += " " + changeDTO.getAction().name().charAt(0) + changeDTO.getIndex();
 		}
-		if (TaskAction.UPSCALE.equals(changeDTO.getAction())) {
-			TaskCondition condition = new TaskCondition().setDescription(description);
-			Task existTask = this.taskStoreService.findOne(condition);
-			if (existTask != null) {
-				return SubmitResultVO.of(ReturnCode.EXISTED, "任务已存在", existTask.getId())
-						.setProperty("status", existTask.getStatus())
-						.setProperty("imageUrl", existTask.getImageUrl());
-			}
-		}
 		Task targetTask = this.taskStoreService.get(changeDTO.getTaskId());
 		if (targetTask == null) {
 			return SubmitResultVO.fail(ReturnCode.NOT_FOUND, "关联任务不存在或已失效");
@@ -149,6 +139,7 @@ public class SubmitController {
 		int messageFlags = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_FLAGS);
 		String messageId = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_MESSAGE_ID);
 		String messageHash = targetTask.getPropertyGeneric(Constants.TASK_PROPERTY_MESSAGE_HASH);
+		task.setProperty(Constants.TASK_PROPERTY_REFERENCED_MESSAGE_ID, messageId);
 		if (TaskAction.UPSCALE.equals(changeDTO.getAction())) {
 			return this.taskService.submitUpscale(task, messageId, messageHash, changeDTO.getIndex(), messageFlags);
 		} else if (TaskAction.VARIATION.equals(changeDTO.getAction())) {
@@ -216,25 +207,36 @@ public class SubmitController {
 	}
 
 	private String translatePrompt(String prompt) {
-		if (TranslateWay.NULL.equals(this.properties.getTranslateWay()) || CharSequenceUtil.isBlank(prompt)) {
+		if (TranslateWay.NULL.equals(this.properties.getTranslateWay()) || CharSequenceUtil.isBlank(prompt) || !this.translateService.containsChinese(prompt)) {
 			return prompt;
 		}
-		List<String> imageUrls = new ArrayList<>();
-		Matcher imageMatcher = Pattern.compile("https?://[a-z0-9-_:@&?=+,.!/~*'%$]+\\x20+", Pattern.CASE_INSENSITIVE).matcher(prompt);
-		while (imageMatcher.find()) {
-			imageUrls.add(imageMatcher.group(0));
-		}
 		String paramStr = "";
-		Matcher paramMatcher = Pattern.compile("\\x20+-{1,2}[a-z]+.*$", Pattern.CASE_INSENSITIVE).matcher(prompt);
+		Matcher paramMatcher = Pattern.compile("\\x20+--[a-z]+.*$", Pattern.CASE_INSENSITIVE).matcher(prompt);
 		if (paramMatcher.find()) {
 			paramStr = paramMatcher.group(0);
 		}
-		String imageStr = CharSequenceUtil.join("", imageUrls);
-		String text = prompt.substring(imageStr.length(), prompt.length() - paramStr.length());
+		String promptWithoutParam = CharSequenceUtil.sub(prompt, 0, prompt.length() - paramStr.length());
+		List<String> imageUrls = new ArrayList<>();
+		Matcher imageMatcher = Pattern.compile("https?://[a-z0-9-_:@&?=+,.!/~*'%$]+\\x20+", Pattern.CASE_INSENSITIVE).matcher(promptWithoutParam);
+		while (imageMatcher.find()) {
+			imageUrls.add(imageMatcher.group(0));
+		}
+		String text = promptWithoutParam;
+		for (String imageUrl : imageUrls) {
+			text = CharSequenceUtil.replaceFirst(text, imageUrl, "");
+		}
 		if (CharSequenceUtil.isNotBlank(text)) {
 			text = this.translateService.translateToEnglish(text).trim();
 		}
-		return imageStr + text + paramStr;
+		if (CharSequenceUtil.isNotBlank(paramStr)) {
+			Matcher paramNomatcher = Pattern.compile("--no\\s+(.*?)(?=--|$)").matcher(paramStr);
+			if (paramNomatcher.find()) {
+				String paramNoStr = paramNomatcher.group(1).trim();
+				String paramNoStrEn = this.translateService.translateToEnglish(paramNoStr).trim();
+				paramStr = paramNomatcher.replaceFirst("--no " + paramNoStrEn + " ");
+			}
+		}
+		return CharSequenceUtil.join("", imageUrls) + text + paramStr;
 	}
 
 }

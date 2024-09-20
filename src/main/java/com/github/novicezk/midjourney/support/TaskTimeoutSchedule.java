@@ -22,13 +22,13 @@ public class TaskTimeoutSchedule {
 		this.discordLoadBalancer.getAliveInstances().forEach(instance -> {
 			long timeout = TimeUnit.MINUTES.toMillis(instance.account().getTimeoutMinutes());
 			List<Task> tasks = instance.getRunningTasks().stream()
-					.filter(t -> System.currentTimeMillis() - t.getStartTime() > timeout)
+					.filter(t -> t.getStartTime() != null && System.currentTimeMillis() - t.getStartTime() > timeout)
 					.toList();
 			for (Task task : tasks) {
 				if (Set.of(TaskStatus.FAILURE, TaskStatus.SUCCESS).contains(task.getStatus())) {
-					log.warn("task status is failure/success but is in the queue, end it. id: {}", task.getId());
+					log.warn("[{}] - task status is failure/success but is in the queue, end it. id: {}", instance.account().getDisplay(), task.getId());
 				} else {
-					log.debug("task timeout, id: {}", task.getId());
+					log.debug("[{}] - task timeout, id: {}", instance.account().getDisplay(), task.getId());
 					task.fail("任务超时");
 				}
 				instance.exitTask(task);
