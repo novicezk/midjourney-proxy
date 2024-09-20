@@ -95,11 +95,14 @@ display.
   MidJourney, intended only as an example application scenario, will no longer be updated.
 - [chatgpt-web-midjourney-proxy](https://github.com/Dooy/chatgpt-web-midjourney-proxy) : chatgpt web, midjourney,
   gpts,tts, whisper A complete UI solution
-- [chatnio](https://github.com/Deeptrain-Community/chatnio) : The next-generation AI one-stop solution for B/C end, an aggregated model platform with exquisite UI and powerful functions
-- [new-api](https://github.com/Calcium-Ion/new-api) : An API interface management and distribution system compatible with the Midjourney Proxy
+- [chatnio](https://github.com/Deeptrain-Community/chatnio) : The next-generation AI one-stop solution for B/C end, an
+  aggregated model platform with exquisite UI and powerful functions
+- [new-api](https://github.com/Calcium-Ion/new-api) : An API interface management and distribution system compatible
+  with the Midjourney Proxy
 - [stable-diffusion-mobileui](https://github.com/yuanyuekeji/stable-diffusion-mobileui) : SDUI, based on this interface
   and SD (System Design), can be packaged with one click to generate H5 and mini-programs.
 - [MidJourney-Web](https://github.com/ConnectAI-E/MidJourney-Web) : 🍎 Supercharged Experience For MidJourney On Web UI
+- [midjourney-captcha-bot](https://github.com/ye4241/midjourney-captcha-bot) : Bypass Midjourney captcha
 
 ## Open API
 
