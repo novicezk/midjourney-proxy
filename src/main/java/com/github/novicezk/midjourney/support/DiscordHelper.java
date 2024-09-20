@@ -59,6 +59,17 @@ public class DiscordHelper {
 		return wssUrl;
 	}
 
+	public String getResumeWss() {
+		if (CharSequenceUtil.isBlank(this.properties.getNgDiscord().getResumeWss())) {
+			return null;
+		}
+		String resumeWss = this.properties.getNgDiscord().getResumeWss();
+		if (resumeWss.endsWith("/")) {
+			resumeWss = resumeWss.substring(0, resumeWss.length() - 1);
+		}
+		return resumeWss;
+	}
+
 	public String getDiscordUploadUrl(String uploadUrl) {
 		if (CharSequenceUtil.isBlank(this.properties.getNgDiscord().getUploadServer()) || CharSequenceUtil.isBlank(uploadUrl)) {
 			return uploadUrl;
@@ -68,18 +79,6 @@ public class DiscordHelper {
 			uploadServer = uploadServer.substring(0, uploadServer.length() - 1);
 		}
 		return uploadUrl.replaceFirst(DISCORD_UPLOAD_URL, uploadServer);
-	}
-
-	public String findTaskIdWithCdnUrl(String url) {
-		if (!CharSequenceUtil.startWith(url, DISCORD_CDN_URL)) {
-			return null;
-		}
-		int hashStartIndex = url.lastIndexOf("/");
-		String taskId = CharSequenceUtil.subBefore(url.substring(hashStartIndex + 1), ".", true);
-		if (CharSequenceUtil.length(taskId) == 16) {
-			return taskId;
-		}
-		return null;
 	}
 
 	public String getMessageHash(String imageUrl) {

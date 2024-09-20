@@ -1,26 +1,35 @@
 package com.github.novicezk.midjourney.enums;
 
 
+import lombok.Getter;
+
 public enum TaskStatus {
 	/**
 	 * 未启动.
 	 */
-	NOT_START,
+	NOT_START(0),
 	/**
 	 * 已提交.
 	 */
-	SUBMITTED,
+	SUBMITTED(1),
 	/**
 	 * 执行中.
 	 */
-	IN_PROGRESS,
+	IN_PROGRESS(3),
 	/**
 	 * 失败.
 	 */
-	FAILURE,
+	FAILURE(4),
 	/**
 	 * 成功.
 	 */
-	SUCCESS
+	SUCCESS(4);
+
+	@Getter
+	private final int order;
+
+	TaskStatus(int order) {
+		this.order = order;
+	}
 
 }
