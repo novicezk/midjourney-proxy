@@ -1,13 +1,10 @@
 package com.github.novicezk.midjourney.wss.handle;
-
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.novicezk.midjourney.Constants;
-import com.github.novicezk.midjourney.OssProperties;
 import com.github.novicezk.midjourney.enums.MessageType;
 import com.github.novicezk.midjourney.enums.TaskAction;
 import com.github.novicezk.midjourney.enums.TaskStatus;
 import com.github.novicezk.midjourney.loadbalancer.DiscordInstance;
-import com.github.novicezk.midjourney.loadbalancer.DiscordLoadBalancer;
 import com.github.novicezk.midjourney.support.DiscordHelper;
 import com.github.novicezk.midjourney.support.Task;
 import com.github.novicezk.midjourney.support.TaskCondition;
@@ -16,15 +13,15 @@ import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-
+import lombok.extern.slf4j.Slf4j;
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 public abstract class MessageHandler {
-	@Resource
-	protected DiscordLoadBalancer discordLoadBalancer;
+
 	@Resource
 	protected DiscordHelper discordHelper;
 
@@ -34,9 +31,6 @@ public abstract class MessageHandler {
 
 	public abstract void handle(DiscordInstance instance, MessageType messageType, DataObject message);
 
-	public int order() {
-		return 100;
-	}
 
 	protected String getMessageContent(DataObject message) {
 		return message.hasKey("content") ? message.getString("content") : "";
@@ -84,7 +78,13 @@ public abstract class MessageHandler {
 		task.setProperty(Constants.TASK_PROPERTY_MESSAGE_HASH, messageHash);
 		task.setImageUrl(imageUrl);
 		if (StringUtils.hasText(imageUrl) && !StringUtils.hasText(task.getOssImageUrl())) {
-			task.setOssImageUrl(extImageSaveHandler.uploadToOSSAndGetUrl(imageUrl));
+			try {
+				String ossImageUrl = extImageSaveHandler.uploadToOSSAndGetUrl(imageUrl);
+				log.debug("Uploaded to OSS, URL: " + ossImageUrl);
+				task.setOssImageUrl(ossImageUrl);
+			} catch (Exception e) {
+				log.debug("Failed to upload to OSS: " + e.getMessage());
+			}
 		}
 
 		finishTask(task, message);
