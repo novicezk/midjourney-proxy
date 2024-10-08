@@ -32,6 +32,11 @@ public abstract class MessageHandler {
 	public abstract void handle(DiscordInstance instance, MessageType messageType, DataObject message);
 
 
+	public int order() {
+		return 100;
+	}
+
+
 	protected String getMessageContent(DataObject message) {
 		return message.hasKey("content") ? message.getString("content") : "";
 	}
