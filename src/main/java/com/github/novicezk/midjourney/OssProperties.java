@@ -44,4 +44,9 @@ public class OssProperties {
      * 是否使用自定义cdn加速域名
      */
     private Boolean isCname = false;
+
+    /**
+     * 自定义cdn加速域名地址.
+     */
+    private String cdnEndpoint;
 }

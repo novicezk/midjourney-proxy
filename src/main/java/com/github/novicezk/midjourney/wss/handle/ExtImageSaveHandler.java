@@ -59,19 +59,13 @@ public class ExtImageSaveHandler {
                         url = generatedUrl.toString();
                     } else {
                         String protocol = "https://";
-                        String endpoint = ossProperties.getEndpoint();
+                        String endpoint = ossProperties.getIsCname() ? ossProperties.getCdnEndpoint() : ossProperties.getEndpoint();
                         if (endpoint.contains("://")) {
                             String[] parts = endpoint.split("://", 2);
                             protocol = parts[0] + "://";
                             endpoint = parts[1];
                         }
-                        String fileUrl;
-                        if (ossProperties.getIsCname()) {
-                            fileUrl = protocol + endpoint + "/" + objectKey;
-                        } else {
-                            fileUrl = protocol + bucketName + "." + endpoint + "/" + objectKey;
-                        }
-                        url = fileUrl;
+                        url = protocol + (ossProperties.getIsCname() ? endpoint : bucketName + "." + endpoint) + "/" + objectKey;
                     }
                     break;
                 }
