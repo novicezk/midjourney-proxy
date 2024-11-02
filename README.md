@@ -36,6 +36,7 @@ Proxy the Discord channel for MidJourney to enable API-based calls for AI drawin
 > - [x] Supports Niji bot robot
 > - [x] Supports InsightFace face replacement robot
 > - [x] Embedded management dashboard page
+> - [x] Backend supports dynamic configuration
 
 ## Prerequisites for use
 
