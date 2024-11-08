@@ -1,5 +1,5 @@
 mj:
   task-store:
-    type: in_memory
+    type: mongodb
     timeout: 30d
   translate-way: null
