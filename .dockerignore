@@ -19,4 +19,4 @@ config/application.yml
 .gitignore
 docker
 docs
-README.md
+README_US.md
