@@ -2,7 +2,7 @@
 
 <h1 align="center">midjourney-proxy</h1>
 
-[English](./README_US) | 中文
+[English](./README_US.md) | 中文
 
 代理 MidJourney 的discord频道，实现api形式调用AI绘图
 
