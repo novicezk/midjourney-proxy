@@ -2,7 +2,7 @@
 
 <h1 align="center">midjourney-proxy</h1>
 
-English | [中文](./README)
+English | [中文](./README.md)
 
 Proxy the Discord channel for MidJourney to enable API-based calls for AI drawing
 
