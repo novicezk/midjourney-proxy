@@ -1,5 +1,19 @@
 mj:
+  discord:
+    guild-id: 1112940597846749225
+    channel-id: 1112940597846749228
+    user-token: MTEwNDY1NDYyNTI1NDE0NjE0OA.GbrBOv.zHlGkv8IGum99BHr082iyaC46m-k3YQo7Xf8NM
+    user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
   task-store:
-    type: in_memory
+    type: redis
     timeout: 30d
   translate-way: null
+  queue:
+    timeout-minutes: 5
+    core-size: 3
+    queue-size: 10
+spring:
+  redis:
+    port: 18099
+    host: redis-18099.c57.us-east-1-4.ec2.cloud.redislabs.com
+    password: y3vqtzrmKMr760JDtO3kJHW16oBgsL4l
