@@ -21,3 +21,13 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.github.novicezk.midjourney.controller
+mj:
+  accounts:
+    - guild-id: xxxx
+      channel-id: xxxx
+      user-token: xxxx
+      user-agent: xxxx
+spring:
+  data:
+    mongodb:
+      uri: mongodburi
