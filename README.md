@@ -40,6 +40,7 @@
 > - [x] 解决token频繁掉线问题
 > - [x] 支持弹窗自动验证功能
 > - [x] 支持违禁词Action needed to continue自动申诉
+> - [x] 支持最新的MidJourney V7 Alpha版本
 
 ## 使用前提
 

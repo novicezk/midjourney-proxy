@@ -40,6 +40,7 @@ Proxy the Discord channel for MidJourney to enable API-based calls for AI drawin
 > - [x] Resolves the issue of frequent token disconnections
 > - [x] Supports automatic pop-up verification
 > - [x] Supports automatic appeal for prohibited word 'Action needed to continue'
+> - [x] Supports the latest MidJourney V7 Alpha version
 
 ## Prerequisites for use
 
