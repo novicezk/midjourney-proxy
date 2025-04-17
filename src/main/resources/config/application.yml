@@ -20,4 +20,5 @@ knife4j:
         group-name: API
         api-rule: package
         api-rule-resources:
-          - com.github.novicezk.midjourney.controller
+filePath: D:\ProgramData\aiproject\midjourney-proxy\src\main\resources\config\application.yml
+
