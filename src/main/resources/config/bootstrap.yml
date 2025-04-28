@@ -1,0 +1,20 @@
+spring:
+  application:
+    #项目名称
+    name: midjourney-proxy
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery: #服务发现配置
+        #nacos地址
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+      config: #注册中心配置
+        #nacos地址
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+        prefix: midjourney-proxy
+        file-extension: yaml

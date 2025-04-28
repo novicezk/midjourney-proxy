@@ -19,6 +19,5 @@ knife4j:
       api:
         group-name: API
         api-rule: package
-        api-rule-resources:
-filePath: D:\ProgramData\aiproject\midjourney-proxy\src\main\resources\config\application.yml
-
+        api-rule-resources: null
+filePath:
