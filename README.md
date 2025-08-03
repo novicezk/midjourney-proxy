@@ -41,6 +41,7 @@
 > - [x] 支持弹窗自动验证功能
 > - [x] 支持违禁词Action needed to continue自动申诉
 > - [x] 支持最新的MidJourney V7 Alpha版本
+> - [x] 支持视频生成相关接口
 
 ## 使用前提
 

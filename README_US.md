@@ -41,6 +41,7 @@ Proxy the Discord channel for MidJourney to enable API-based calls for AI drawin
 > - [x] Supports automatic pop-up verification
 > - [x] Supports automatic appeal for prohibited word 'Action needed to continue'
 > - [x] Supports the latest MidJourney V7 Alpha version
+> - [x] Supports video generation related interfaces
 
 ## Prerequisites for use
 
