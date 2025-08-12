@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -15,12 +17,14 @@ public class DomainObject implements Serializable {
 	@Getter
 	@Setter
 	@ApiModelProperty("ID")
+	@Id
 	protected String id;
 
 	@Setter
 	protected Map<String, Object> properties; // 扩展属性，仅支持基本类型
 
 	@JsonIgnore
+	@Transient
 	private final transient Object lock = new Object();
 
 	public void sleep() throws InterruptedException {
